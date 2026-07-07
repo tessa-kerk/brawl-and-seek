@@ -108,6 +108,7 @@
     pose({ col, row, progress = 0, facing = 1 } = {}) {
       const T = Arena.T;
       if (col != null) { Player.x = col * T + T / 2; Player.y = row * T + T / 2; }
+      Player.vx = 0; Player.vy = 0;
       Player.facing = facing;
       Player.camo = Arena.camoSurface(Player.x, Player.y, Player.h);
       Player.still = progress * STATE.repaintTime;

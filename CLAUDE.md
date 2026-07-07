@@ -32,8 +32,14 @@ The paint fill is visible and satisfying at a glance; moving obviously breaks ca
 
 **QA method:** Playwright driving **system Chrome via `channel="chrome"`** (no `playwright install` needed). Use `Game.pose(...)` / `Game.pause()` to freeze deterministic frames, screenshot at exact device sizes, and **read the frames back** — judge the picture. Do not use the preview MCP's pixel screenshot (it hung at harness level on the Elixir Hour build).
 
+## Art direction (decided 07-07-2026 — hybrid; for the later art pass)
+Programmatic art for now (a vector brawler + tile shapes). The later pass is **hybrid**: (1) official **Supercell Fankit** assets (fankit.supercell.com) used *unmodified* where they fit — reveal cards, end screens, marketing shell; (2) **our own Brawl-style fan art** (BrawlHouse method) for the in-game top-down sprites + arena tiles the kit won't cover. **Two hard lines that never move:**
+- Every capture/screen carries the required notice: *"This material is unofficial and is not endorsed by Supercell. For more information see Supercell's Fan Content Policy: www.supercell.com/fan-content-policy"* **and a small `CONCEPT` label stays in the game UI** — so nothing can pass as a real in-game screenshot.
+- **No extracted or ripped game files/sprites — Fankit and our own art only.**
+Keep the renderer **swap-friendly**: `render.js` `drawBrawler` and `arena.js` tiles are drawn programmatically and must stay easy to replace with richer sprites without touching game logic.
+
 ## Do not
-- Do not use any Supercell asset, sprite, sound or copy. Art is **original, Brawl-adjacent** per the visual system (a programmatic vector brawler + tile shapes for now; a hero illustration can replace the token later without touching logic).
+- Do not rip, extract, or reproduce any Supercell game file, sprite, sound or copy. (Fankit assets used unmodified are allowed per the art direction above.)
 - Do not oversize the map (a Meccha lesson): keep it compact and legible.
 - Do not commit the parent folder's private design docs.
 

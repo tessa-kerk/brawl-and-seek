@@ -114,8 +114,19 @@
     const ramp = Math.min((d - C.DEAD) / (C.RAD !== undefined ? C.RAD - C.DEAD : C.MAX - C.DEAD), 1);
     return C.MINK + (1 - C.MINK) * ramp;
   }
+  // Is the player actively commanding movement right now (key held, or the
+  // stick deflected past its dead-zone)? Used to gate the repaint so pushing
+  // against a wall — where displacement can be zero — never starts a hide.
+  function engaged() {
+    if (keys.size) return true;
+    if (!active) return false;
+    const C = MODE === 'fixed' ? X : F;
+    return Math.hypot(stick.dx, stick.dy) > C.DEAD;
+  }
+
   window.Input = {
     mode: MODE,
+    engaged,
     vector() {
       let x = 0, y = 0;
       if (keys.has('left')) x -= 1; if (keys.has('right')) x += 1;

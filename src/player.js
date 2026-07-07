@@ -28,7 +28,10 @@
 
     update(dt) {
       const v = Input.vector();                 // {x,y}, |v| = direction × speed factor
-      const hasInput = Math.hypot(v.x, v.y) > 0.001;  // input.js already applies the dead-zone
+      // "Commanding movement" gates the repaint — key/stick engagement, NOT
+      // displacement. So pushing into a wall (where displacement can be zero)
+      // can never start a hide; only a genuinely idle stick does.
+      const hasInput = Math.hypot(v.x, v.y) > 0.001 || Input.engaged();
 
       // Ease velocity toward intent — fast to start (punchy), quick to stop.
       const tvx = v.x * this.speed, tvy = v.y * this.speed;

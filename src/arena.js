@@ -20,18 +20,29 @@
     return { x: W / 2, y: H / 2 };
   }
 
-  // Per-axis AABB tile collision. Player is a square of half-extent h.
+  /* Move-and-slide tile collision. Two fully DECOUPLED axis passes so a wall on
+   * one axis can never eat movement on the free axis (the bug that pinned a
+   * hider in a 1-wide corridor and reported "blocked X:YES Y:YES" while pushing
+   * into open space):
+   *   1. Move X, resolve against tiles overlapping the ORIGINAL y-band [py±h].
+   *   2. Move Y, resolve against tiles overlapping the RESOLVED x-band [x±h].
+   * No path reverts the whole move or re-clamps into the prior contact point. */
+  const EPS = 0.01;
   function collide(px, py, dx, dy, h) {
-    let x = px + dx, y = py + dy;
-    if (dx > 0) { const c = Math.floor((x + h) / T); for (const r of span(y, h)) if (isSolid(c, r)) { x = c * T - h - 0.001; break; } }
-    else if (dx < 0) { const c = Math.floor((x - h) / T); for (const r of span(y, h)) if (isSolid(c, r)) { x = (c + 1) * T + h + 0.001; break; } }
-    if (dy > 0) { const r = Math.floor((y + h) / T); for (const c of span(x, h)) if (isSolid(c, r)) { y = r * T - h - 0.001; break; } }
-    else if (dy < 0) { const r = Math.floor((y - h) / T); for (const c of span(x, h)) if (isSolid(c, r)) { y = (r + 1) * T + h + 0.001; break; } }
+    let x = px, y = py;
+    if (dx !== 0) {
+      x = px + dx;
+      const rTop = Math.floor((py - h) / T), rBot = Math.floor((py + h) / T);
+      if (dx > 0) { const c = Math.floor((x + h) / T); for (let r = rTop; r <= rBot; r++) if (isSolid(c, r)) { x = c * T - h - EPS; break; } }
+      else { const c = Math.floor((x - h) / T); for (let r = rTop; r <= rBot; r++) if (isSolid(c, r)) { x = (c + 1) * T + h + EPS; break; } }
+    }
+    if (dy !== 0) {
+      y = py + dy;
+      const cLeft = Math.floor((x - h) / T), cRight = Math.floor((x + h) / T);
+      if (dy > 0) { const r = Math.floor((y + h) / T); for (let c = cLeft; c <= cRight; c++) if (isSolid(c, r)) { y = r * T - h - EPS; break; } }
+      else { const r = Math.floor((y - h) / T); for (let c = cLeft; c <= cRight; c++) if (isSolid(c, r)) { y = (r + 1) * T + h + EPS; break; } }
+    }
     return { x, y };
-  }
-  function span(centre, h) {
-    const a = Math.floor((centre - h) / T), b = Math.floor((centre + h) / T);
-    const out = []; for (let i = a; i <= b; i++) out.push(i); return out;
   }
 
   /* Which surface does a hider at (px,py) paint into? Priority wall > water >

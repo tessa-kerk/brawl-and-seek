@@ -47,6 +47,7 @@
     FX.draw(ctx);
     Render.drawPlayer(ctx, tSec);
     hud();
+    if (window.Debug && Debug.on) Debug.frame();
   }
 
   function hud() {
@@ -77,6 +78,14 @@
     resize();
     addEventListener('resize', resize);
     addEventListener('orientationchange', () => setTimeout(resize, 60));
+    // iOS Safari: the toolbar showing/hiding mid-round changes the usable height
+    // without firing 'resize' — track the visual viewport so the fit stays right.
+    if (window.visualViewport) {
+      visualViewport.addEventListener('resize', resize);
+      visualViewport.addEventListener('scroll', resize);
+    }
+    // Debug overlay (ground-truth instrument): ?debug=1
+    if (new URLSearchParams(location.search).has('debug') && window.Debug) Debug.init();
     matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change', (e) => { STATE.reduceMotion = e.matches; });
 
     // stamp the build in the top bar

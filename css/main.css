@@ -9,20 +9,24 @@
 }
 
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;}
+html,body{height:100%;overscroll-behavior:none;}
 body{
   background:var(--navy-2);
   color:var(--chalk);
   font-family:'Nunito Sans',system-ui,sans-serif;
   overflow:hidden;
+  position:fixed;inset:0;               /* pin the page so iOS can't rubber-band it */
   -webkit-user-select:none;user-select:none;
   -webkit-tap-highlight-color:transparent;
-  touch-action:none;
+  -webkit-touch-callout:none;           /* no long-press callout stealing the touch */
+  touch-action:none;overscroll-behavior:none;
 }
 
-/* Stage = the fixed-viewport play area. Canvas fills it; DOM chrome overlays. */
-#stage{position:fixed;inset:0;overflow:hidden;}
-#game{position:absolute;inset:0;width:100%;height:100%;display:block;}
+/* Stage = the fixed-viewport play area. Canvas fills it; DOM chrome overlays.
+   touch-action:none on the surface itself is the reliable way to stop iOS
+   pan / pinch / double-tap-zoom eating a game touch. */
+#stage{position:fixed;inset:0;overflow:hidden;touch-action:none;overscroll-behavior:none;}
+#game{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;}
 
 /* ---- Top bar: title + build stamp ------------------------------------ */
 #topbar{

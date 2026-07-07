@@ -40,10 +40,15 @@
       // so it never accumulates against a wall (which would feel like sticking).
       const rx = this.vx * dt, ry = this.vy * dt;
       const p = Arena.collide(this.x, this.y, rx, ry, this.h);
-      if (Math.abs((p.x - this.x) - rx) > 0.01) this.vx = 0;
-      if (Math.abs((p.y - this.y) - ry) > 0.01) this.vy = 0;
+      const blockedX = Math.abs((p.x - this.x) - rx) > 0.01;
+      const blockedY = Math.abs((p.y - this.y) - ry) > 0.01;
+      if (blockedX) this.vx = 0;
+      if (blockedY) this.vy = 0;
       this.x = p.x; this.y = p.y;
       if (hasInput && v.x) this.facing = v.x > 0 ? 1 : -1;
+
+      // Telemetry for the ?debug=1 overlay (intended vs applied velocity + blocks).
+      this.dbg = { tvx, tvy, vx: this.vx, vy: this.vy, blockedX, blockedY, hasInput, in: v };
 
       if (hasInput) {
         if (this.progress > 0) breakCamo(this);  // intent to move breaks camo at once

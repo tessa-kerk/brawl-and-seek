@@ -1,0 +1,98 @@
+/* Brawl & Seek — layout & UI chrome. The arena itself is drawn on <canvas>;
+ * everything textual (title bar, hint, build stamp) is DOM so it stays crisp at
+ * any scale, including 360px phone width. */
+
+:root{
+  --navy:#1E2340; --yellow:#FFC800; --magenta:#FF4FA0;
+  --teal:#35E0D0; --chalk:#F6F4EF; --ink:#14172B;
+  --navy-2:#171B33;           /* the letterbox / deepest background */
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  background:var(--navy-2);
+  color:var(--chalk);
+  font-family:'Nunito Sans',system-ui,sans-serif;
+  overflow:hidden;
+  -webkit-user-select:none;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:none;
+}
+
+/* Stage = the fixed-viewport play area. Canvas fills it; DOM chrome overlays. */
+#stage{position:fixed;inset:0;overflow:hidden;}
+#game{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+/* ---- Top bar: title + build stamp ------------------------------------ */
+#topbar{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;
+  pointer-events:none;z-index:5;
+}
+.wordmark{
+  font-family:'Lilita One',cursive;font-weight:400;
+  font-size:clamp(20px,4.4vw,30px);line-height:1;
+  letter-spacing:.5px;
+  color:var(--yellow);
+  text-shadow:0 2px 0 var(--ink), 0 0 18px rgba(255,200,0,.25);
+}
+.wordmark .amp{color:var(--magenta);}
+.stamp{
+  font-family:'Nunito Sans';font-weight:800;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--chalk);opacity:.5;
+  padding:4px 9px;border:1px solid rgba(246,244,239,.22);border-radius:999px;
+  white-space:nowrap;
+}
+
+/* ---- Bottom hint ----------------------------------------------------- */
+#hint{
+  position:absolute;left:50%;transform:translateX(-50%);
+  bottom:calc(env(safe-area-inset-bottom) + 14px);
+  z-index:5;pointer-events:none;
+  max-width:min(92vw,560px);text-align:center;
+  font-size:clamp(12px,3.2vw,15px);line-height:1.35;
+  color:var(--chalk);
+  background:rgba(23,27,51,.72);
+  border:1px solid rgba(246,244,239,.12);
+  border-radius:14px;
+  padding:9px 16px;
+  backdrop-filter:blur(3px);
+  transition:opacity .5s ease;
+}
+#hint b{color:var(--yellow);font-weight:800;}
+#hint .paint{color:var(--magenta);font-weight:800;}
+#hint.dim{opacity:0;}
+
+/* ---- Status chip (state read-out, top-centre) ------------------------ */
+#status{
+  position:absolute;top:calc(env(safe-area-inset-top) + 52px);left:50%;
+  transform:translateX(-50%);
+  z-index:5;pointer-events:none;
+  font-family:'Lilita One',cursive;font-size:14px;letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:5px 14px;border-radius:999px;
+  opacity:0;transition:opacity .35s ease, background .35s ease, color .35s ease;
+}
+#status.visible{opacity:1;}
+#status.hiding{background:rgba(255,79,160,.16);color:var(--magenta);border:1px solid rgba(255,79,160,.4);}
+#status.hidden{background:rgba(53,224,208,.16);color:var(--teal);border:1px solid rgba(53,224,208,.45);}
+#status.exposed{background:rgba(255,200,0,.14);color:var(--yellow);border:1px solid rgba(255,200,0,.4);}
+
+/* ---- Disclaimer (Fan Content Policy safety, on everything) ------------ */
+.disclaimer{
+  position:absolute;left:0;right:0;
+  bottom:calc(env(safe-area-inset-bottom) + 3px);
+  text-align:center;z-index:4;pointer-events:none;
+  font-size:10px;letter-spacing:.02em;color:var(--chalk);opacity:.32;
+}
+
+@media (max-width:520px){
+  /* keep the disclaimer from colliding with the hint on short screens */
+  .disclaimer{font-size:9px;}
+}
+@media (prefers-reduced-motion:reduce){
+  #hint,#status{transition:none;}
+}

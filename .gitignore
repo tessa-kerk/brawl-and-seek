@@ -1,0 +1,22 @@
+# The repo root is game/ — the parent workshop folder's private design docs
+# (Concept Brief, Project Brief, and anything else in ../) live OUTSIDE the repo
+# and must never be committed. git can't add files from ../ anyway; keep it so.
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+
+# If a toolchain is ever added
+node_modules/
+dist/
+
+# Local scratch / python caches
+_scratch/
+tools/__pycache__/
+__pycache__/
+*.pyc

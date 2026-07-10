@@ -50,18 +50,49 @@
    * by the pond and become water; otherwise blend into the floor you stand on).
    * Returns {type, color}. Floor returns the exact checker shade underfoot so
    * the blend is pixel-honest. */
+  /* Which surfaces paint you is a MAP PROPERTY (the Map Maker toggle), so this
+   * reads STATE.camoSurfaces rather than assuming all three. Returns null when
+   * nothing here qualifies — stand there all day and you'll never vanish. */
+  const enabled = () => (window.STATE && STATE.camoSurfaces) || { wall: true, floor: true, water: true };
+
   function camoSurface(px, py, h) {
+    const en = enabled();
     const pad = T * 0.42;             // reach a touch beyond the body to "hug"
     const c0 = Math.floor((px - h - pad) / T), c1 = Math.floor((px + h + pad) / T);
     const r0 = Math.floor((py - h - pad) / T), r1 = Math.floor((py + h + pad) / T);
     let water = null;
     for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) {
-      if (isWall(c, r)) return { type: 'wall', color: S.wallTop };
-      if (isWater(c, r)) water = { type: 'water', color: S.water };
+      if (en.wall && isWall(c, r)) return { type: 'wall', color: S.wallTop };
+      if (en.water && isWater(c, r)) water = { type: 'water', color: S.water };
     }
     if (water) return water;
+    if (!en.floor) return null;
     const cc = Math.floor(px / T), cr = Math.floor(py / T);
     return { type: 'floor', color: ((cc + cr) & 1) ? S.floorB : S.floorA };
+  }
+
+  const typeAt = (c, r) => (grid[r][c] === '#' ? 'wall' : grid[r][c] === '~' ? 'water' : 'floor');
+
+  /* Map Maker only: show, at a glance, which surfaces camouflage you. Enabled
+   * surfaces glow teal; disabled ones fall under a scrim. Flip a toggle and the
+   * map itself tells you what changed. */
+  function drawCamoOverlay(ctx) {
+    const en = enabled(), teal = CFG.palette.teal;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const type = typeAt(c, r);
+      const on = !!en[type];
+      const x = c * T, y = r * T;
+      if (on) {
+        ctx.globalAlpha = 0.09; ctx.fillStyle = teal;
+        ctx.fillRect(x, y, T, T);
+        ctx.globalAlpha = 0.55; ctx.strokeStyle = teal; ctx.lineWidth = 1.5;
+        roundRect(ctx, x + 4, y + 4, T - 8, T - 8, type === 'wall' ? 10 : 4); ctx.stroke();
+      } else {
+        ctx.globalAlpha = 0.34; ctx.fillStyle = '#080B18';
+        ctx.fillRect(x, y, T, T);
+      }
+    }
+    ctx.globalAlpha = 1;
   }
 
   // ---- Navigation (BFS on the tile grid; the arena is tiny, so this is free) --
@@ -178,6 +209,6 @@
 
   window.Arena = {
     T, cols, rows, W, H, grid, isSolid, isWall, isWater, spawn, collide, camoSurface, draw, roundRect,
-    freeTiles, hideTiles, centre, tileOf, path, pick,
+    freeTiles, hideTiles, centre, tileOf, path, pick, drawCamoOverlay, typeAt,
   };
 })();

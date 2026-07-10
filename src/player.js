@@ -67,7 +67,9 @@
         this.still += dt;
         this.camo = Arena.camoSurface(this.x, this.y, this.h);
         const wasHidden = this.hidden;
-        this.progress = Math.min(this.still / STATE.repaintTime, 1);
+        // No qualifying surface here (a Map Maker toggle can switch one off) —
+        // you can stand still forever and never paint in.
+        this.progress = this.camo ? Math.min(this.still / STATE.repaintTime, 1) : 0;
         this.hidden = this.progress >= 1;
         if (this.hidden && !wasHidden) FX.settleRing(this.x, this.y - this.r * 0.2);
       }

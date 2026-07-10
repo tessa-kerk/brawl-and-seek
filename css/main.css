@@ -163,8 +163,7 @@ body{
   #ticker{gap:4px;}
   #ticker .chip{padding:4px 6px;border-radius:8px;}
   #ticker b{font-size:13px;} #ticker .big b{font-size:16px;}
-  #ticker.hidden{opacity:0;transition:opacity .35s ease;}
-#ticker .lbl{font-size:8px;letter-spacing:.08em;}
+  #ticker .lbl{font-size:8px;letter-spacing:.08em;}
 }
 
 /* ---- Bottom hint ----------------------------------------------------- */
@@ -228,3 +227,172 @@ body{
   }
   #end-board{max-height:none;}
 }
+
+/* ======================================================================
+   MAP MAKER — the editor frame. This is the pitch's money shot, so it must
+   read as a real properties inspector, not a row of debug switches.
+   ====================================================================== */
+
+/* Entry pill (event view only) */
+#mk-open{
+  position:absolute;right:14px;bottom:calc(env(safe-area-inset-bottom) + 26px);
+  z-index:7;display:flex;align-items:center;gap:7px;
+  font-family:'Lilita One',cursive;font-size:14px;letter-spacing:.03em;
+  color:var(--ink);background:var(--teal);
+  border:none;border-radius:999px;padding:9px 15px;cursor:pointer;
+  box-shadow:0 4px 0 #1FA79A, 0 10px 26px rgba(0,0,0,.35);
+}
+#mk-open:active{transform:translateY(2px);box-shadow:0 2px 0 #1FA79A;}
+body.maker #mk-open{display:none;}
+
+/* Hide the event HUD while editing */
+body.maker #ticker, body.maker #hint, body.maker #banner,
+body.maker #bonus, body.maker #endpanel{display:none !important;}
+
+/* ---- the panel ------------------------------------------------------- */
+#makerpanel{display:none;}
+body.maker #makerpanel{
+  display:flex;flex-direction:column;gap:12px;
+  position:absolute;z-index:8;
+  background:linear-gradient(180deg, rgba(26,30,56,.97), rgba(18,21,42,.97));
+  border:1px solid rgba(246,244,239,.14);
+  box-shadow:0 -14px 40px rgba(0,0,0,.45);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+/* desktop: docked right rail, like an inspector */
+@media (min-width:860px){
+  body.maker #makerpanel{
+    top:0;right:0;bottom:0;width:340px;
+    border-left:1px solid rgba(53,224,208,.22);border-radius:0;
+    padding:calc(env(safe-area-inset-top) + 16px) 18px 18px;
+  }
+}
+/* phone: bottom sheet */
+@media (max-width:859px){
+  body.maker #makerpanel{
+    left:0;right:0;bottom:0;
+    max-height:46vh;
+    border-radius:18px 18px 0 0;
+    border-top:1px solid rgba(53,224,208,.28);
+    padding:12px 14px calc(env(safe-area-inset-bottom) + 12px);
+  }
+}
+
+.mk-head{display:flex;align-items:center;gap:10px;}
+.mk-title{font-family:'Lilita One',cursive;font-size:19px;color:var(--chalk);letter-spacing:.06em;flex:1;}
+.mk-back{
+  font-family:'Nunito Sans';font-weight:800;font-size:11px;letter-spacing:.08em;
+  color:var(--chalk);background:rgba(246,244,239,.08);
+  border:1px solid rgba(246,244,239,.18);border-radius:8px;padding:5px 9px;cursor:pointer;
+}
+.mk-back:active{background:rgba(246,244,239,.16);}
+.mk-live{
+  font-family:'Nunito Sans';font-weight:800;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--teal);border:1px solid rgba(53,224,208,.5);background:rgba(53,224,208,.12);
+  border-radius:999px;padding:3px 8px;
+}
+.mk-map{font-size:11px;color:var(--chalk);opacity:.55;margin-top:-4px;}
+.mk-map b{color:var(--yellow);opacity:.95;font-weight:800;}
+
+.mk-group{
+  background:rgba(10,13,28,.5);border:1px solid rgba(246,244,239,.08);
+  border-radius:12px;padding:11px 12px;
+}
+.mk-group h4{
+  font-family:'Nunito Sans';font-weight:800;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--chalk);opacity:.75;margin-bottom:3px;
+}
+.mk-hint{font-size:11px;line-height:1.35;color:var(--chalk);opacity:.45;margin-bottom:9px;}
+.mk-row{display:flex;align-items:center;gap:12px;}
+.mk-rowtext{flex:1;}
+.mk-row .mk-hint{margin-bottom:0;}
+
+/* surface chips */
+.mk-surfaces{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.mk-surf{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:rgba(246,244,239,.05);
+  border:1.5px solid rgba(246,244,239,.14);border-radius:10px;
+  padding:9px 4px 8px;cursor:pointer;transition:border-color .15s, background .15s;
+}
+.mk-surf i{
+  width:100%;height:22px;border-radius:6px;background:var(--sw);
+  border:1.5px solid rgba(20,23,43,.75);opacity:.45;transition:opacity .15s;
+}
+.mk-surf span{font-family:'Lilita One',cursive;font-size:12px;color:var(--chalk);opacity:.55;letter-spacing:.03em;}
+.mk-surf.on{border-color:var(--teal);background:rgba(53,224,208,.10);}
+.mk-surf.on i{opacity:1;box-shadow:0 0 0 1.5px rgba(53,224,208,.55);}
+.mk-surf.on span{opacity:1;color:var(--teal);}
+
+.mk-warn{
+  margin-top:9px;font-size:10.5px;line-height:1.35;
+  color:var(--magenta);background:rgba(255,79,160,.1);
+  border:1px solid rgba(255,79,160,.35);border-radius:8px;padding:6px 8px;
+}
+
+/* segmented control */
+.mk-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;
+  background:rgba(10,13,28,.7);border:1px solid rgba(246,244,239,.10);border-radius:10px;padding:3px;}
+.mk-seg button{
+  font-family:'Lilita One',cursive;font-size:13px;letter-spacing:.02em;
+  color:var(--chalk);opacity:.55;background:transparent;border:none;border-radius:7px;
+  padding:7px 0;cursor:pointer;transition:background .15s,color .15s,opacity .15s;
+}
+.mk-seg button.on{background:var(--yellow);color:var(--ink);opacity:1;box-shadow:0 2px 0 #C89A00;}
+
+/* switch */
+.mk-switch{
+  flex:none;width:48px;height:28px;border-radius:999px;cursor:pointer;
+  background:rgba(246,244,239,.14);border:1px solid rgba(246,244,239,.18);
+  position:relative;transition:background .18s,border-color .18s;
+}
+.mk-switch span{
+  position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
+  background:var(--chalk);transition:transform .18s;box-shadow:0 1px 3px rgba(0,0,0,.4);
+}
+.mk-switch.on{background:rgba(53,224,208,.30);border-color:var(--teal);}
+.mk-switch.on span{transform:translateX(20px);background:var(--teal);}
+
+.mk-foot{display:flex;flex-direction:column;gap:7px;}
+.mk-reset{
+  align-self:flex-start;
+  font-family:'Nunito Sans';font-weight:800;font-size:10.5px;letter-spacing:.06em;
+  color:var(--chalk);opacity:.6;background:none;border:none;cursor:pointer;
+  text-decoration:underline;text-underline-offset:3px;padding:0;
+}
+.mk-reset:active{opacity:1;}
+.mk-note{font-size:10px;line-height:1.4;color:var(--chalk);opacity:.4;}
+
+/* TAGGED! toast in the sandbox */
+#mk-toast{
+  position:absolute;left:50%;top:24%;transform:translate(-50%,-50%) scale(.85);
+  z-index:9;pointer-events:none;opacity:0;
+  font-family:'Lilita One',cursive;font-size:clamp(24px,6vw,40px);
+  color:var(--yellow);background:var(--magenta);
+  border:3px solid var(--ink);border-radius:12px;padding:6px 20px;
+  transition:opacity .18s ease, transform .18s ease;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);
+}
+#mk-toast.show{opacity:1;transform:translate(-50%,-50%) rotate(-8deg) scale(1);}
+
+/* "no camo surface here" state for the status chip */
+#status.nocamo{background:rgba(255,79,160,.16);color:var(--magenta);border:1px solid rgba(255,79,160,.45);}
+
+/* --- Map Maker layout corrections ------------------------------------- */
+/* The CONCEPT badge is a hard line: it must never be occluded, in any view.
+   Pull the top bar clear of the right rail, and centre the floating chips over
+   the PLAY AREA rather than the whole viewport. */
+@media (min-width:860px){
+  body.maker #topbar{right:340px;}
+  body.maker #status, body.maker #mk-toast{left:calc(50% - 170px);}
+}
+/* Keep the state chip off the arena (and off the player's head). */
+body.maker #status{top:auto;bottom:18px;}
+@media (max-width:859px){
+  body.maker #status{bottom:calc(46vh + 12px);}
+}
+
+/* Interactive chrome must be able to receive touches and scroll: the stage sets
+   touch-action:none for the joystick, so re-enable it where the UI lives. */
+#makerpanel, #endpanel{touch-action:pan-y;}
+#mk-open, #replay, #mk-back, #mk-reset, .mk-surf, .mk-seg button, .mk-switch{touch-action:manipulation;}

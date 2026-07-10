@@ -96,7 +96,8 @@
       const d = AI.tileDist(s.x, s.y, h.x, h.y);
       if (!h.hidden && d < B.visionRadius && d < bestD) { best = h; bestD = d; }
       // the tell: a mover this close to a hidden brawler ripples the camo
-      if (h.hidden && speedFrac > 0.02 && d < B.rippleRadius) {
+      const tellOn = !window.STATE || STATE.rippleTell !== false;
+      if (h.hidden && tellOn && speedFrac > 0.02 && d < B.rippleRadius) {
         h._tellCd = (h._tellCd || 0) - dt;
         if (h._tellCd <= 0) { FX.tell(h.x, h.y - h.r * 0.2); h._tellCd = 0.45; }
         if (Math.random() < notice * dt) {                   // the bot reads its own ripple

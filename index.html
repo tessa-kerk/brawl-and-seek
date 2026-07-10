@@ -14,8 +14,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Brawl & Seek">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/fonts.css?v=6">
-<link rel="stylesheet" href="css/main.css?v=6">
+<link rel="stylesheet" href="css/fonts.css?v=7">
+<link rel="stylesheet" href="css/main.css?v=7">
 </head>
 <body>
   <div id="stage">
@@ -25,7 +25,7 @@
       <div class="wordmark">BRAWL <span class="amp">&amp;</span> SEEK</div>
       <div class="badges">
         <span class="concept" title="Unofficial fan concept — not a real in-game screenshot">CONCEPT</span>
-        <span class="stamp">v6 · M2</span>
+        <span class="stamp">v7 · M3</span>
       </div>
     </div>
 
@@ -56,24 +56,77 @@
         <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">Fan Content Policy</a>.</p>
     </div>
 
+    <!-- Enter the editor (event view only) -->
+    <button id="mk-open" aria-label="Open Map Maker">
+      <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      <span>Map Maker</span>
+    </button>
+
+    <!-- The editor frame: camouflage as a tunable map property, changing live -->
+    <aside id="makerpanel">
+      <div class="mk-head">
+        <button id="mk-back" class="mk-back">◂ Event</button>
+        <div class="mk-title">MAP MAKER</div>
+        <span class="mk-live">Live</span>
+      </div>
+      <div class="mk-map"><b>Fresh Paint</b> · 10 × 9 · camouflage properties</div>
+
+      <section class="mk-group">
+        <h4>Camo surfaces</h4>
+        <p class="mk-hint">Which surfaces paint a hider in.</p>
+        <div class="mk-surfaces">
+          <button class="mk-surf" data-surface="wall"><i style="--sw:#5A63A8"></i><span>Walls</span></button>
+          <button class="mk-surf" data-surface="floor"><i style="--sw:#313A73"></i><span>Floor</span></button>
+          <button class="mk-surf" data-surface="water"><i style="--sw:#1C93C4"></i><span>Water</span></button>
+        </div>
+        <p class="mk-warn" id="mk-warn" hidden>No surface camouflages — nobody can hide on this map.</p>
+      </section>
+
+      <section class="mk-group">
+        <h4>Repaint time</h4>
+        <p class="mk-hint">How long stillness takes to hide you.</p>
+        <div class="mk-seg" id="mk-repaint">
+          <button data-repaint="0.5">0.5s</button>
+          <button data-repaint="1">1s</button>
+          <button data-repaint="2">2s</button>
+        </div>
+      </section>
+
+      <section class="mk-group mk-row">
+        <div class="mk-rowtext">
+          <h4>Ripple tell</h4>
+          <p class="mk-hint">Hidden brawlers ripple when someone moves close.</p>
+        </div>
+        <button id="mk-ripple" class="mk-switch" role="switch" aria-checked="true"><span></span></button>
+      </section>
+
+      <div class="mk-foot">
+        <button id="mk-reset" class="mk-reset">Reset to defaults</button>
+        <p class="mk-note">Changes apply live. Move, stop, vanish — every map sets its own rules.</p>
+      </div>
+    </aside>
+
+    <div id="mk-toast"></div>
+
     <div class="disclaimer">Fan concept by Tessa Kerk · unofficial, not endorsed by Supercell · <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">Fan Content Policy</a></div>
   </div>
 
-  <script src="src/config.js?v=6"></script>
-  <script src="data/arena.js?v=6"></script>
-  <script src="data/tuning.js?v=6"></script>
-  <script src="src/input.js?v=6"></script>
-  <script src="src/arena.js?v=6"></script>
-  <script src="src/ai.js?v=6"></script>
-  <script src="src/fx.js?v=6"></script>
-  <script src="src/player.js?v=6"></script>
-  <script src="src/tag.js?v=6"></script>
-  <script src="src/hider.js?v=6"></script>
-  <script src="src/seeker.js?v=6"></script>
-  <script src="src/round.js?v=6"></script>
-  <script src="src/render.js?v=6"></script>
-  <script src="src/reveal.js?v=6"></script>
-  <script src="src/debug.js?v=6"></script>
-  <script src="src/game.js?v=6"></script>
+  <script src="src/config.js?v=7"></script>
+  <script src="data/arena.js?v=7"></script>
+  <script src="data/tuning.js?v=7"></script>
+  <script src="src/input.js?v=7"></script>
+  <script src="src/arena.js?v=7"></script>
+  <script src="src/ai.js?v=7"></script>
+  <script src="src/fx.js?v=7"></script>
+  <script src="src/player.js?v=7"></script>
+  <script src="src/tag.js?v=7"></script>
+  <script src="src/hider.js?v=7"></script>
+  <script src="src/seeker.js?v=7"></script>
+  <script src="src/round.js?v=7"></script>
+  <script src="src/render.js?v=7"></script>
+  <script src="src/reveal.js?v=7"></script>
+  <script src="src/maker.js?v=7"></script>
+  <script src="src/debug.js?v=7"></script>
+  <script src="src/game.js?v=7"></script>
 </body>
 </html>

@@ -84,7 +84,7 @@
         d.still += dt;
         d.camo = Arena.camoSurface(d.x, d.y, d.h);
         const was = d.hidden;
-        d.progress = Math.min(d.still / STATE.repaintTime, 1);
+        d.progress = d.camo ? Math.min(d.still / STATE.repaintTime, 1) : 0;
         d.hidden = d.progress >= 1;
         if (d.hidden && !was) onHidden(d);
 

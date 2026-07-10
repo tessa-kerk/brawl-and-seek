@@ -4,8 +4,12 @@
  * pause) lets the capture rig freeze exact frames; ?debug=1 adds the overlay. */
 (function () {
   window.STATE = {
-    view: 'event',
+    view: 'event',                                          // 'event' | 'maker'
     repaintTime: CFG.repaintTime,
+    // Map properties. The Event view always runs canon (all three surfaces
+    // camouflage, the tell is on); the Map Maker view makes them tunable, live.
+    camoSurfaces: { wall: true, floor: true, water: true },
+    rippleTell: true,
     reduceMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
     paused: false,
     everHidden: false,
@@ -22,13 +26,36 @@
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
     canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px';
-    scale = Math.min(cssW / Arena.W, cssH / Arena.H);
-    offX = (cssW - Arena.W * scale) / 2;
-    offY = (cssH - Arena.H * scale) / 2;
+
+    // The editor reserves room for its panel (right rail on desktop, bottom
+    // sheet on phone). Event view keeps ZERO padding — it's a signed-off
+    // surface and must fit exactly as it always has.
+    let padR = 0, padB = 0, padT = 0;
+    if (STATE.view === 'maker') {
+      if (cssW >= 860) padR = 340; else padB = Math.min(Math.round(cssH * 0.46), 360);
+      padT = 52;
+    }
+    const availW = cssW - padR, availH = cssH - padT - padB;
+    scale = Math.min(availW / Arena.W, availH / Arena.H);
+    offX = (availW - Arena.W * scale) / 2;
+    offY = padT + (availH - Arena.H * scale) / 2;
   }
 
   function update(dt) {
     if (STATE.paused) return;
+
+    // MAP MAKER: a test-play sandbox. No round clock, no score, no dummies —
+    // one seeker so the tell and the Tag stay meaningful while you tune.
+    if (STATE.view === 'maker') {
+      STATE.repaintTime = MAKER.repaint;
+      Player.update(dt);
+      Seekers.update(dt);
+      Tags.update(dt);
+      Maker.update(dt);
+      FX.update(dt);
+      return;
+    }
+
     if (Round.phase === 'over') { Round.update(dt); FX.update(dt); return; }  // freeze the scene
     STATE.repaintTime = Round.repaintTime();
     Player.update(dt);
@@ -44,17 +71,19 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = '#171B33'; ctx.fillRect(0, 0, cssW, cssH);
 
+    const maker = STATE.view === 'maker';
     ctx.setTransform(scale * dpr, 0, 0, scale * dpr, offX * dpr, offY * dpr);
     Arena.draw(ctx, tSec);
+    if (maker) Arena.drawCamoOverlay(ctx);         // show which surfaces paint you
     FX.draw(ctx);
     for (const d of Hiders.list) Render.drawHider(ctx, d, tSec, false);
     for (const s of Seekers.list) Render.drawSeeker(ctx, s, tSec);
     Render.drawPlayer(ctx, tSec);
     Tags.draw(ctx);
-    Reveal.frame(ctx, tSec);                       // dim + reveal markers when over
+    if (!maker) Reveal.frame(ctx, tSec);           // dim + reveal markers when over
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);        // screen space
-    if (Round.phase === 'over' && Round.result.reason === 'spotted' && Round.overT < Reveal.delay())
+    if (!maker && Round.phase === 'over' && Round.result.reason === 'spotted' && Round.overT < Reveal.delay())
       Render.drawSpotted(ctx, cssW, cssH, Round.overT);
 
     hud();
@@ -65,6 +94,18 @@
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
   function hud() {
+    // MAP MAKER has no round HUD — just a state chip that teaches the property.
+    if (STATE.view === 'maker') {
+      const p = Player;
+      let cls = '', txt = '';
+      if (p.hidden) { cls = 'hidden'; txt = 'Camouflaged'; }
+      else if (p.progress > 0) { cls = 'hiding'; txt = 'Painting in…'; }
+      else if (!p.camo && !p.lastMoving) { cls = 'nocamo'; txt = 'No camo surface here'; }
+      elStatus.className = txt ? cls + ' visible' : '';
+      elStatus.textContent = txt;
+      return;
+    }
+
     const over = Round.phase === 'over';
     const st = Player.found ? 'exposed' : Player.state();
     elStatus.className = (!over && st !== 'exposed') ? st + ' visible' : st;
@@ -158,6 +199,7 @@
     const stamp = document.querySelector('.stamp');
     if (stamp) stamp.textContent = `v${CFG.BUILD.n} · ${CFG.BUILD.milestone}`;
 
+    if (window.Maker) Maker.init();                 // wires the editor panel (+ ?view=maker)
     if (new URLSearchParams(location.search).has('debug') && window.Debug) Debug.init();
     requestAnimationFrame(frame);
   }
@@ -177,9 +219,9 @@
   window.Game = {
     get scale() { return scale; }, get off() { return { x: offX, y: offY }; },
     pause() { STATE.paused = true; }, resume() { STATE.paused = false; last = 0; },
-    setRepaint(s) { STATE.repaintTime = s; },
     setReduceMotion(b) { STATE.reduceMotion = !!b; },
     newRound,
+    refit: resize,
     skipHide() { Round.elapsed = Math.max(Round.elapsed, TUNING.round.hidePhase); Round.phase = 'seek'; },
     pose({ col, row, progress = 0, facing = 1 } = {}) {
       const T = Arena.T;

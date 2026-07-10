@@ -2,7 +2,22 @@
 
 ## ⚡ CURRENT STATE — read this first (updated 07-07-2026, Session 2)
 
-**WHERE WE ARE: ✅ M1 SIGNED OFF. 🎮 M2 IS BUILT AND PLAYABLE (build v6, projectile Tag) — awaiting Tessa's device sign-off at the stop-and-show-me gate.** M3 (Map Maker view) and M4 (polish) untouched.
+**WHERE WE ARE: ✅ M1 SIGNED OFF. ✅ M2 SIGNED OFF (07-07-2026, Tessa, phone-tested from the home-screen icon)** — *"chases end in a committed shot, misses visibly cost the seeker, and cover works mid-run. The projectile Tag is the right shape."* **🛠 M3 (Map Maker view) IS BUILT (v7) — awaiting device sign-off.** M4 (polish) untouched.
+
+**M3 IS BUILT (build v7) — awaiting Tessa's device sign-off.** The same map sits in an **editor frame** with three **live** properties, applied with no restart:
+- **Camo surfaces** (walls / floor / water) — `Arena.camoSurface()` now reads `STATE.camoSurfaces` and returns **null** when nothing qualifies: switch a surface off and standing there never paints you in (the status chip says *"No camo surface here"*). Turn all three off and the panel warns that nobody can hide.
+- **Repaint time** (0.5s / 1s / 2s) — a real segmented control; the next paint obeys it immediately.
+- **Ripple tell** on/off — a real switch. Off means no ripple *and* no clue: with the tell off, a bot with its notice chance cranked to 5/s **never once** locked onto a hidden hider (verified). Camouflage becomes perfect against them.
+
+The **arena itself shows the property**: enabled surfaces glow teal, disabled ones fall under a scrim, so flipping a toggle changes the map in front of you. It's a **test-play sandbox** (`src/maker.js`) — no round clock, no score, no dummies; one bot seeker patrols so the tell and the Tag stay meaningful, and being tagged just respawns you with a `TAGGED!` stamp. Editor panel docks as a right rail ≥860px and a bottom sheet on phones. Enter via the floating **Map Maker** button, leave via **◂ Event**; the Event view then resets to canon (all three surfaces, tell on).
+
+**🐛 A REAL BUG THIS FOUND — and it was breaking M2 too.** `input.js` called `preventDefault()` on every `touchstart` inside `#stage`, which stops the browser synthesising a click. **Every UI button was dead on a phone** — the Map Maker button, the panel controls, and **M2's "Play again"**. Fixed: touches beginning on interactive chrome (`button, a, #makerpanel, #endpanel`) are excluded from the thumb-stick and never `preventDefault`-ed, with `touch-action` re-enabled on those surfaces so the panel scrolls. Verified by real taps: buttons fire, the joystick still drives on the arena. *(This is a fix to a signed-off surface — flagged, not silent.)*
+
+**🧹 Removed a lying debug helper.** `Game.setRepaint()` had been dead since M2 — the event loop overwrites `STATE.repaintTime` from the round's escalation every frame (measured: set 0.5 → back to 1.0 one frame later). Repaint is owned by **`Round.repaintTime()`** in the event and **`MAKER.repaint`** in the editor. Deleted, and the stale test rewritten to exercise the real path.
+
+**REGRESSION PROOF (Event view is signed off, so it must not move):** the fit geometry matches the pre-M3 formula **exactly** at 1280×800, 390×844 and 360×740 (independent oracle: the original formula recomputed in the test); ticker, hint and chrome intact; **13/13 tag + 17/17 round canon assertions**; the geometric collision proof still **0 clips / 0 stuck** across 5,968 cases; M1 movement, paint timer and camo break all green. Zero console errors.
+
+**⛔ M1 + M2 ARE BOTH REGRESSION SURFACES.** Paint fill, camo break, movement/collision, the PWA build, the round loop, the projectile Tag, ticker, SPOTTED! stamp and reveal map are all signed off. **The Event view must render identically after M3 lands** — re-render and diff before shipping; flag any visual change to an approved surface, never ship it silently.
 
 **M2 — what's in (all QA'd against real rendered output + canon-rule tests):**
 - **Seeker bot** (`src/seeker.js`) — patrols by BFS path; sees UNHIDDEN hiders; a hidden hider only ripples when a mover comes close (the tell), and **sprinting past blinds you to it** (`sprintBlindness`). A ripple gives a *noisy* fix, so the seeker sometimes tags empty ground: **wrong tag −30 health, 4th mistake → spectator.** Found hiders **become seekers** (the 1v11 → 11v1 snowball); the pack's +15% speed boost fades as it grows.
@@ -70,9 +85,9 @@
 - `src/render.js` — `Render`: the paint-fill money shot (sweep clip, wet edge, ring, fading name tag/health).
 - `src/game.js` — `STATE` + boot + fit-to-viewport transform + main loop + a **debug API** (`Game.pose/pause/setRepaint`) the capture rig uses to freeze exact frames.
 
-**BUILD STAMP RITUAL (every commit):** bump `CFG.BUILD.n` in `src/config.js` AND find-replace `?v=<old>`→`?v=<new>` across `index.html` (currently **`?v=6`**, BUILD n:6). The top-right title stamp (`v6 · M2`) is the witness — if it doesn't match, a script is cached stale.
+**BUILD STAMP RITUAL (every commit):** bump `CFG.BUILD.n` in `src/config.js` AND find-replace `?v=<old>`→`?v=<new>` across `index.html` (currently **`?v=7`**, BUILD n:7). The top-right title stamp (`v7 · M3`) is the witness — if it doesn't match, a script is cached stale.
 
-**DEBUG OVERLAY:** append `?debug=1` to the URL for the on-screen instrument. `?joystick=fixed` switches to the fixed-anchor stick; combine as `?debug=1&joystick=fixed`.
+**DEBUG OVERLAY:** append `?debug=1` for the on-screen instrument (now also shows view / camo surfaces / repaint / tell). `?joystick=fixed` switches to the fixed-anchor stick. `?view=maker` opens the editor directly. Combine freely.
 
 **QA METHOD (reused every session):** Playwright driving **system Chrome via `channel="chrome"`** — no `playwright install` needed. `Game.pose({col,row,progress,facing})` freezes a deterministic frame; screenshot at exact device viewports; **read the real frames back and judge the picture, never the numbers.** Scripts live in the session scratchpad for M1; a permanent rig lands in `tools/` at the capture session (Session 3). Do **not** use the preview MCP's pixel screenshot (it hung at harness level on the Elixir Hour build).
 
@@ -105,7 +120,7 @@
 - [x] **M0 — Scaffold.** Repo, folders, self-hosted fonts (Lilita One / Nunito Sans / Caveat), visual-system CSS tokens, `PLAN.md`, `CLAUDE.md`, `README.md`, `.gitignore`.
 - [x] **M1 — Paint fill + camo break** feel right on desktop AND phone width. **✅ SIGNED OFF 07-07-2026** (Tessa, device-verified). Regression surface.
 - [x] **M2 — Round loop.** Seeker bot, AI dummy hiders, score ticker, proximity-ripple tell, SPOTTED! stamp, reveal map. Round < 90s. *(built, build v5 — awaiting Tessa's device sign-off at the show-me gate)*
-- [ ] **M3 — Map Maker view.** The same map in an editor frame with three live toggles: camo surfaces (walls/floor/water), repaint time (0.5/1/2s), ripple tell on/off. Flip a toggle → the mechanic changes live.
+- [x] **M3 — Map Maker view.** The same map in an editor frame with three live toggles: camo surfaces (walls/floor/water), repaint time (0.5/1/2s), ripple tell on/off. Flip a toggle → the mechanic changes live. *(built, build v7 — awaiting Tessa's device sign-off)*
 - [ ] **M4 — Polish.** Mobile controls, `prefers-reduced-motion` full pass, performance pass.
 
 ## Log

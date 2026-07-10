@@ -48,7 +48,8 @@
   function onHit(p, h) {
     p.dead = true;
     FX.breakBurst(h.x, h.y - h.r * 0.2);
-    Round.onFound(h, p.owner);
+    if (window.STATE && STATE.view === 'maker') Maker.onTagged(h);   // sandbox: no round to end
+    else Round.onFound(h, p.owner);
   }
   function onMiss(p) {
     p.dead = true;

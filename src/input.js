@@ -75,13 +75,28 @@
     stick.dx = dx; stick.dy = dy;
   }
 
+  /* Touches that begin on interactive chrome (the Map Maker panel, Play again,
+   * links) must NOT be swallowed: calling preventDefault() on touchstart stops
+   * the browser synthesising a click, which silently kills every button on a
+   * phone. Those touches are also excluded from the thumb-stick. */
+  const uiIds = new Set();
+  const UI_SEL = 'button, a, input, select, label, #makerpanel, #endpanel';
+  const isUI = (el) => !!(el && el.closest && el.closest(UI_SEL));
+
   // ---- the one handler, rebuilt from event.touches ----------------------
   function handle(e) {
     dbg.evtCount++; dbg.lastType = e.type;
-    if (e.cancelable) { e.preventDefault(); dbg.pdOk = true; } else { dbg.pdOk = false; }
+
+    if (e.type === 'touchstart') {
+      for (const t of e.changedTouches) if (isUI(t.target)) uiIds.add(t.identifier);
+    }
+    // Only claim the gesture if a real GAME touch is involved.
+    let gameTouch = false;
+    for (const t of e.changedTouches) if (!uiIds.has(t.identifier)) gameTouch = true;
+    if (gameTouch && e.cancelable) { e.preventDefault(); dbg.pdOk = true; }
 
     const list = [];
-    for (const t of e.touches) list.push({ id: t.identifier, x: t.clientX, y: t.clientY });
+    for (const t of e.touches) if (!uiIds.has(t.identifier)) list.push({ id: t.identifier, x: t.clientX, y: t.clientY });
     dbg.touches = list;
 
     if (MODE === 'fixed') {
@@ -97,6 +112,9 @@
         else { anchorId = null; active = false; stick.dx = stick.dy = 0; }
       }
       if (t) { active = true; cur.x = t.x; cur.y = t.y; setThrow(t.x, t.y, anchor.x, anchor.y, F.MAX); }
+    }
+    if (e.type === 'touchend' || e.type === 'touchcancel') {
+      for (const t of e.changedTouches) uiIds.delete(t.identifier);
     }
     drawVisual();
   }

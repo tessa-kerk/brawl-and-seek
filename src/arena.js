@@ -64,6 +64,40 @@
     return { type: 'floor', color: ((cc + cr) & 1) ? S.floorB : S.floorA };
   }
 
+  // ---- Navigation (BFS on the tile grid; the arena is tiny, so this is free) --
+  const freeTiles = [], hideTiles = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    if (isSolid(c, r)) continue;
+    freeTiles.push({ c, r });
+    // a good hiding spot = floor touching a wall or water (something to paint into)
+    if (isSolid(c - 1, r) || isSolid(c + 1, r) || isSolid(c, r - 1) || isSolid(c, r + 1)) hideTiles.push({ c, r });
+  }
+  const centre = (c, r) => ({ x: c * T + T / 2, y: r * T + T / 2 });
+  const tileOf = (x, y) => ({ c: Math.floor(x / T), r: Math.floor(y / T) });
+  const key = (c, r) => r * cols + c;
+
+  // Shortest tile path from (c0,r0) to (c1,r1). Returns [{c,r}…] excluding the
+  // start, or null if unreachable. 4-way — diagonals would clip wall corners.
+  function path(c0, r0, c1, r1) {
+    if (isSolid(c1, r1) || isSolid(c0, r0)) return null;
+    const prev = new Map(); const q = [[c0, r0]]; prev.set(key(c0, r0), null);
+    for (let i = 0; i < q.length; i++) {
+      const [c, r] = q[i];
+      if (c === c1 && r === r1) {
+        const out = []; let k = key(c, r), cc = c, rr = r;
+        while (prev.get(k) !== null) { out.push({ c: cc, r: rr }); const p = prev.get(k); cc = p[0]; rr = p[1]; k = key(cc, rr); }
+        return out.reverse();
+      }
+      for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nc = c + dc, nr = r + dr;
+        if (isSolid(nc, nr) || prev.has(key(nc, nr))) continue;
+        prev.set(key(nc, nr), [c, r]); q.push([nc, nr]);
+      }
+    }
+    return null;
+  }
+  const pick = (arr) => arr[(Math.random() * arr.length) | 0];
+
   // ---- Rendering --------------------------------------------------------
   function draw(ctx, t) {
     // Floor checker (drawn under everything).
@@ -142,5 +176,8 @@
     ctx.closePath();
   }
 
-  window.Arena = { T, cols, rows, W, H, grid, isSolid, isWall, isWater, spawn, collide, camoSurface, draw, roundRect };
+  window.Arena = {
+    T, cols, rows, W, H, grid, isSolid, isWall, isWater, spawn, collide, camoSurface, draw, roundRect,
+    freeTiles, hideTiles, centre, tileOf, path, pick,
+  };
 })();

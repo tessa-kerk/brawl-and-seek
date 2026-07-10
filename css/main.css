@@ -43,12 +43,128 @@ body{
   text-shadow:0 2px 0 var(--ink), 0 0 18px rgba(255,200,0,.25);
 }
 .wordmark .amp{color:var(--magenta);}
+.badges{display:flex;align-items:center;gap:6px;}
 .stamp{
   font-family:'Nunito Sans';font-weight:800;
   font-size:11px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--chalk);opacity:.5;
   padding:4px 9px;border:1px solid rgba(246,244,239,.22);border-radius:999px;
   white-space:nowrap;
+}
+/* Required by the art hard-lines: nothing can pass as a real in-game screenshot. */
+.concept{
+  font-family:'Nunito Sans';font-weight:800;
+  font-size:10px;letter-spacing:.16em;
+  color:var(--teal);
+  padding:4px 9px;border:1px solid rgba(53,224,208,.5);border-radius:999px;
+  background:rgba(53,224,208,.10);white-space:nowrap;
+}
+
+/* ---- Score ticker (the camping rule, legible at a glance) ------------- */
+#ticker{
+  position:absolute;top:calc(env(safe-area-inset-top) + 50px);left:50%;
+  transform:translateX(-50%);
+  z-index:5;pointer-events:none;
+  display:flex;gap:6px;align-items:stretch;
+  max-width:96vw;flex-wrap:nowrap;
+}
+#ticker .chip{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(23,27,51,.80);
+  border:1px solid rgba(246,244,239,.14);
+  border-radius:10px;padding:5px 9px;
+  backdrop-filter:blur(3px);white-space:nowrap;
+}
+#ticker.hidden{opacity:0;transition:opacity .35s ease;}
+#ticker .lbl{
+  font-family:'Nunito Sans';font-weight:800;font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--chalk);opacity:.55;
+}
+#ticker b{font-family:'Lilita One',cursive;font-weight:400;font-size:15px;color:var(--chalk);letter-spacing:.02em;}
+#ticker .big b{font-size:19px;color:var(--yellow);}
+#ticker .time b{color:var(--chalk);}
+#ticker .time.low b{color:var(--magenta);}
+/* the coin fades as the camp-decay eats your rate */
+#ticker .coin{
+  width:13px;height:13px;border-radius:50%;
+  background:radial-gradient(circle at 35% 32%, #FFE58A, var(--yellow) 65%, #C89A00);
+  box-shadow:0 0 0 1.5px rgba(20,23,43,.7) inset;
+  transition:opacity .3s linear;
+}
+#ticker #tk-rate{font-size:13px;color:var(--yellow);}
+#ticker .chip.decayed #tk-rate{color:rgba(246,244,239,.6);}
+
+/* +100 reposition bonus flash */
+#bonus{
+  position:absolute;top:calc(env(safe-area-inset-top) + 126px);left:50%;
+  transform:translateX(-50%) translateY(6px);
+  z-index:6;pointer-events:none;opacity:0;
+  font-family:'Lilita One',cursive;font-size:26px;color:var(--yellow);
+  text-shadow:0 2px 0 var(--ink);
+}
+#bonus.show{animation:bonuspop 1.3s ease-out forwards;}
+@keyframes bonuspop{
+  0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(.7);}
+  18%{opacity:1;transform:translateX(-50%) translateY(-2px) scale(1.12);}
+  60%{opacity:1;transform:translateX(-50%) translateY(-10px) scale(1);}
+  100%{opacity:0;transform:translateX(-50%) translateY(-26px) scale(1);}
+}
+
+/* Phase banner: HIDE! / SEEKER RELEASED */
+#banner{
+  position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);
+  z-index:6;pointer-events:none;text-align:center;
+  font-family:'Lilita One',cursive;font-size:clamp(26px,7vw,52px);
+  color:var(--yellow);text-shadow:0 3px 0 var(--ink),0 0 26px rgba(255,200,0,.3);
+  opacity:0;transition:opacity .3s ease;letter-spacing:.02em;
+}
+#banner.show{opacity:1;}
+#banner small{display:block;font-family:'Nunito Sans';font-weight:800;font-size:12px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--chalk);opacity:.7;margin-top:6px;}
+
+/* ---- End-of-round reveal panel ---------------------------------------- */
+#endpanel{
+  position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 12px);
+  transform:translateX(-50%);
+  z-index:8;width:min(94vw,420px);
+  background:rgba(20,23,43,.94);
+  border:1px solid rgba(246,244,239,.16);border-radius:16px;
+  padding:14px 16px 12px;text-align:center;
+  backdrop-filter:blur(6px);
+  box-shadow:0 18px 50px rgba(0,0,0,.5);
+}
+#end-title{font-family:'Lilita One',cursive;font-size:30px;line-height:1;letter-spacing:.02em;}
+#end-title.spotted{color:var(--magenta);}
+#end-title.safe{color:var(--teal);}
+#end-sub{font-size:12.5px;color:var(--chalk);opacity:.85;margin:6px 0 10px;}
+#end-sub b{color:var(--yellow);font-weight:800;}
+#end-board{list-style:none;margin:0 0 10px;padding:0;max-height:32vh;overflow-y:auto;}
+#end-board li{
+  display:grid;grid-template-columns:16px 12px 1fr auto auto;align-items:center;gap:7px;
+  padding:4px 6px;border-radius:7px;font-size:12px;
+}
+#end-board li.me{background:rgba(255,200,0,.12);outline:1px solid rgba(255,200,0,.3);}
+#end-board .rank{opacity:.5;font-variant-numeric:tabular-nums;}
+#end-board .dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink);}
+#end-board .nm{font-family:'Lilita One',cursive;text-align:left;letter-spacing:.03em;}
+#end-board .st{opacity:.6;font-size:10.5px;}
+#end-board .sc{font-family:'Lilita One',cursive;color:var(--yellow);min-width:44px;text-align:right;}
+#replay{
+  font-family:'Lilita One',cursive;font-size:17px;letter-spacing:.03em;
+  color:var(--ink);background:var(--yellow);
+  border:none;border-radius:11px;padding:9px 26px;cursor:pointer;
+  box-shadow:0 4px 0 #C89A00;
+}
+#replay:active{transform:translateY(2px);box-shadow:0 2px 0 #C89A00;}
+.fanpolicy{font-size:9.5px;line-height:1.35;color:var(--chalk);opacity:.45;margin-top:9px;}
+.fanpolicy a{color:inherit;}
+
+@media (max-width:430px){
+  #ticker{gap:4px;}
+  #ticker .chip{padding:4px 6px;border-radius:8px;}
+  #ticker b{font-size:13px;} #ticker .big b{font-size:16px;}
+  #ticker.hidden{opacity:0;transition:opacity .35s ease;}
+#ticker .lbl{font-size:8px;letter-spacing:.08em;}
 }
 
 /* ---- Bottom hint ----------------------------------------------------- */
@@ -72,7 +188,7 @@ body{
 
 /* ---- Status chip (state read-out, top-centre) ------------------------ */
 #status{
-  position:absolute;top:calc(env(safe-area-inset-top) + 52px);left:50%;
+  position:absolute;top:calc(env(safe-area-inset-top) + 90px);left:50%;
   transform:translateX(-50%);
   z-index:5;pointer-events:none;
   font-family:'Lilita One',cursive;font-size:14px;letter-spacing:.06em;
@@ -92,6 +208,7 @@ body{
   text-align:center;z-index:4;pointer-events:none;
   font-size:10px;letter-spacing:.02em;color:var(--chalk);opacity:.32;
 }
+.disclaimer a{color:inherit;}
 
 @media (max-width:520px){
   /* keep the disclaimer from colliding with the hint on short screens */
@@ -99,4 +216,15 @@ body{
 }
 @media (prefers-reduced-motion:reduce){
   #hint,#status{transition:none;}
+}
+
+/* Desktop: dock the summary beside the map — the reveal map IS the shareable
+   artefact, so the panel must not sit on top of the hiding spots. */
+@media (min-width:900px){
+  #endpanel{
+    left:auto;right:26px;bottom:auto;top:50%;
+    transform:translateY(-50%);
+    width:360px;max-height:86vh;overflow-y:auto;
+  }
+  #end-board{max-height:none;}
 }

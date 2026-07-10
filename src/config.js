@@ -5,7 +5,7 @@
  */
 window.CFG = {
   // Build stamp — bump n + the ?v= token in index.html on every commit.
-  BUILD: { n: 4, date: '07-07-2026', milestone: 'M1' },
+  BUILD: { n: 5, date: '07-07-2026', milestone: 'M2' },
 
   // Palette — the six locked roles. Never invent a colour per deliverable.
   palette: {
@@ -25,4 +25,20 @@ window.CFG = {
   playerSpeed: 4.2,    // tiles per second
   playerRadius: 0.34,  // as a fraction of a tile (collision half-extent)
   camoAlpha: 0.24,     // "strong, not perfect" — floor of the hidden silhouette's opacity
+
+  /* Character art — PLACEHOLDER vector tokens. Explicit light/body/dark triples
+   * (not computed) so the player's signed-off M1 look stays pixel-identical.
+   * These get replaced wholesale in the art pass (Fankit first, then our own
+   * Brawl-style fan art) — the renderer must stay swap-friendly. */
+  characters: {
+    player: { name: 'YOU', body: '#FFC800', light: '#FFD84A', dark: '#E0A800' },
+    dummies: [
+      { name: 'PIP',  body: '#7BD389', light: '#9CE3A6', dark: '#57B267' },
+      { name: 'ZED',  body: '#C08BE8', light: '#D6ABF3', dark: '#9C68C6' },
+      { name: 'MOX',  body: '#FF8A5C', light: '#FFA97F', dark: '#DB6A3F' },
+      { name: 'KIRA', body: '#6FC3E8', light: '#95D8F3', dark: '#4A9DC4' },
+      { name: 'BOLT', body: '#E8C46F', light: '#F3D894', dark: '#C4A04A' },
+    ],
+    seeker: { name: 'SEEKER', body: '#FF4F6D', light: '#FF7A92', dark: '#C93450' },
+  },
 };

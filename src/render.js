@@ -1,31 +1,28 @@
-/* Brawl & Seek — the player render, i.e. the M1 money shot: the one-second
- * paint fill. A magenta paint edge sweeps left→right across the brawler; behind
- * the edge it is repainted to the surface colour and fades to a hidden
- * silhouette; the name tag + health bar fade with the fill. All world-space. */
+/* Brawl & Seek — entity rendering. The M1 paint fill is a SIGNED-OFF regression
+ * surface: the player's look must stay pixel-identical, so character colours are
+ * explicit light/body/dark triples rather than computed tints. Dummy hiders run
+ * the exact same paint-fill visual; seekers are drawn distinctly (visor + health).
+ * All world-space except drawSpotted(), which is a screen-space stamp. */
 (function () {
   const P = CFG.palette;
 
-  // ---- The brawler silhouette (shared by normal + camo so the shape matches) -
+  // ---- shared silhouette ------------------------------------------------
   function bodyPath(ctx, cx, cy, r) {
     const w = r * 1.72, h = r * 2.02;
     Arena.roundRect(ctx, cx - w / 2, cy - h / 2, w, h, r * 0.86);
   }
 
-  function drawNormal(ctx, cx, cy, r, facing) {
-    // feet
-    ctx.fillStyle = '#E0A800';
+  function drawNormal(ctx, cx, cy, r, facing, col, opts = {}) {
+    ctx.fillStyle = col.dark;
     ctx.beginPath(); ctx.ellipse(cx - r * 0.45, cy + r * 0.92, r * 0.34, r * 0.24, 0, 0, 7); ctx.fill();
     ctx.beginPath(); ctx.ellipse(cx + r * 0.45, cy + r * 0.92, r * 0.34, r * 0.24, 0, 0, 7); ctx.fill();
-    // body
     const g = ctx.createLinearGradient(0, cy - r, 0, cy + r);
-    g.addColorStop(0, '#FFD84A'); g.addColorStop(1, P.yellow);
+    g.addColorStop(0, col.light); g.addColorStop(1, col.body);
     bodyPath(ctx, cx, cy, r); ctx.fillStyle = g; ctx.fill();
     ctx.lineWidth = r * 0.17; ctx.strokeStyle = P.ink; ctx.stroke();
-    // cheek highlight
     ctx.globalAlpha = 0.5; ctx.fillStyle = '#FFF0B0';
     ctx.beginPath(); ctx.ellipse(cx - r * 0.42, cy - r * 0.5, r * 0.32, r * 0.42, -0.4, 0, 7); ctx.fill();
     ctx.globalAlpha = 1;
-    // eyes
     const ex = facing * r * 0.16;
     for (const s of [-1, 1]) {
       ctx.fillStyle = P.chalk;
@@ -33,10 +30,13 @@
       ctx.fillStyle = P.ink;
       ctx.beginPath(); ctx.arc(cx + ex + s * r * 0.34 + facing * r * 0.05, cy - r * 0.12, r * 0.12, 0, 7); ctx.fill();
     }
+    if (opts.visor) {   // seekers get a hunting brow so they read instantly
+      ctx.fillStyle = P.ink;
+      Arena.roundRect(ctx, cx - r * 0.62, cy - r * 0.46, r * 1.24, r * 0.22, r * 0.1); ctx.fill();
+    }
   }
 
   function drawCamo(ctx, cx, cy, r, color, extraAlpha) {
-    // Same silhouette, painted the surface colour, "strong not perfect" opacity.
     ctx.globalAlpha = CFG.camoAlpha * extraAlpha;
     bodyPath(ctx, cx, cy, r); ctx.fillStyle = color; ctx.fill();
     ctx.globalAlpha = CFG.camoAlpha * extraAlpha * 1.3;
@@ -44,57 +44,67 @@
     ctx.globalAlpha = 1;
   }
 
-  function drawPlayer(ctx, t) {
-    const pl = Player, cx = pl.x, cy = pl.y, r = pl.r;
-    const p = pl.progress;
+  // ---- hiders (player + dummies share the paint fill) --------------------
+  function drawHider(ctx, e, t, isPlayer) {
+    if (e.found && !isPlayer) return;               // found dummies are now seekers
+    const cx = e.x, cy = e.y, r = e.r, p = e.progress, col = e.col;
 
-    // ground shadow, fading out as the paint fills (a shadow is a giveaway)
     ctx.globalAlpha = (1 - p) * 0.28; ctx.fillStyle = '#000';
     ctx.beginPath(); ctx.ellipse(cx, cy + r * 1.12, r * 0.8, r * 0.3, 0, 0, 7); ctx.fill();
     ctx.globalAlpha = 1;
 
-    if (pl.hidden) {
-      // Fully hidden: just the faint surface-matched silhouette + you-are-here.
-      drawCamo(ctx, cx, cy, r, pl.camo.color, 1);
-      FX.youAreHere(ctx, cx, cy + r * 0.1, t);
+    if (e.hidden && !e.found) {
+      drawCamo(ctx, cx, cy, r, (e.camo && e.camo.color) || P.navy, 1);
+      if (isPlayer) FX.youAreHere(ctx, cx, cy + r * 0.1, t);
       return;
     }
 
     const left = cx - r * 1.12, right = cx + r * 1.12;
     const sweepX = left + p * (right - left);
-
-    if (p <= 0) {
-      drawNormal(ctx, cx, cy, r, pl.facing);
+    if (p <= 0 || e.found) {
+      drawNormal(ctx, cx, cy, r, e.facing, col);
     } else {
-      // Right of the wet edge: still the normal brawler.
-      ctx.save();
-      ctx.beginPath(); ctx.rect(sweepX, cy - r * 2, right - sweepX + r, r * 4); ctx.clip();
-      drawNormal(ctx, cx, cy, r, pl.facing);
-      ctx.restore();
-      // Left of the wet edge: already painted in (ramp opacity up as it settles).
-      ctx.save();
-      ctx.beginPath(); ctx.rect(left - r, cy - r * 2, sweepX - left + r, r * 4); ctx.clip();
-      drawCamo(ctx, cx, cy, r, pl.camo.color, 0.55 + 0.45 * p);
-      ctx.restore();
-      // The wet magenta paint edge.
+      ctx.save(); ctx.beginPath(); ctx.rect(sweepX, cy - r * 2, right - sweepX + r, r * 4); ctx.clip();
+      drawNormal(ctx, cx, cy, r, e.facing, col); ctx.restore();
+      ctx.save(); ctx.beginPath(); ctx.rect(left - r, cy - r * 2, sweepX - left + r, r * 4); ctx.clip();
+      drawCamo(ctx, cx, cy, r, (e.camo && e.camo.color) || P.navy, 0.55 + 0.45 * p); ctx.restore();
       drawWetEdge(ctx, sweepX, cy, r, t);
     }
-
     if (p > 0 && p < 1) drawRing(ctx, cx, cy, r, p);
-    drawNameTag(ctx, cx, cy, r, pl);
+    drawNameTag(ctx, cx, cy, r, e.name, 1 - p, e.found ? 0 : 1);
+  }
+
+  function drawSeeker(ctx, s, t) {
+    const cx = s.x, cy = s.y, r = s.r;
+    const ghost = s.state === 'spectator';
+    ctx.save();
+    if (ghost) ctx.globalAlpha = 0.28;
+    ctx.globalAlpha *= 1; ctx.fillStyle = '#000';
+    ctx.globalAlpha = ghost ? 0.1 : 0.28;
+    ctx.beginPath(); ctx.ellipse(cx, cy + r * 1.12, r * 0.8, r * 0.3, 0, 0, 7); ctx.fill();
+    ctx.globalAlpha = ghost ? 0.28 : 1;
+
+    if (s.flash > 0) {   // wrong tag — it cost health
+      ctx.strokeStyle = 'rgba(255,79,109,.9)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(cx, cy, r * (1.4 + (0.35 - s.flash) * 3), 0, 7); ctx.stroke();
+    }
+    drawNormal(ctx, cx, cy, r, s.facing, s.col, { visor: true });
+    // health pips
+    const w = r * 1.5, hh = r * 0.2, bx = cx - w / 2, by = cy - r * 1.75;
+    Arena.roundRect(ctx, bx, by, w, hh, hh / 2); ctx.fillStyle = 'rgba(9,16,36,.85)'; ctx.fill();
+    const frac = Math.max(0, s.health) / TUNING.seeker.health;
+    Arena.roundRect(ctx, bx + 1, by + 1, (w - 2) * frac, hh - 2, (hh - 2) / 2);
+    ctx.fillStyle = frac > 0.5 ? '#3BD16B' : frac > 0.25 ? P.yellow : '#FF4F6D'; ctx.fill();
+    ctx.restore();
   }
 
   function drawWetEdge(ctx, x, cy, r, t) {
     const wob = STATE.reduceMotion ? 0 : Math.sin(t * 12) * r * 0.05;
     ctx.save();
-    ctx.shadowColor = P.magenta; ctx.shadowBlur = 12;
-    ctx.fillStyle = P.magenta;
+    ctx.shadowColor = P.magenta; ctx.shadowBlur = 12; ctx.fillStyle = P.magenta;
     Arena.roundRect(ctx, x - r * 0.16, cy - r * 1.15 + wob, r * 0.32, r * 2.25, r * 0.16); ctx.fill();
-    ctx.shadowBlur = 0;
-    // bright core
-    ctx.fillStyle = '#FF8CC6';
+    ctx.shadowBlur = 0; ctx.fillStyle = '#FF8CC6';
     Arena.roundRect(ctx, x - r * 0.06, cy - r * 1.05 + wob, r * 0.12, r * 2.05, r * 0.06); ctx.fill();
-    // a couple of drips
     if (!STATE.reduceMotion) {
       ctx.fillStyle = P.magenta; ctx.globalAlpha = 0.85;
       ctx.beginPath(); ctx.arc(x, cy + r * 1.2 + (t * 40 % 12), r * 0.12, 0, 7); ctx.fill();
@@ -106,7 +116,7 @@
   function drawRing(ctx, cx, cy, r, p) {
     const rad = r * 1.62;
     ctx.save();
-    ctx.globalAlpha = p < 0.9 ? 0.9 : (1 - p) * 9;   // fade the ring out as it completes
+    ctx.globalAlpha = p < 0.9 ? 0.9 : (1 - p) * 9;
     ctx.strokeStyle = 'rgba(23,27,51,.55)'; ctx.lineWidth = r * 0.2;
     ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
     ctx.strokeStyle = P.magenta; ctx.lineWidth = r * 0.16; ctx.lineCap = 'round';
@@ -114,33 +124,57 @@
     ctx.restore();
   }
 
-  function drawNameTag(ctx, cx, cy, r, pl) {
-    const a = pl.nameAlpha();
-    if (a <= 0.01) return;
-    ctx.save();
-    ctx.globalAlpha = a;
-    const label = 'YOU', fs = r * 0.62;
+  function drawNameTag(ctx, cx, cy, r, label, alpha, showHealth) {
+    if (alpha <= 0.01) return;
+    ctx.save(); ctx.globalAlpha = alpha;
+    const fs = r * 0.62;
     ctx.font = `${fs}px 'Lilita One', sans-serif`;
     const tw = ctx.measureText(label).width;
     const padX = r * 0.34, boxW = tw + padX * 2, boxH = fs * 1.34;
     const bx = cx - boxW / 2, by = cy - r * 2.35;
-    // health bar (above the pill)
-    const hbW = boxW * 0.92, hbX = cx - hbW / 2, hbY = by - r * 0.4, hbH = r * 0.24;
-    Arena.roundRect(ctx, hbX, hbY, hbW, hbH, hbH / 2); ctx.fillStyle = 'rgba(9,16,36,.85)'; ctx.fill();
-    Arena.roundRect(ctx, hbX + 1.5, hbY + 1.5, hbW - 3, hbH - 3, (hbH - 3) / 2); ctx.fillStyle = '#3BD16B'; ctx.fill();
-    // name pill
+    if (showHealth) {
+      const hbW = boxW * 0.92, hbX = cx - hbW / 2, hbY = by - r * 0.4, hbH = r * 0.24;
+      Arena.roundRect(ctx, hbX, hbY, hbW, hbH, hbH / 2); ctx.fillStyle = 'rgba(9,16,36,.85)'; ctx.fill();
+      Arena.roundRect(ctx, hbX + 1.5, hbY + 1.5, hbW - 3, hbH - 3, (hbH - 3) / 2); ctx.fillStyle = '#3BD16B'; ctx.fill();
+    }
     Arena.roundRect(ctx, bx, by, boxW, boxH, boxH * 0.32);
     ctx.fillStyle = 'rgba(20,23,43,.9)'; ctx.fill();
     ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(246,244,239,.25)'; ctx.stroke();
-    // little pointer
-    ctx.beginPath();
-    ctx.moveTo(cx - r * 0.18, by + boxH); ctx.lineTo(cx + r * 0.18, by + boxH); ctx.lineTo(cx, by + boxH + r * 0.24);
+    ctx.beginPath(); ctx.moveTo(cx - r * 0.18, by + boxH); ctx.lineTo(cx + r * 0.18, by + boxH); ctx.lineTo(cx, by + boxH + r * 0.24);
     ctx.closePath(); ctx.fillStyle = 'rgba(20,23,43,.9)'; ctx.fill();
-    // text
     ctx.fillStyle = P.chalk; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(label, cx, by + boxH / 2 + fs * 0.06);
     ctx.restore();
   }
 
-  window.Render = { drawPlayer };
+  // ---- the SPOTTED! stamp (screen space) --------------------------------
+  // Display type, tilted ~8°, Brawl Yellow on Paint Magenta — the locked motif.
+  function drawSpotted(ctx, w, h, age) {
+    const k = STATE.reduceMotion ? 1 : Math.min(1, age / 0.22);
+    const scale = STATE.reduceMotion ? 1 : 1.6 - 0.6 * easeOut(k);
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, age / 0.12);
+    ctx.translate(w / 2, h * 0.42);
+    ctx.rotate((-8 * Math.PI) / 180);
+    ctx.scale(scale, scale);
+    const fs = Math.min(w * 0.14, 86);
+    ctx.font = `${fs}px 'Lilita One', sans-serif`;
+    const label = 'SPOTTED!';
+    const tw = ctx.measureText(label).width;
+    const bw = tw + fs * 0.7, bh = fs * 1.5;
+    ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 24; ctx.shadowOffsetY = 8;
+    Arena.roundRect(ctx, -bw / 2, -bh / 2, bw, bh, fs * 0.22);
+    ctx.fillStyle = P.magenta; ctx.fill();
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    ctx.lineWidth = 5; ctx.strokeStyle = P.ink; ctx.stroke();
+    ctx.fillStyle = P.yellow; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, 0, fs * 0.06);
+    ctx.restore();
+  }
+  const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+
+  window.Render = {
+    drawPlayer: (ctx, t) => drawHider(ctx, Player, t, true),
+    drawHider, drawSeeker, drawSpotted, drawNormal, bodyPath,
+  };
 })();

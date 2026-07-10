@@ -2,7 +2,21 @@
 
 ## ⚡ CURRENT STATE — read this first (updated 07-07-2026, Session 2)
 
-**WHERE WE ARE: ✅ MILESTONE 1 IS SIGNED OFF by Tessa (07-07-2026), verified from her own device recordings** — wall contact slides cleanly along the free axis, escapes are instant, no repaint starts while the stick is deflected, free-walk is smooth, and the PWA fullscreen build removes the Safari gesture problem. **M2 is now in progress** (seeker bot, score ticker, SPOTTED! stamp, reveal map, round < 90s). M3 (Map Maker view) and M4 (polish) untouched.
+**WHERE WE ARE: ✅ M1 SIGNED OFF. 🎮 M2 IS BUILT AND PLAYABLE (build v5) — awaiting Tessa's device sign-off at the stop-and-show-me gate.** M3 (Map Maker view) and M4 (polish) untouched.
+
+**M2 — what's in (all QA'd against real rendered output + canon-rule tests):**
+- **Seeker bot** (`src/seeker.js`) — patrols by BFS path; sees UNHIDDEN hiders; a hidden hider only ripples when a mover comes close (the tell), and **sprinting past blinds you to it** (`sprintBlindness`). A ripple gives a *noisy* fix, so the seeker sometimes tags empty ground: **wrong tag −30 health, 4th mistake → spectator.** Found hiders **become seekers** (the 1v11 → 11v1 snowball); the pack's +15% speed boost fades as it grows.
+- **AI dummy hiders** (`src/hider.js`) — 5 of them, running the player's exact camo rule, and obeying the camping rule: they camp, then make the daring run to a spot ≥3 tiles away to bank the bonus. That run is what the seeker gets to see.
+- **Score ticker** (legible at a glance) — SCORE · a **coin that fades as the camp-decay eats your rate** · the **current REPAINT time** · HIDERS remaining · clock. Plus a **+100** flash on a banked reposition, and HIDE! / SEEKER RELEASED phase banners.
+- **SPOTTED! stamp** on being found — display type, tilted 8°, Brawl Yellow on Paint Magenta (the locked motif) — then the **end-of-round reveal map** showing every hider's spot with SPOTTED!/SAFE chips, survival times, and a leaderboard. On desktop the summary docks beside the map so the reveal stays clean (it's the shareable artefact). **Play again** fully resets.
+- **`CONCEPT` badge + Fan Content Policy notice** now in the UI and on the reveal panel (art hard-lines).
+- **`?debug=1` extended** with round/score/seeker telemetry, per the standing rule.
+
+**Two real bugs found by measuring, not guessing:** (1) dummy dwell counted down during the *hide* phase, so the whole pack broke cover on the exact frame the seeker released → mass finds in 4s; (2) `sprintBlindness` never engaged because the seeker's per-frame speed was **bimodal** (47% of frames read ~0 — it advanced a waypoint without moving), so the bot got full notice while actually sprinting. Fixed `AI.step` to spend its whole distance budget, and smoothed the speed estimate (EMA).
+
+**⚠️ BALANCE — the honest state, for Tessa's device test.** Rounds currently end in **~25–40s** (always well under the 90s cap). In scripted play the **player is usually found before the clock**: idle camping in the open centre gets you found ~26–30s (*correct* — the anti-camping rule is supposed to punish that), but even repositioning play rarely survives to 75s. The arena is small (10×9), so a growing seeker pack sweeps it fast. **This is the thing to judge on device.** If it feels too punishing, the dials are `TUNING.seeker.{noticeChance, rippleRadius, visionRadius, baseSpeed}` — all **prototype-tuned, not canon**; every canon number Tessa gave is untouched and verified below.
+
+**CANON RULES VERIFIED** (oracle = Tessa's spec written by hand, independent of the implementation): score +10/s halving every 10s to a floor of 2/s ✓ · reposition ≥3 tiles banks +100 and resets the rate (and 1.5 tiles does **not**) ✓ · repaint 1.0 → 1.5 (3 found) → 2.0 (2 remain) ✓ · seeker 100hp, −30/wrong tag, 4th miss → spectator ✓ · 15s hide + 60s seek = **75s < 90s** ✓.
 
 **M1 = REGRESSION SURFACE.** The paint fill, the camo break, movement/collision, and the PWA build are signed off. Re-render and re-check them before shipping any change that touches them; flag visual changes, never ship them silently.
 
@@ -50,7 +64,7 @@
 - `src/render.js` — `Render`: the paint-fill money shot (sweep clip, wet edge, ring, fading name tag/health).
 - `src/game.js` — `STATE` + boot + fit-to-viewport transform + main loop + a **debug API** (`Game.pose/pause/setRepaint`) the capture rig uses to freeze exact frames.
 
-**BUILD STAMP RITUAL (every commit):** bump `CFG.BUILD.n` in `src/config.js` AND find-replace `?v=<old>`→`?v=<new>` across `index.html` (currently **`?v=4`**, BUILD n:4). The top-right title stamp (`v4 · M1`) is the witness — if it doesn't match, a script is cached stale.
+**BUILD STAMP RITUAL (every commit):** bump `CFG.BUILD.n` in `src/config.js` AND find-replace `?v=<old>`→`?v=<new>` across `index.html` (currently **`?v=5`**, BUILD n:5). The top-right title stamp (`v5 · M2`) is the witness — if it doesn't match, a script is cached stale.
 
 **DEBUG OVERLAY:** append `?debug=1` to the URL for the on-screen instrument. `?joystick=fixed` switches to the fixed-anchor stick; combine as `?debug=1&joystick=fixed`.
 
@@ -84,7 +98,7 @@
 
 - [x] **M0 — Scaffold.** Repo, folders, self-hosted fonts (Lilita One / Nunito Sans / Caveat), visual-system CSS tokens, `PLAN.md`, `CLAUDE.md`, `README.md`, `.gitignore`.
 - [x] **M1 — Paint fill + camo break** feel right on desktop AND phone width. **✅ SIGNED OFF 07-07-2026** (Tessa, device-verified). Regression surface.
-- [ ] **M2 — Round loop.** Seeker bot, AI dummy hiders, score ticker, proximity-ripple tell, SPOTTED! stamp, reveal map. Round < 90s. *(in progress; show-me gate)*
+- [x] **M2 — Round loop.** Seeker bot, AI dummy hiders, score ticker, proximity-ripple tell, SPOTTED! stamp, reveal map. Round < 90s. *(built, build v5 — awaiting Tessa's device sign-off at the show-me gate)*
 - [ ] **M3 — Map Maker view.** The same map in an editor frame with three live toggles: camo surfaces (walls/floor/water), repaint time (0.5/1/2s), ripple tell on/off. Flip a toggle → the mechanic changes live.
 - [ ] **M4 — Polish.** Mobile controls, `prefers-reduced-motion` full pass, performance pass.
 

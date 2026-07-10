@@ -14,8 +14,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Brawl & Seek">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/fonts.css?v=4">
-<link rel="stylesheet" href="css/main.css?v=4">
+<link rel="stylesheet" href="css/fonts.css?v=5">
+<link rel="stylesheet" href="css/main.css?v=5">
 </head>
 <body>
   <div id="stage">
@@ -23,9 +23,23 @@
 
     <div id="topbar">
       <div class="wordmark">BRAWL <span class="amp">&amp;</span> SEEK</div>
-      <div class="stamp">v4 · M1</div>
+      <div class="badges">
+        <span class="concept" title="Unofficial fan concept — not a real in-game screenshot">CONCEPT</span>
+        <span class="stamp">v5 · M2</span>
+      </div>
     </div>
 
+    <!-- Score ticker: the camping rule, legible at a glance. -->
+    <div id="ticker">
+      <div class="chip big"><span class="lbl">SCORE</span><b id="tk-score">0</b></div>
+      <div class="chip" id="tk-coinchip"><span class="coin" id="tk-coin"></span><b id="tk-rate">+10/s</b></div>
+      <div class="chip"><span class="lbl">REPAINT</span><b id="tk-repaint">1.0s</b></div>
+      <div class="chip"><span class="lbl">HIDERS</span><b id="tk-hiders">6</b></div>
+      <div class="chip time"><span class="lbl">⏱</span><b id="tk-time">1:15</b></div>
+    </div>
+
+    <div id="bonus">+100</div>
+    <div id="banner"></div>
     <div id="status"></div>
 
     <p id="hint">
@@ -33,17 +47,32 @@
       on a surface to paint yourself in — <b>move</b> to break camo.
     </p>
 
-    <div class="disclaimer">Fan concept by Tessa Kerk · not affiliated with Supercell</div>
+    <div id="endpanel" hidden>
+      <div id="end-title"></div>
+      <div id="end-sub"></div>
+      <ol id="end-board"></ol>
+      <button id="replay">Play again</button>
+      <p class="fanpolicy">This material is unofficial and is not endorsed by Supercell. For more information see Supercell's
+        <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">Fan Content Policy</a>.</p>
+    </div>
+
+    <div class="disclaimer">Fan concept by Tessa Kerk · unofficial, not endorsed by Supercell · <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">Fan Content Policy</a></div>
   </div>
 
-  <script src="src/config.js?v=4"></script>
-  <script src="data/arena.js?v=4"></script>
-  <script src="src/input.js?v=4"></script>
-  <script src="src/arena.js?v=4"></script>
-  <script src="src/fx.js?v=4"></script>
-  <script src="src/player.js?v=4"></script>
-  <script src="src/render.js?v=4"></script>
-  <script src="src/debug.js?v=4"></script>
-  <script src="src/game.js?v=4"></script>
+  <script src="src/config.js?v=5"></script>
+  <script src="data/arena.js?v=5"></script>
+  <script src="data/tuning.js?v=5"></script>
+  <script src="src/input.js?v=5"></script>
+  <script src="src/arena.js?v=5"></script>
+  <script src="src/ai.js?v=5"></script>
+  <script src="src/fx.js?v=5"></script>
+  <script src="src/player.js?v=5"></script>
+  <script src="src/hider.js?v=5"></script>
+  <script src="src/seeker.js?v=5"></script>
+  <script src="src/round.js?v=5"></script>
+  <script src="src/render.js?v=5"></script>
+  <script src="src/reveal.js?v=5"></script>
+  <script src="src/debug.js?v=5"></script>
+  <script src="src/game.js?v=5"></script>
 </body>
 </html>

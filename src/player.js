@@ -19,14 +19,21 @@
     camo: null,                       // {type,color} being matched
     lastMoving: false,
 
+    // round state
+    isPlayer: true, name: 'YOU', col: CFG.characters.player,
+    found: false, foundAt: null, hideSpot: null,
+
     reset() {
       const s = Arena.spawn();
       this.x = s.x; this.y = s.y; this.vx = 0; this.vy = 0;
       this.still = 0; this.progress = 0; this.hidden = false;
+      this.found = false; this.foundAt = null; this.hideSpot = null;
       this.camo = Arena.camoSurface(this.x, this.y, this.h);
     },
 
     update(dt) {
+      // Frozen once spotted or the round is over.
+      if (this.found || (window.Round && Round.phase === 'over')) { this.vx = this.vy = 0; return; }
       const v = Input.vector();                 // {x,y}, |v| = direction × speed factor
       // "Commanding movement" gates the repaint — key/stick engagement, NOT
       // displacement. So pushing into a wall (where displacement can be zero)

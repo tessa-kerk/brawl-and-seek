@@ -24,6 +24,14 @@
     rings.push({ x, y, r0: 8, r1: 46, life: 0, max: 0.55, color: P.teal, w: 3 });
   }
 
+  /* THE TELL. Someone moved within a short radius of a hidden brawler, so the
+   * camo ripples for a moment. This is the seeker's only clue — slow down and
+   * watch and you see it; sprint past and you don't. Static ring under
+   * reduce-motion so it still reads. */
+  function tell(x, y) {
+    rings.push({ x, y, r0: 4, r1: reduce() ? 20 : 34, life: 0, max: reduce() ? 0.9 : 0.42, color: P.teal, w: 2.5 });
+  }
+
   function update(dt) {
     for (const b of bursts) { b.life += dt; b.vy += 260 * dt; b.x += b.vx * dt; b.y += b.vy * dt; }
     bursts = bursts.filter((b) => b.life < b.max);
@@ -63,5 +71,5 @@
     ctx.restore();
   }
 
-  window.FX = { breakBurst, settleRing, update, draw, youAreHere };
+  window.FX = { breakBurst, settleRing, tell, update, draw, youAreHere };
 })();

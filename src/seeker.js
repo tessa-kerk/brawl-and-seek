@@ -49,22 +49,41 @@
   // two more hiders cascades the whole round in a couple of seconds.
   function spawnAt(x, y) { const s = make(x, y); s.state = 'patrol'; s.hold = TUNING.seeker.spawnHold; list.push(s); }
 
-  // ---- tagging ----------------------------------------------------------
-  function attemptTag(s) {
-    const B = TUNING.seeker;
-    s.tagCd = B.tagCooldown;
-    const hit = hiders().find((h) => AI.tileDist(s.x, s.y, h.x, h.y) <= B.tagRange);
-    if (hit) {
-      Round.onFound(hit, s);
-      s.target = null; s.targetPos = null; s.state = 'patrol'; s.hold = 0.5;
-      return true;
+  // ---- the Tag: a fired projectile ---------------------------------------
+  /* A tag that hits nothing — empty air or a wall — costs 30, exactly as a
+   * whiffed chase does. Called back by the projectile when it dies unfed. */
+  function wrongTag(s) {
+    if (!s || s.state === 'spectator') return;
+    s.health -= TUNING.seeker.wrongTagCost; s.mistakes++; s.flash = 0.35;
+    if (s.health <= 0) { s.state = 'spectator'; s.target = null; s.targetPos = null; }
+  }
+
+  /* Commit to a shot. Against a visible runner the bot LEADS the target, badly
+   * enough that juking beats it. Against a ripple fix it aims at a guess whose
+   * error shrinks as it closes — so seekers must walk in and commit, and pay
+   * when they're wrong. */
+  function shoot(s, target, live, distTiles) {
+    const G = TUNING.tag;
+    let tx, ty;
+    if (live) {
+      const d = Math.hypot(target.x - s.x, target.y - s.y);
+      const tof = d / Tags.speed();
+      const lead = 1 + (Math.random() * 2 - 1) * G.botLeadNoise;
+      tx = target.x + (target.vx || 0) * tof * lead;
+      ty = target.y + (target.vy || 0) * tof * lead;
+    } else {
+      /* A ripple is a suspicion, not a targeting solution. The fix sharpens as
+       * the seeker closes, but never collapses to certainty — otherwise the bot
+       * just walks to point-blank and never misses, which is the touch-chase we
+       * removed. The floor keeps close shots genuinely committal. */
+      const fix = G.botFixNoise * (G.fixFloor + (1 - G.fixFloor) * Math.min(1, distTiles / G.range)) * T;
+      const a = Math.random() * Math.PI * 2, m = Math.random() * fix;
+      tx = target.x + Math.cos(a) * m; ty = target.y + Math.sin(a) * m;
     }
-    // wrong tag — it costs
-    s.health -= B.wrongTagCost; s.mistakes++; s.flash = 0.35;
-    FX.breakBurst(s.x, s.y - s.r * 0.2);
-    if (s.health <= 0) { s.state = 'spectator'; s.target = null; }
-    else { s.target = null; s.targetPos = null; s.state = 'patrol'; }
-    return false;
+    const ang = Math.atan2(ty - s.y, tx - s.x) + (Math.random() * 2 - 1) * G.botAimError;
+    s.facing = Math.cos(ang) > 0 ? 1 : -1;
+    Tags.fire(s, ang);
+    s.tagCd = G.cooldown;
   }
 
   // ---- perception -------------------------------------------------------
@@ -115,12 +134,29 @@
           // a live target that paints in vanishes — fall back to its last seen spot
           if (s.live && s.target.hidden) { s.live = false; s.targetPos = { x: s.target.x, y: s.target.y }; }
           if (s.live) s.targetPos = { x: s.target.x, y: s.target.y };
-          s.repath -= dt;
-          if (s.repath <= 0) { const t = Arena.tileOf(s.targetPos.x, s.targetPos.y); AI.goTo(s, t); s.repath = B.repathEvery; }
-          AI.step(s, dt, spd);
+
+          const G = TUNING.tag;
           const d = AI.tileDist(s.x, s.y, s.targetPos.x, s.targetPos.y);
-          if (d <= B.tagRange && s.tagCd <= 0) attemptTag(s);
-          else if (s.stall > 0.9) { s.state = 'patrol'; s.target = null; }
+          const inRange = d <= G.range * G.fireAt;
+          const clear = Tags.los(s.x, s.y, s.targetPos.x, s.targetPos.y);
+
+          if (inRange && clear) {
+            /* In range with a clear line: STAND AND COMMIT. Never walk closer
+             * while the cooldown ticks — closing to point-blank makes the shot
+             * unmissable and quietly restores the touch-chase we just removed. */
+            s.stall = 0;
+            if (s.targetPos.x !== s.x) s.facing = s.targetPos.x > s.x ? 1 : -1;
+            if (s.tagCd <= 0) {
+              shoot(s, s.target, s.live, d);
+              // A ripple fix is a one-shot commitment; a visible runner stays hunted.
+              if (!s.live) { s.state = 'patrol'; s.target = null; s.targetPos = null; }
+            }
+          } else {
+            s.repath -= dt;
+            if (s.repath <= 0) { const t = Arena.tileOf(s.targetPos.x, s.targetPos.y); AI.goTo(s, t); s.repath = B.repathEvery; }
+            AI.step(s, dt, spd);
+            if (s.stall > 0.9) { s.state = 'patrol'; s.target = null; }
+          }
         }
       }
 
@@ -134,5 +170,5 @@
     }
   }
 
-  window.Seekers = { list, reset, update, spawnAt, active, speedOf };
+  window.Seekers = { list, reset, update, spawnAt, active, speedOf, wrongTag };
 })();

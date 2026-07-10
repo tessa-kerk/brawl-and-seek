@@ -17,13 +17,33 @@ window.TUNING = {
     whenTwoRemain: 2.0,     // when only two hiders remain
   },
 
+  /* The universal Tag — a FIRED PROJECTILE, not a touch (Concept Brief v3.2 §104).
+   * Being seen ends in a committed shot, not an outrun-and-touch marathon.
+   * Hitting any brawler — camouflaged or visibly running — is the find. A tag
+   * that hits nothing, or a wall, is the wrong tag and costs the same 30. So
+   * seekers commit to shots instead of spraying, and walls double as chase cover. */
+  tag: {
+    // --- CANON (Concept Brief v3.2) ---
+    range: 3.0,             // tiles
+    speedMult: 2.0,         // × the seeker's base move speed
+    cooldown: 0.75,         // s between shots
+    // --- PROTOTYPE-TUNED (thin hitbox + bot aim; not canon) ---
+    projRadius: 0.07,       // tiles — thin
+    hitRadius: 0.30,        // tiles — a brawler's effective hitbox against the tag
+    fireAt: 0.92,           // fire once within this fraction of range
+    botAimError: 0.13,      // radians of aim jitter
+    botLeadNoise: 0.42,     // fractional error when leading a runner (juking beats it)
+    botFixNoise: 0.85,      // tiles of error on a ripple fix at max range; sharpens as it closes…
+    fixFloor: 0.55,         // …but never below this fraction of the error. A close shot is still
+                            // a commitment, not a certainty — that's what makes misses cost 30.
+  },
+
   seeker: {
     // --- CANON (Tessa) ---
     health: 100,
     wrongTagCost: 30,       // three mistakes survivable; the fourth -> spectator
     speedBoost: 0.15,       // +15% while <= 2 seekers, fading as the pack grows
     // --- PROTOTYPE-TUNED (not canon; balanced for this small 10x9 arena) ---
-    tagRange: 0.7,          // tiles — the universal Tag's short reach
     baseSpeed: 3.7,         // tiles/s (player is 4.2, so a running hider can break away)
     visionRadius: 2.3,      // tiles — sees UNHIDDEN hiders (being caught in the open is bad,
                             // but not instantly fatal from across the arena)
@@ -33,7 +53,6 @@ window.TUNING = {
                             // "slow down and watch and you see it; sprint past and you don't"
     noticeNoise: 0.85,      // tiles of error on a ripple fix — a ripple says "near here", not "here".
                             // This is what makes wrong tags (and the -30 health rule) actually happen.
-    tagCooldown: 0.8,       // s between tag attempts
     repathEvery: 0.35,      // s
     spawnHold: 1.6,         // s a newly-converted seeker waits before hunting
   },

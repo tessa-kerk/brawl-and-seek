@@ -34,6 +34,7 @@
     Player.update(dt);
     Hiders.update(dt);
     Seekers.update(dt);
+    Tags.update(dt);
     Round.update(dt);
     FX.update(dt);
     if (Player.hidden) STATE.everHidden = true;
@@ -49,6 +50,7 @@
     for (const d of Hiders.list) Render.drawHider(ctx, d, tSec, false);
     for (const s of Seekers.list) Render.drawSeeker(ctx, s, tSec);
     Render.drawPlayer(ctx, tSec);
+    Tags.draw(ctx);
     Reveal.frame(ctx, tSec);                       // dim + reveal markers when over
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);        // screen space

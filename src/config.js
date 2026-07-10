@@ -5,7 +5,7 @@
  */
 window.CFG = {
   // Build stamp — bump n + the ?v= token in index.html on every commit.
-  BUILD: { n: 5, date: '07-07-2026', milestone: 'M2' },
+  BUILD: { n: 6, date: '07-07-2026', milestone: 'M2' },
 
   // Palette — the six locked roles. Never invent a colour per deliverable.
   palette: {

@@ -37,7 +37,7 @@
       this.phase = 'hide'; this.elapsed = 0; this.overT = 0; this.result = null;
       this.foundCount = 0; this.score = 0; this.rate = TUNING.hider.scoreRate;
       this.camp = 0; this.lastHideSpot = null; this.bonusFlash = 0; this._wasHidden = false;
-      Player.reset(); Hiders.reset(); Seekers.reset();
+      Player.reset(); Hiders.reset(); Seekers.reset(); Tags.reset();
       STATE.repaintTime = this.repaintTime();
     },
 

@@ -32,6 +32,11 @@
     rings.push({ x, y, r0: 4, r1: reduce() ? 20 : 34, life: 0, max: reduce() ? 0.9 : 0.42, color: P.teal, w: 2.5 });
   }
 
+  // A fired Tag leaving the barrel, or slapping into a wall / empty air.
+  function spark(x, y) {
+    rings.push({ x, y, r0: 2, r1: reduce() ? 10 : 17, life: 0, max: 0.22, color: '#FF4F6D', w: 3 });
+  }
+
   function update(dt) {
     for (const b of bursts) { b.life += dt; b.vy += 260 * dt; b.x += b.vx * dt; b.y += b.vy * dt; }
     bursts = bursts.filter((b) => b.life < b.max);
@@ -71,5 +76,5 @@
     ctx.restore();
   }
 
-  window.FX = { breakBurst, settleRing, tell, update, draw, youAreHere };
+  window.FX = { breakBurst, settleRing, tell, spark, update, draw, youAreHere };
 })();

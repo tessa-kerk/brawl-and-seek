@@ -11,7 +11,7 @@
     return {
       name: def.name, col: def, isPlayer: false,
       x: c.x, y: c.y, h: CFG.playerRadius * T, r: CFG.playerRadius * T * 1.02,
-      facing: 1, speed: CFG.playerSpeed * 0.82,   // tiles/s — a touch slower than you
+      facing: 1, vx: 0, vy: 0, speed: CFG.playerSpeed * 0.82,  // tiles/s — a touch slower than you
       still: 0, progress: 0, hidden: false, camo: null,
       found: false, foundAt: null, hideSpot: null,
       score: 0, camp: 0, rate: TUNING.hider.scoreRate, lastHideSpot: null,
@@ -72,6 +72,7 @@
     const H = TUNING.hider;
     for (const d of list) {
       if (d.found) continue;
+      const px = d.x, py = d.y;       // for the velocity a seeker leads its shot with
 
       if (d.state === 'travel') {
         if (d.progress > 0) breakCamo(d);
@@ -102,6 +103,7 @@
           }
         }
       }
+      if (dt > 0) { d.vx = (d.x - px) / dt; d.vy = (d.y - py) / dt; }
     }
   }
 

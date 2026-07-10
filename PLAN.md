@@ -2,7 +2,7 @@
 
 ## ⚡ CURRENT STATE — read this first (updated 07-07-2026, Session 2)
 
-**WHERE WE ARE: ✅ M1 SIGNED OFF. 🎮 M2 IS BUILT AND PLAYABLE (build v5) — awaiting Tessa's device sign-off at the stop-and-show-me gate.** M3 (Map Maker view) and M4 (polish) untouched.
+**WHERE WE ARE: ✅ M1 SIGNED OFF. 🎮 M2 IS BUILT AND PLAYABLE (build v6, projectile Tag) — awaiting Tessa's device sign-off at the stop-and-show-me gate.** M3 (Map Maker view) and M4 (polish) untouched.
 
 **M2 — what's in (all QA'd against real rendered output + canon-rule tests):**
 - **Seeker bot** (`src/seeker.js`) — patrols by BFS path; sees UNHIDDEN hiders; a hidden hider only ripples when a mover comes close (the tell), and **sprinting past blinds you to it** (`sprintBlindness`). A ripple gives a *noisy* fix, so the seeker sometimes tags empty ground: **wrong tag −30 health, 4th mistake → spectator.** Found hiders **become seekers** (the 1v11 → 11v1 snowball); the pack's +15% speed boost fades as it grows.

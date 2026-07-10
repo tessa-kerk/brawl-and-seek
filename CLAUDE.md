@@ -32,11 +32,28 @@ The paint fill is visible and satisfying at a glance; moving obviously breaks ca
 
 **QA method:** Playwright driving **system Chrome via `channel="chrome"`** (no `playwright install` needed). Use `Game.pose(...)` / `Game.pause()` to freeze deterministic frames, screenshot at exact device sizes, and **read the frames back** — judge the picture. Do not use the preview MCP's pixel screenshot (it hung at harness level on the Elixir Hour build).
 
-## Art direction (decided 07-07-2026 — hybrid; for the later art pass)
-Programmatic art for now (a vector brawler + tile shapes). The later pass is **hybrid**: (1) official **Supercell Fankit** assets (fankit.supercell.com) used *unmodified* where they fit — reveal cards, end screens, marketing shell; (2) **our own Brawl-style fan art** (BrawlHouse method) for the in-game top-down sprites + arena tiles the kit won't cover. **Two hard lines that never move:**
-- Every capture/screen carries the required notice: *"This material is unofficial and is not endorsed by Supercell. For more information see Supercell's Fan Content Policy: www.supercell.com/fan-content-policy"* **and a small `CONCEPT` label stays in the game UI** — so nothing can pass as a real in-game screenshot.
-- **No extracted or ripped game files/sprites — Fankit and our own art only.**
-Keep the renderer **swap-friendly**: `render.js` `drawBrawler` and `arena.js` tiles are drawn programmatically and must stay easy to replace with richer sprites without touching game logic.
+## ⚖️ STANDING RULE — verification oracles must be independent of the code under test
+**Any sweep, sim or test whose expected-value oracle shares logic with the implementation does not count as proof.** Established 07-07-2026 after two failed fix attempts: a collision "escape sweep" decided which directions were *free* by calling the very `collide()` function it was testing. Probe and actual agreed, the sweep reported "0 stuck", and the bug shipped twice to Tessa's device.
+
+- Derive expected values from an **independent source of truth** — the raw data (e.g. the tile grid), a hand-computed table, a second implementation, or geometry — never from the function under test.
+- The collision proof that finally worked: oracle = `box_overlaps_solid()` computed **straight from the grid in Python**, asserting two invariants (never end inside a wall; if an axis is geometrically free it must move). 5,968 cases, independent of `collide()`.
+- **Corollary: a passing sim is never sign-off.** Tessa's device recording is the judge for anything she can feel. Say plainly what a sim does and does not prove.
+
+## 🔧 STANDING RULE — `?debug=1` must keep working in every future build
+The on-screen debug overlay (`src/debug.js`) is the instrument that found the real bug. Keep it functional and current: raw active touch points, stick anchor + vector, intended vs applied velocity, collision-blocked axes, `preventDefault` success, `touch-action`, `visualViewport`. When you add systems (seeker, score, round state), **extend the overlay to expose them too.** `?joystick=fixed` also stays.
+
+## Art direction (FINAL, 07-07-2026 — supersedes the earlier hybrid note; nothing to build yet, just don't architect against it)
+The art pass follows the **BrawlHouse workflow**:
+1. **Check the official Supercell Fankit (fankit.supercell.com) FIRST for every asset**, and use it **unmodified** wherever the quality is up to par.
+2. Only where official assets are **missing or below par**, generate **our own fan art of ACTUAL brawlers in Brawl Stars' art style** (recognisable characters) — with **our own original backgrounds and arena tiles**.
+
+**Goal: the prototype reads as Brawl Stars art the way Elixir Hour reads as Clash Royale art.**
+
+**Hard lines (unchanged, never move):**
+- **No extracted game files or sprite rips.** Fankit + our own art only.
+- Every build and capture keeps the notice *"This material is unofficial and is not endorsed by Supercell. For more information see Supercell's Fan Content Policy: www.supercell.com/fan-content-policy"* **plus a small `CONCEPT` label in the game UI** — nothing can pass as a real in-game screenshot.
+
+Keep the renderer **swap-friendly**: `render.js` `drawBrawler` and `arena.js` tiles are drawn programmatically and must stay trivially replaceable with richer sprites without touching game logic.
 
 ## Do not
 - Do not rip, extract, or reproduce any Supercell game file, sprite, sound or copy. (Fankit assets used unmodified are allowed per the art direction above.)

@@ -1,8 +1,18 @@
 # Brawl & Seek — build plan & progress
 
-## ⚡ CURRENT STATE — read this first (written 07-07-2026, Session 2)
+## ⚡ CURRENT STATE — read this first (updated 07-07-2026, Session 2)
 
-**WHERE WE ARE:** **Milestone 1 is DONE and awaiting Tessa's sign-off (stop-and-show-me gate).** The repo scaffold is up and the core mechanic — the one-second paint fill and the camo break — is built, playable, and QA'd against real rendered output at desktop (1280×720) and phone (390×844) width. Nothing past M1 is built yet (no seeker, ticker, SPOTTED!, reveal, or Map Maker view).
+**WHERE WE ARE: ✅ MILESTONE 1 IS SIGNED OFF by Tessa (07-07-2026), verified from her own device recordings** — wall contact slides cleanly along the free axis, escapes are instant, no repaint starts while the stick is deflected, free-walk is smooth, and the PWA fullscreen build removes the Safari gesture problem. **M2 is now in progress** (seeker bot, score ticker, SPOTTED! stamp, reveal map, round < 90s). M3 (Map Maker view) and M4 (polish) untouched.
+
+**M1 = REGRESSION SURFACE.** The paint fill, the camo break, movement/collision, and the PWA build are signed off. Re-render and re-check them before shipping any change that touches them; flag visual changes, never ship them silently.
+
+**📱 HOW TO PLAY ON PHONE (recommended): install as a home-screen PWA.** Open the site in Safari → Share (□↑) → **Add to Home Screen** → launch from the icon. It runs fullscreen with no tab/URL bar, which is what removed Safari's own gestures (Safari tab-switched mid-round during testing). `manifest.webmanifest` + `apple-touch-icon.png` + iOS standalone meta are in place. **The landing page (Session 6) must document these install steps in its "play it" section.**
+
+**🔎 `?debug=1` IS PERMANENT.** The overlay is a standing requirement in every future build (see CLAUDE.md). Extend it as systems land — the seeker, score and round state must be exposed there too. `?joystick=fixed` also stays.
+
+**🎨 ART DIRECTION (FINAL 07-07-2026 — supersedes the earlier hybrid note; nothing to build now, just don't architect against it).** The art pass follows the **BrawlHouse workflow**: check the official **Supercell Fankit (fankit.supercell.com) FIRST for every asset** and use it **unmodified** where quality is up to par; only where official assets are **missing or below par**, generate **our own fan art of ACTUAL brawlers in Brawl Stars' art style** (recognisable characters) with **our own original backgrounds and arena tiles**. **Goal: the prototype reads as Brawl Stars art the way Elixir Hour reads as Clash Royale art.** Hard lines unchanged: **no extracted game files or sprite rips** (Fankit + our own art only); every build and capture keeps the *"unofficial / not endorsed by Supercell / Fan Content Policy"* notice **plus the `CONCEPT` label in the UI**. Renderer stays swap-friendly (`render.js drawBrawler`, `arena.js` tiles).
+
+**⚖️ THE LESSON THAT COST TWO FAILED FIXES (now a standing rule in CLAUDE.md):** *verification oracles must be independent of the code under test.* A collision "escape sweep" decided which directions were free by calling the same buggy `collide()` it was testing — probe and actual agreed, it reported "0 stuck", and the bug shipped to Tessa's device twice. A passing sim is never sign-off; her device recording is the judge.
 
 **MOVEMENT FIX (build v2, 07-07) — from Tessa's mobile playtest.** Two issues found and fixed, both verified against real output (a scripted collision+input escape sweep over every wall-adjacent tile × 8 directions, AND frames from a scripted phone-width play recording):
 - **Stuck after hiding.** Two real causes: (a) a *crawl band* — drags under ~14px moved ≤8px/130ms (oversized 46px throw + analog curve); (b) a genuine *multi-touch lock* — when the hide-finger lifted while a second finger was down, the stick went dead until all fingers lifted (the "takes multiple tries" bug on iPad). **Fix (input.js):** robust multi-touch (first finger drives, strays ignored, hand-off to a remaining finger on release — no more dead-lock), a shorter 34px throw, and a response curve (MIN_K 0.5) that gives real speed straight out of a 4px dead-zone.
@@ -56,11 +66,25 @@
 
 ---
 
+## M2 — canon tuning (Tessa, 07-07-2026; source: Concept Brief "Design tuning")
+
+**These are canon, not placeholders.** They live in ONE block — `data/tuning.js` (`window.TUNING`) — for fast iteration. Never scatter them.
+
+| System | Value |
+|---|---|
+| Hider score | **+10/s** while hidden; rate **halves every 10s** in the same spot (**floor 2/s**); shown as a **fading coin** on the ticker |
+| Reposition bonus | repainting **≥3 tiles away** banks **+100** and **resets the rate** |
+| Repaint time | **1.0s** at round start → **1.5s** once **three hiders found** → **2.0s** when **two remain**. Current value **always visible on the ticker** |
+| Seeker | **100 health**; wrong tag **−30**; correct tags free (three mistakes survivable — **the fourth sends you to spectator**) |
+| Round | **15s hide phase** before the seeker releases; **+15% seeker move speed while ≤2 seekers** (fades as the pack grows); **3-minute cap**; surviving hiders **win on the clock** |
+
+**⚠️ One reconciliation, flagged not silently resolved:** canon says a **3-minute round cap**, but the Project Brief's acceptance criteria require **a full round under 90 seconds** so captures stay clip-length. The prototype therefore runs a **compressed round** (15s hide + 60s seek = **75s total**), with the canon 180s cap kept in `TUNING.round.canonCapSeconds` for reference. The design number is unchanged; only the prototype's demo round is compressed. Tessa to confirm at the M2 gate.
+
 ## Milestones (from the Session 2 kickoff)
 
 - [x] **M0 — Scaffold.** Repo, folders, self-hosted fonts (Lilita One / Nunito Sans / Caveat), visual-system CSS tokens, `PLAN.md`, `CLAUDE.md`, `README.md`, `.gitignore`.
-- [x] **M1 — Paint fill + camo break** feel right on desktop AND phone width. *(← show-me gate; awaiting sign-off.)*
-- [ ] **M2 — Round loop.** Seeker bot, AI dummy hiders, score ticker, proximity-ripple tell, SPOTTED! stamp, reveal map. Round < 90s.
+- [x] **M1 — Paint fill + camo break** feel right on desktop AND phone width. **✅ SIGNED OFF 07-07-2026** (Tessa, device-verified). Regression surface.
+- [ ] **M2 — Round loop.** Seeker bot, AI dummy hiders, score ticker, proximity-ripple tell, SPOTTED! stamp, reveal map. Round < 90s. *(in progress; show-me gate)*
 - [ ] **M3 — Map Maker view.** The same map in an editor frame with three live toggles: camo surfaces (walls/floor/water), repaint time (0.5/1/2s), ripple tell on/off. Flip a toggle → the mechanic changes live.
 - [ ] **M4 — Polish.** Mobile controls, `prefers-reduced-motion` full pass, performance pass.
 

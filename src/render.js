@@ -158,8 +158,9 @@
   }
 
   // ---- end-of-round stamp (screen space) --------------------------------
-  // Display type, tilted ~8°, the locked motif. SPOTTED! is yellow-on-magenta;
-  // SEEKERS EXHAUSTED! is its mirror (ink-on-teal, the hiders-win colour).
+  // Display type, tilted ~8°, the locked motif. A stamp family: SPOTTED! is
+  // yellow-on-magenta (a hider found); TAGGED OUT! is its mirror (ink-on-teal,
+  // the hiders-win colour) — the hiders turn the Tag back on the seekers.
   function drawStamp(ctx, w, h, age, label, bg, fg) {
     const k = STATE.reduceMotion ? 1 : Math.min(1, age / 0.22);
     const scale = STATE.reduceMotion ? 1 : 1.6 - 0.6 * easeOut(k);
@@ -168,7 +169,7 @@
     ctx.translate(w / 2, h * 0.42);
     ctx.rotate((-8 * Math.PI) / 180);
     ctx.scale(scale, scale);
-    const fs = Math.min(w * 0.14, label.length > 9 ? 58 : 86);   // shrink the longer word
+    const fs = Math.min(w * 0.14, label.length > 11 ? 58 : 86);  // shrink only a long label; the stamp family (SPOTTED! / TAGGED OUT!) stays full size
     ctx.font = `${fs}px 'Lilita One', sans-serif`;
     const tw = ctx.measureText(label).width;
     const bw = tw + fs * 0.7, bh = fs * 1.5;
@@ -182,11 +183,11 @@
     ctx.restore();
   }
   const drawSpotted = (ctx, w, h, age) => drawStamp(ctx, w, h, age, 'SPOTTED!', P.magenta, P.yellow);
-  const drawExhausted = (ctx, w, h, age) => drawStamp(ctx, w, h, age, 'SEEKERS EXHAUSTED!', P.teal, P.ink);
+  const drawTaggedOut = (ctx, w, h, age) => drawStamp(ctx, w, h, age, 'TAGGED OUT!', P.teal, P.ink);
   const easeOut = (x) => 1 - Math.pow(1 - x, 3);
 
   window.Render = {
     drawPlayer: (ctx, t) => drawHider(ctx, Player, t, true),
-    drawHider, drawSeeker, drawSpotted, drawExhausted, drawStamp, drawNormal, bodyPath,
+    drawHider, drawSeeker, drawSpotted, drawTaggedOut, drawStamp, drawNormal, bodyPath,
   };
 })();

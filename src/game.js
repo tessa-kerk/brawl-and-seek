@@ -91,7 +91,7 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);        // screen space
     if (!maker && Round.phase === 'over' && Round.overT < Reveal.delay()) {
       if (Round.result.reason === 'spotted') Render.drawSpotted(ctx, cssW, cssH, Round.overT);
-      else if (Round.result.reason === 'exhausted') Render.drawExhausted(ctx, cssW, cssH, Round.overT);
+      else if (Round.result.reason === 'tagged-out') Render.drawTaggedOut(ctx, cssW, cssH, Round.overT);
     }
 
     hud();
@@ -129,7 +129,7 @@
     document.getElementById('tk-coinchip').classList.toggle('decayed', rate < TUNING.hider.scoreRate * 0.6);
     document.getElementById('tk-repaint').textContent = Round.repaintTime().toFixed(1) + 's';
     document.getElementById('tk-hiders').textContent = Round.hidersAlive();
-    // Seekers-remaining: makes the tag budget legible, so SEEKERS EXHAUSTED reads
+    // Seekers-remaining: makes the tag budget legible, so TAGGED OUT! reads
     // (v12, canon v3.4). Goes low/magenta when only one seeker is left on the map.
     const nSeek = Seekers.active().length;
     document.getElementById('tk-seekers').textContent = nSeek;

@@ -6,8 +6,8 @@
   const P = CFG.palette;
   let panelShown = false;
 
-  // A stamp state (SPOTTED! / SEEKERS EXHAUSTED!) holds before the reveal map.
-  const delay = () => (Round.result && (Round.result.reason === 'spotted' || Round.result.reason === 'exhausted') ? 1.5 : 0.6);
+  // A stamp state (SPOTTED! / TAGGED OUT!) holds before the reveal map.
+  const delay = () => (Round.result && (Round.result.reason === 'spotted' || Round.result.reason === 'tagged-out') ? 1.5 : 0.6);
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
   // ---- the map (world space, over a dimmed arena) ------------------------
@@ -65,7 +65,7 @@
       spotted:    ['SPOTTED!', 'spotted', 'The seeker found you.'],
       'all-found':['ALL FOUND', 'spotted', 'The seekers cleared the map.'],
       timeout:    ['YOU SURVIVED', 'safe', 'You outlasted the clock — hiders win.'],
-      exhausted:  ['SEEKERS EXHAUSTED!', 'safe', 'The seekers spent their tags — hiders win.'],
+      'tagged-out':['TAGGED OUT!', 'safe', 'The seekers spent their tags — hiders win.'],
     };
     const [ttl, cls, tail] = TITLES[res.reason] || TITLES.timeout;
     title.textContent = ttl; title.className = cls;

@@ -1,5 +1,5 @@
 """Round end states (Concept Brief v3.4) — four ways to end, and the edge cases
-around SEEKERS EXHAUSTED. Oracle = the spec, hand-written here.
+around TAGGED OUT! (all seekers benched). Oracle = the spec, hand-written here.
 """
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -13,12 +13,12 @@ with game() as (pg, errs):
     def bench_all():
         pg.evaluate("Seekers.list.forEach(s=>{s.state='spectator'; s.health=-10;});")
 
-    # 1) SEEKERS EXHAUSTED: all seekers spectating + no tag in flight -> hiders win
+    # 1) TAGGED OUT!: all seekers spectating + no tag in flight -> hiders win
     pg.evaluate("Round.reset(); Round.phase='seek'; Round.elapsed=20; Tags.reset(); Player.found=false;")
     bench_all()
     pg.evaluate("Round.update(0.016)")
     r = pg.evaluate("({phase:Round.phase, reason:Round.result?Round.result.reason:'-', survived:Round.result?Round.result.survived:null})")
-    t.check(f"all seekers benched -> ends 'exhausted', hiders win ({r})", r['phase'] == 'over' and r['reason'] == 'exhausted' and r['survived'] is True)
+    t.check(f"all seekers benched -> ends 'tagged-out', hiders win ({r})", r['phase'] == 'over' and r['reason'] == 'tagged-out' and r['survived'] is True)
 
     # 2a) an airborne tag DELAYS the end (resolves first)
     #     clear ALL targets so the tag genuinely hits nothing (else it may strike a
@@ -32,7 +32,7 @@ with game() as (pg, errs):
         if pg.evaluate("Tags.list.length") == 0: break
         pg.evaluate("Tags.update(0.016)")
     pg.evaluate("Round.update(0.016)")
-    t.check("…then the tag misses -> SEEKERS EXHAUSTED", pg.evaluate("Round.result && Round.result.reason") == 'exhausted')
+    t.check("…then the tag misses -> TAGGED OUT!", pg.evaluate("Round.result && Round.result.reason") == 'tagged-out')
 
     # 2b) an airborne tag that HITS converts a hider -> a fresh seeker -> round CONTINUES
     revive = pg.evaluate("""(()=>{
@@ -63,7 +63,7 @@ with game() as (pg, errs):
     t.check(f"converted seeker is fresh: 100 hp, 0 mistakes ({fresh})", fresh['hp'] == 100 and fresh['m'] == 0)
 
     # 5) simultaneity: a tag that HITS the player wins as a FIND (spotted), even if
-    #    that seeker was on its last mistake — no bench, no 'exhausted'.
+    #    that seeker was on its last mistake — no bench, no 'tagged-out'.
     sim = pg.evaluate("""(()=>{
       Round.reset(); Round.phase='seek'; Round.elapsed=20; Tags.reset();
       const c=Arena.centre(6,1); Player.x=c.x; Player.y=c.y; Player.hidden=true; Player.found=false;

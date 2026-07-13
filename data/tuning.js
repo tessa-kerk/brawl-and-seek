@@ -3,6 +3,15 @@
  * round loop balances on lives in this one block, so iteration is fast and no
  * number is ever scattered into logic. */
 window.TUNING = {
+  /* Global speed feel. Tessa's M3 note: "the speeds just feel really fast for
+   * everyone" — a global read, not a balance one. This multiplies EVERY mover
+   * uniformly (player, seekers, dummies, and the tag via its speedMult), so the
+   * validated ratios (player>seeker, tag 2x base) are preserved and only the
+   * absolute pace changes. Override live with ?speed=<n> to A/B on device.
+   * PROVISIONAL 0.82 (13-07-2026) — pending Tessa's device pick; then baked with
+   * a dated note. ?speed=1 reproduces the original "too fast" pace. */
+  speedScale: 0.82,
+
   hider: {
     scoreRate: 10,          // +10 pts/s while hidden
     rateHalfLife: 10,       // the rate halves every 10s spent in the same spot

@@ -7,7 +7,11 @@ from _harness import game, Tally  # noqa: E402
 
 with game() as (pg, errs):
     pg.evaluate("Game.pause()")
-    T = pg.evaluate("Arena.T"); BASE = pg.evaluate("TUNING.seeker.baseSpeed")
+    T = pg.evaluate("Arena.T")
+    # Effective base move speed = baseSpeed x the global pace scale. The tag's
+    # canon is "2x base MOVE speed", which is scale-invariant — so the oracle
+    # includes speedScale (a uniform scale must not break the 2x ratio).
+    BASE = pg.evaluate("TUNING.seeker.baseSpeed * STATE.speedScale")
     t = Tally()
 
     SETUP = """(([sc,sr,tc,tr,hidden])=>{

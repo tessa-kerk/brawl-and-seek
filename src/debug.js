@@ -81,6 +81,7 @@
       `seekers(${Seekers.active().length}) spd ${Seekers.speedOf().toFixed(2)}: ${Seekers.list.map((s) => `${s.state}/hp${Math.max(0, s.health)}/m${s.mistakes}`).join(' ') || '—'}`,
       `tags in flight: ${Tags.list.length}  cd: ${Seekers.list.map((s) => Math.max(0, s.tagCd).toFixed(2)).join(' ') || '—'}`,
       `view: ${STATE.view}  surfaces: ${Object.entries(STATE.camoSurfaces).filter(([, v]) => v).map(([k]) => k).join('+') || 'none'}  repaint ${STATE.repaintTime}s  tell:${STATE.rippleTell ? 'on' : 'off'}`,
+      `speed x${STATE.speedScale.toFixed(2)}  (player ${(CFG.playerSpeed * STATE.speedScale).toFixed(2)} · seeker ${Seekers.speedOf().toFixed(2)} · tag ${(TUNING.seeker.baseSpeed * TUNING.tag.speedMult * STATE.speedScale).toFixed(2)} tiles/s)`,
       `pd:${d.pdOk ? 'ok' : 'NO'}  last:${d.lastType}  evts:${d.evtCount}`,
       `vv: off(${vv ? vv.offsetLeft.toFixed(0) + ',' + vv.offsetTop.toFixed(0) : '?'}) h ${vv ? vv.height.toFixed(0) : '?'} / inner ${innerHeight}  dpr ${window.devicePixelRatio}`,
       `touch-action(stage): ${ta}`,

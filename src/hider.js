@@ -76,7 +76,7 @@
 
       if (d.state === 'travel') {
         if (d.progress > 0) breakCamo(d);
-        const moving = AI.step(d, dt, d.speed);
+        const moving = AI.step(d, dt, d.speed * STATE.speedScale);
         if (d.stall > 0.7) { AI.goTo(d, pickHideTile(d, 1)); }        // route went bad
         if (!moving) { d.state = 'settle'; d.still = 0; }
       } else {

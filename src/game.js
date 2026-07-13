@@ -10,6 +10,12 @@
     // camouflage, the tell is on); the Map Maker view makes them tunable, live.
     camoSurfaces: { wall: true, floor: true, water: true },
     rippleTell: true,
+    // Global movement pace (see TUNING.speedScale). ?speed=<n> overrides it live
+    // for on-device A/B; clamped to a sane range.
+    speedScale: (() => {
+      const q = parseFloat(new URLSearchParams(location.search).get('speed'));
+      return (q > 0 && q <= 2) ? q : (window.TUNING ? TUNING.speedScale : 1);
+    })(),
     reduceMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
     paused: false,
     everHidden: false,
@@ -222,6 +228,7 @@
     setReduceMotion(b) { STATE.reduceMotion = !!b; },
     newRound,
     refit: resize,
+    setSpeed(s) { STATE.speedScale = (s > 0 && s <= 2) ? s : STATE.speedScale; },
     skipHide() { Round.elapsed = Math.max(Round.elapsed, TUNING.round.hidePhase); Round.phase = 'seek'; },
     pose({ col, row, progress = 0, facing = 1 } = {}) {
       const T = Arena.T;

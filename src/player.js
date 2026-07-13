@@ -41,7 +41,9 @@
       const hasInput = Math.hypot(v.x, v.y) > 0.001 || Input.engaged();
 
       // Ease velocity toward intent — fast to start (punchy), quick to stop.
-      const tvx = v.x * this.speed, tvy = v.y * this.speed;
+      // STATE.speedScale is the global pace multiplier (M4 speed pass).
+      const sp = this.speed * STATE.speedScale;
+      const tvx = v.x * sp, tvy = v.y * sp;
       const a = 1 - Math.exp(-dt / (hasInput ? 0.04 : 0.06));
       this.vx += (tvx - this.vx) * a;
       this.vy += (tvy - this.vy) * a;

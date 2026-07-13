@@ -11,7 +11,9 @@
   const P = CFG.palette;
   const list = [];
 
-  const speed = () => TUNING.seeker.baseSpeed * TUNING.tag.speedMult * T;   // world px/s
+  // 2x the seeker's base MOVE speed — including the global pace scale, so the tag
+  // stays exactly 2x however fast everyone is moving (ratio preserved).
+  const speed = () => TUNING.seeker.baseSpeed * TUNING.tag.speedMult * STATE.speedScale * T;   // world px/s
 
   // Every hider still in play (seekers are never valid targets).
   function targets() {

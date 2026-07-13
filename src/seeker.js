@@ -18,11 +18,11 @@
   }
   const active = () => list.filter((s) => s.state !== 'spectator');
 
-  // +15% while <= 2 seekers, fading as the pack grows.
+  // +15% while <= 2 seekers, fading as the pack grows. Scaled by the global pace.
   function speedOf() {
     const n = active().length, B = TUNING.seeker;
     const boost = n <= 2 ? B.speedBoost : n === 3 ? B.speedBoost * 0.5 : n === 4 ? B.speedBoost * 0.25 : 0;
-    return B.baseSpeed * (1 + boost);
+    return B.baseSpeed * (1 + boost) * STATE.speedScale;
   }
 
   function make(x, y) {

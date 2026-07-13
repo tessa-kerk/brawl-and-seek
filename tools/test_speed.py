@@ -11,7 +11,7 @@ from _harness import game, Tally  # noqa: E402
 with game() as (pg, errs):
     t = Tally()
     pdef = pg.evaluate("STATE.speedScale")
-    t.check(f"default speedScale is the provisional bake ({pdef})", 0 < pdef <= 1)
+    t.check(f"default speedScale is the baked Brawl-true pick ({pdef}, want 0.70)", abs(pdef - 0.70) < 1e-9)
 
     # ratios are scale-invariant: measure the raw component speeds at 1.0 and 0.6
     def speeds(scale):

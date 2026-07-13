@@ -1,32 +1,24 @@
-/* Brawl & Seek — TEMPORARY M4 gate control: an in-game pace picker.
+/* Brawl & Seek — the pace picker, now DEMOTED to a debug/capture affordance.
  *
- * Tessa's canonical test flow is the home-screen PWA, which has no URL bar, so
- * she cannot type ?speed=<n> to A/B the movement pace. This is a visible,
- * tappable, blind A/B/C segmented control that switches the global speed live,
- * survives Play again within the session, and works in the PWA on phone AND on
- * desktop. `?speed=` stays as the debug affordance.
- *
- * This is temporary UI on the signed-off Event surface (flagged in PLAN.md). It
- * gets removed / demoted into a debug corner once Tessa's pick is baked into
- * TUNING.speedScale with a dated note. Kept in its own file so removal is one
- * script tag + one DOM block. */
+ * It served its purpose: it let Tessa A/B the movement pace in the home-screen
+ * PWA (no URL bar for ?speed=). She picked A (0.70), now baked into
+ * TUNING.speedScale, so the default Event view no longer shows the picker. It
+ * stays available for capture/tuning work behind ?debug=1 or ?pace=1 (and
+ * ?speed=<n> still overrides live). Kept in its own file so it's easy to delete
+ * entirely later. */
 (function () {
   function init() {
-    const seg = document.getElementById('pace-seg');
-    if (!seg || !window.STATE) return;
-    const btns = [...seg.querySelectorAll('button')];
+    const el = document.getElementById('pace');
+    if (!el || !window.STATE) return;
+    const q = new URLSearchParams(location.search);
+    const show = q.has('debug') || q.has('pace');
+    if (!show) { el.style.display = 'none'; return; }   // baked: hidden by default
 
+    const btns = [...el.querySelectorAll('#pace-seg button')];
     function sync() {
-      for (const b of btns) {
-        b.classList.toggle('on', Math.abs(parseFloat(b.dataset.speed) - STATE.speedScale) < 0.001);
-      }
+      for (const b of btns) b.classList.toggle('on', Math.abs(parseFloat(b.dataset.speed) - STATE.speedScale) < 0.001);
     }
-    for (const b of btns) {
-      b.addEventListener('click', () => {
-        STATE.speedScale = parseFloat(b.dataset.speed);   // live, uniform (ratios preserved)
-        sync();
-      });
-    }
+    for (const b of btns) b.addEventListener('click', () => { STATE.speedScale = parseFloat(b.dataset.speed); sync(); });
     sync();
     window.Pace = { sync };
   }

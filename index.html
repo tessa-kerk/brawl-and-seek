@@ -14,8 +14,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Brawl & Seek">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/fonts.css?v=10">
-<link rel="stylesheet" href="css/main.css?v=10">
+<link rel="stylesheet" href="css/fonts.css?v=11">
+<link rel="stylesheet" href="css/main.css?v=11">
 </head>
 <body>
   <div id="stage">
@@ -25,7 +25,7 @@
       <div class="wordmark">BRAWL <span class="amp">&amp;</span> SEEK</div>
       <div class="badges">
         <span class="concept" title="Unofficial fan concept — not a real in-game screenshot">CONCEPT</span>
-        <span class="stamp">v10 · M4</span>
+        <span class="stamp">v11 · M4</span>
       </div>
     </div>
 
@@ -47,8 +47,9 @@
       on a surface to paint yourself in — <b>move</b> to break camo.
     </p>
 
-    <!-- TEMPORARY M4 gate control: blind A/B/C pace picker (Tessa can't type
-         ?speed= in the PWA). Removed / demoted once her pick is baked. -->
+    <!-- Pace picker — DEMOTED to a debug/capture affordance (Tessa picked A=0.70,
+         now baked into TUNING.speedScale). Hidden by default; shown with
+         ?debug=1 or ?pace=1. See src/pace.js. -->
     <div id="pace" role="group" aria-label="Movement pace">
       <span class="lbl">Pace</span>
       <div class="mk-seg" id="pace-seg">
@@ -122,23 +123,23 @@
     <div class="disclaimer">Fan concept by Tessa Kerk · unofficial, not endorsed by Supercell · <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">Fan Content Policy</a></div>
   </div>
 
-  <script src="src/config.js?v=10"></script>
-  <script src="data/arena.js?v=10"></script>
-  <script src="data/tuning.js?v=10"></script>
-  <script src="src/input.js?v=10"></script>
-  <script src="src/arena.js?v=10"></script>
-  <script src="src/ai.js?v=10"></script>
-  <script src="src/fx.js?v=10"></script>
-  <script src="src/player.js?v=10"></script>
-  <script src="src/tag.js?v=10"></script>
-  <script src="src/hider.js?v=10"></script>
-  <script src="src/seeker.js?v=10"></script>
-  <script src="src/round.js?v=10"></script>
-  <script src="src/render.js?v=10"></script>
-  <script src="src/reveal.js?v=10"></script>
-  <script src="src/maker.js?v=10"></script>
-  <script src="src/pace.js?v=10"></script>
-  <script src="src/debug.js?v=10"></script>
-  <script src="src/game.js?v=10"></script>
+  <script src="src/config.js?v=11"></script>
+  <script src="data/arena.js?v=11"></script>
+  <script src="data/tuning.js?v=11"></script>
+  <script src="src/input.js?v=11"></script>
+  <script src="src/arena.js?v=11"></script>
+  <script src="src/ai.js?v=11"></script>
+  <script src="src/fx.js?v=11"></script>
+  <script src="src/player.js?v=11"></script>
+  <script src="src/tag.js?v=11"></script>
+  <script src="src/hider.js?v=11"></script>
+  <script src="src/seeker.js?v=11"></script>
+  <script src="src/round.js?v=11"></script>
+  <script src="src/render.js?v=11"></script>
+  <script src="src/reveal.js?v=11"></script>
+  <script src="src/maker.js?v=11"></script>
+  <script src="src/pace.js?v=11"></script>
+  <script src="src/debug.js?v=11"></script>
+  <script src="src/game.js?v=11"></script>
 </body>
 </html>

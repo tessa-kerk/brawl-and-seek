@@ -5,7 +5,7 @@ import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from _harness import game, Tally, touch  # noqa: E402
 
-with game(width=390, height=844, mobile=True) as (pg, errs):
+with game(width=390, height=844, mobile=True, query="?pace=1") as (pg, errs):  # ?pace shows the demoted picker
     t = Tally()
 
     pg.tap("#mk-open"); pg.wait_for_timeout(350)

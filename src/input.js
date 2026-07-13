@@ -87,8 +87,14 @@
   function handle(e) {
     dbg.evtCount++; dbg.lastType = e.type;
 
+    // RECONCILE membership per touchstart (not add-only): iOS can drop a
+    // touchend and REUSE identifiers, so a stale UI id could otherwise exclude a
+    // later game touch from the stick forever (the same ghost class as the M1
+    // saga). Setting/clearing by isUI on every touchstart heals that instantly.
     if (e.type === 'touchstart') {
-      for (const t of e.changedTouches) if (isUI(t.target)) uiIds.add(t.identifier);
+      for (const t of e.changedTouches) {
+        if (isUI(t.target)) uiIds.add(t.identifier); else uiIds.delete(t.identifier);
+      }
     }
     // Only claim the gesture if a real GAME touch is involved.
     let gameTouch = false;

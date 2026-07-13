@@ -41,4 +41,34 @@ with game() as (pg, errs):
     tot = pg.evaluate("Round.totalSeconds()"); hide = pg.evaluate("TUNING.round.hidePhase"); cap = pg.evaluate("TUNING.round.canonCapSeconds")
     t.check(f"round {hide}s hide + seek = {tot}s (<90) · canon cap {cap}s kept", hide == 15 and tot < 90 and cap == 180)
 
+    # E) SCORING STARTS AT SEEKER RELEASE (Concept Brief v3.3). Oracle: nothing
+    #    accrues/decays/banks during the hide phase; it all begins at release.
+    #    Drive Round.update by hand with the player pinned hidden.
+    def hidden_tick(phase, secs, reposition=False):
+        repos = 'true' if reposition else 'false'
+        # keep Round.elapsed pinned inside `phase` so update() doesn't auto-advance
+        elapsed = "TUNING.round.hidePhase+1" if phase == 'seek' else "1"
+        return pg.evaluate(f"""(()=>{{
+          Round.reset(); Round.phase='{phase}'; Round.elapsed={elapsed};
+          const T=Arena.T; Player.found=false; Player.hidden=true; Round._wasHidden=false;
+          Player.x=4*T; Player.y=4*T;
+          Round.update(0.001);                       // paint-in transition sets lastHideSpot
+          if({repos}){{ Player.hidden=false; Round._wasHidden=true; Round.update(0.001);
+                        Player.x=4*T + 4*T; Player.hidden=true; Round._wasHidden=false; }}
+          const step=0.05, n=Math.round({secs}/step);
+          for(let i=0;i<n;i++){{ Round.elapsed={elapsed}; Round.update(step); }}
+          Round.elapsed={elapsed};
+          return {{score:Round.score, camp:Round.camp, rate:Round.rate}};
+        }})()""")
+
+    hide5 = hidden_tick('hide', 5)
+    t.check(f"HIDE phase: no score after 5s hidden (score {hide5['score']:.1f})", hide5['score'] < 0.001)
+    t.check(f"HIDE phase: camp stays 0 (coin full) — camp {hide5['camp']:.2f}, rate {hide5['rate']:.1f}", hide5['camp'] < 0.001 and abs(hide5['rate'] - 10) < 1e-6)
+    seek1 = hidden_tick('seek', 1.0)
+    t.check(f"SEEK phase: score accrues (~10 after 1s → {seek1['score']:.1f})", 8 < seek1['score'] < 12)
+    hideRepos = hidden_tick('hide', 0.2, reposition=True)
+    t.check(f"HIDE phase: a >=3-tile repaint banks NOTHING (score {hideRepos['score']:.1f})", hideRepos['score'] < 0.5)
+    seekRepos = hidden_tick('seek', 0.1, reposition=True)
+    t.check(f"SEEK phase: a >=3-tile repaint banks +100 (score {seekRepos['score']:.0f})", seekRepos['score'] >= 100)
+
     t.finish("round-canon", errs)

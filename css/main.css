@@ -413,3 +413,21 @@ body.maker #status{top:auto;bottom:18px;}
   .mk-switch span, .mk-surf, .mk-seg button, #replay{transition:none;}
 }
 @keyframes bonusfade{0%,100%{opacity:0}18%,82%{opacity:1}}
+
+/* ---- TEMPORARY M4 pace picker (gate control; removed once baked) ------ */
+#pace{
+  position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 100px);
+  transform:translateX(-50%);z-index:6;
+  display:flex;align-items:center;gap:8px;
+  background:rgba(23,27,51,.82);border:1px solid rgba(246,244,239,.16);
+  border-radius:12px;padding:5px 9px;backdrop-filter:blur(3px);
+}
+#pace .lbl{
+  font-family:'Nunito Sans';font-weight:800;font-size:9px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--chalk);opacity:.55;
+}
+#pace .mk-seg{margin:0;min-width:132px;}
+#pace .mk-seg button{padding:6px 0;font-size:13px;}
+#pace.hidden{opacity:0;pointer-events:none;transition:opacity .3s ease;}
+body.maker #pace{display:none;}                 /* Event view only */
+#pace button{touch-action:manipulation;}

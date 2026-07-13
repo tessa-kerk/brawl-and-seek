@@ -43,7 +43,12 @@
 
     onPlayerHidden() {
       const H = TUNING.hider;
-      if (this.lastHideSpot && AI.tileDist(Player.x, Player.y, this.lastHideSpot.x, this.lastHideSpot.y) >= H.repositionMinTiles) {
+      // Reposition bank only banks during the SEEK phase (Concept Brief v3.3:
+      // nothing scores, decays or banks before seeker release). We still record
+      // lastHideSpot during the hide phase so the first post-release reposition
+      // is measured from where you actually set up.
+      if (this.phase === 'seek' && this.lastHideSpot
+          && AI.tileDist(Player.x, Player.y, this.lastHideSpot.x, this.lastHideSpot.y) >= H.repositionMinTiles) {
         this.score += H.repositionBonus; this.camp = 0; this.bonusFlash = 1.4;
       }
       this.lastHideSpot = { x: Player.x, y: Player.y };
@@ -97,13 +102,20 @@
       STATE.repaintTime = this.repaintTime();
       if (this.bonusFlash > 0) this.bonusFlash -= dt;
 
-      // player score — the camping rule
+      // player score — the camping rule. Canon v3.3 (13-07-2026): scoring, the
+      // camp-decay clock and the reposition bank ALL start at SEEKER RELEASE. The
+      // 15s hide phase is unscored setup — nothing accrues, decays or banks. So
+      // score/camp only tick in the seek phase; the coin sits at full strength
+      // (rate = base, camp = 0) until release. Painting in during hide is still
+      // allowed and encouraged — it just doesn't earn until the seeker looses.
       const H = TUNING.hider;
       if (Player.hidden && !Player.found) {
-        if (!this._wasHidden) this.onPlayerHidden();
-        this.camp += dt;
-        this.rate = Math.max(H.rateFloor, H.scoreRate * Math.pow(0.5, this.camp / H.rateHalfLife));
-        this.score += this.rate * dt;
+        if (!this._wasHidden) this.onPlayerHidden();   // records lastHideSpot (banks only if seek)
+        if (this.phase === 'seek') {
+          this.camp += dt;
+          this.rate = Math.max(H.rateFloor, H.scoreRate * Math.pow(0.5, this.camp / H.rateHalfLife));
+          this.score += this.rate * dt;
+        }
       }
       this._wasHidden = Player.hidden;
 

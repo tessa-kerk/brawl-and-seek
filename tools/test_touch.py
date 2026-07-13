@@ -29,10 +29,17 @@ with game(width=390, height=844, mobile=True) as (pg, errs):
     pg.tap("#mk-back"); pg.wait_for_timeout(300)
     t.check("tap ◂ Event restores canon", pg.evaluate("STATE.view") == "event" and pg.evaluate("Object.values(STATE.camoSurfaces).every(Boolean)"))
 
-    # Play again (was dead on touch) fires
+    # Pace picker (M4 gate control): tappable, changes pace live, survives Play again
+    pg.tap('#pace-seg button[data-speed="0.70"]'); pg.wait_for_timeout(80)
+    t.check("pace picker A sets speed live on touch", abs(pg.evaluate("STATE.speedScale") - 0.70) < 1e-9)
+    pg.tap('#pace-seg button[data-speed="1.00"]'); pg.wait_for_timeout(80)
+    t.check("pace picker C sets speed live on touch", abs(pg.evaluate("STATE.speedScale") - 1.00) < 1e-9)
+
+    # Play again (was dead on touch) fires, and the pace choice survives it
     pg.evaluate("Round.end('timeout'); Round.overT=2.5;"); pg.wait_for_timeout(300)
     pg.tap("#replay"); pg.wait_for_timeout(300)
     t.check("Play again fires on touch", pg.evaluate("Round.phase") == "hide")
+    t.check("pace choice survives Play again", abs(pg.evaluate("STATE.speedScale") - 1.00) < 1e-9)
 
     # GHOST-TOUCHEND HARDENING: a UI touch id 7 whose touchend never arrives,
     # then id 7 reused for a GAME touch — must NOT be excluded from the stick.

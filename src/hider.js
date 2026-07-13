@@ -54,7 +54,9 @@
 
   function onHidden(d) {
     const H = TUNING.hider;
-    if (d.lastHideSpot && AI.tileDist(d.x, d.y, d.lastHideSpot.x, d.lastHideSpot.y) >= H.repositionMinTiles) {
+    // Dummies obey the same canon v3.3 rule: the reposition bank only counts in
+    // the seek phase (nothing scores or banks during the hide phase).
+    if (Round.phase === 'seek' && d.lastHideSpot && AI.tileDist(d.x, d.y, d.lastHideSpot.x, d.lastHideSpot.y) >= H.repositionMinTiles) {
       d.score += H.repositionBonus; d.camp = 0;
     }
     d.lastHideSpot = { x: d.x, y: d.y };
@@ -88,15 +90,14 @@
         d.hidden = d.progress >= 1;
         if (d.hidden && !was) onHidden(d);
 
-        if (d.hidden) {
+        if (d.hidden && Round.phase === 'seek') {
+          // Score, decay and dwell only in the seek phase (canon v3.3).
           d.camp += dt;
           d.rate = Math.max(H.rateFloor, H.scoreRate * Math.pow(0.5, d.camp / H.rateHalfLife));
           d.score += d.rate * dt;
-          // Only tick the dwell once the seeker is loose — otherwise the whole
-          // pack breaks cover on the exact frame the seek phase starts.
-          if (Round.phase === 'seek') d.dwell -= dt;
+          d.dwell -= dt;
           // the daring run: bank the bonus somewhere new
-          if (d.dwell <= 0 && Round.phase === 'seek') {
+          if (d.dwell <= 0) {
             breakCamo(d);
             AI.goTo(d, pickHideTile(d, H.repositionMinTiles));
             d.state = 'travel';

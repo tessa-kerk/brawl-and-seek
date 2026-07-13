@@ -24,7 +24,7 @@
   let canvas, ctx, stage;
   let dpr = 1, cssW = 0, cssH = 0, scale = 1, offX = 0, offY = 0;
   let last = 0, tSec = 0;
-  let elHint, elStatus, elBanner, elBonus, elTicker;
+  let elHint, elStatus, elBanner, elBonus, elTicker, elPace;
   let lastPhase = 'hide', bannerT = 0, bonusArmed = false, lastDt = 0.016;
 
   function resize() {
@@ -146,8 +146,9 @@
       bannerT -= lastDt;
       if (bannerT <= 0) elBanner.classList.remove('show');
     }
-    // the reveal map is the shareable artefact — keep the ticker off it
+    // the reveal map is the shareable artefact — keep the ticker + pace off it
     elTicker.classList.toggle('hidden', over);
+    if (elPace) elPace.classList.toggle('hidden', over);
 
     // reposition bonus flash
     if (Round.bonusFlash > 0 && !bonusArmed) {
@@ -190,6 +191,7 @@
     elBanner = document.getElementById('banner');
     elBonus = document.getElementById('bonus');
     elTicker = document.getElementById('ticker');
+    elPace = document.getElementById('pace');
 
     newRound();
     resize();

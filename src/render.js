@@ -89,12 +89,22 @@
       ctx.beginPath(); ctx.arc(cx, cy, r * (1.4 + (0.35 - s.flash) * 3), 0, 7); ctx.stroke();
     }
     drawNormal(ctx, cx, cy, r, s.facing, s.col, { visor: true });
-    // health pips
-    const w = r * 1.5, hh = r * 0.2, bx = cx - w / 2, by = cy - r * 1.75;
+    // health bar
+    const w = r * 1.5, hh = r * 0.22, bx = cx - w / 2, by = cy - r * 1.75;
     Arena.roundRect(ctx, bx, by, w, hh, hh / 2); ctx.fillStyle = 'rgba(9,16,36,.85)'; ctx.fill();
     const frac = Math.max(0, s.health) / TUNING.seeker.health;
     Arena.roundRect(ctx, bx + 1, by + 1, (w - 2) * frac, hh - 2, (hh - 2) / 2);
     ctx.fillStyle = frac > 0.5 ? '#3BD16B' : frac > 0.25 ? P.yellow : '#FF4F6D'; ctx.fill();
+    // mistake pips — the 3-miss tag budget, so a depleting threat is legible
+    // mid-chase (v12): filled red = a wrong tag spent, hollow = budget left.
+    if (!ghost) {
+      const pr = r * 0.14, gap = r * 0.44, py2 = by - r * 0.42;
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath(); ctx.arc(cx - gap + i * gap, py2, pr, 0, 7);
+        if (i < s.mistakes) { ctx.fillStyle = '#FF4F6D'; ctx.fill(); }
+        else { ctx.fillStyle = 'rgba(9,16,36,.7)'; ctx.fill(); ctx.strokeStyle = 'rgba(246,244,239,.65)'; ctx.lineWidth = 1.2; ctx.stroke(); }
+      }
+    }
     ctx.restore();
   }
 
@@ -147,9 +157,10 @@
     ctx.restore();
   }
 
-  // ---- the SPOTTED! stamp (screen space) --------------------------------
-  // Display type, tilted ~8°, Brawl Yellow on Paint Magenta — the locked motif.
-  function drawSpotted(ctx, w, h, age) {
+  // ---- end-of-round stamp (screen space) --------------------------------
+  // Display type, tilted ~8°, the locked motif. SPOTTED! is yellow-on-magenta;
+  // SEEKERS EXHAUSTED! is its mirror (ink-on-teal, the hiders-win colour).
+  function drawStamp(ctx, w, h, age, label, bg, fg) {
     const k = STATE.reduceMotion ? 1 : Math.min(1, age / 0.22);
     const scale = STATE.reduceMotion ? 1 : 1.6 - 0.6 * easeOut(k);
     ctx.save();
@@ -157,24 +168,25 @@
     ctx.translate(w / 2, h * 0.42);
     ctx.rotate((-8 * Math.PI) / 180);
     ctx.scale(scale, scale);
-    const fs = Math.min(w * 0.14, 86);
+    const fs = Math.min(w * 0.14, label.length > 9 ? 58 : 86);   // shrink the longer word
     ctx.font = `${fs}px 'Lilita One', sans-serif`;
-    const label = 'SPOTTED!';
     const tw = ctx.measureText(label).width;
     const bw = tw + fs * 0.7, bh = fs * 1.5;
     ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 24; ctx.shadowOffsetY = 8;
     Arena.roundRect(ctx, -bw / 2, -bh / 2, bw, bh, fs * 0.22);
-    ctx.fillStyle = P.magenta; ctx.fill();
+    ctx.fillStyle = bg; ctx.fill();
     ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
     ctx.lineWidth = 5; ctx.strokeStyle = P.ink; ctx.stroke();
-    ctx.fillStyle = P.yellow; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(label, 0, fs * 0.06);
     ctx.restore();
   }
+  const drawSpotted = (ctx, w, h, age) => drawStamp(ctx, w, h, age, 'SPOTTED!', P.magenta, P.yellow);
+  const drawExhausted = (ctx, w, h, age) => drawStamp(ctx, w, h, age, 'SEEKERS EXHAUSTED!', P.teal, P.ink);
   const easeOut = (x) => 1 - Math.pow(1 - x, 3);
 
   window.Render = {
     drawPlayer: (ctx, t) => drawHider(ctx, Player, t, true),
-    drawHider, drawSeeker, drawSpotted, drawNormal, bodyPath,
+    drawHider, drawSeeker, drawSpotted, drawExhausted, drawStamp, drawNormal, bodyPath,
   };
 })();

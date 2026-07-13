@@ -6,7 +6,8 @@
   const P = CFG.palette;
   let panelShown = false;
 
-  const delay = () => (Round.result && Round.result.reason === 'spotted' ? 1.5 : 0.6);
+  // A stamp state (SPOTTED! / SEEKERS EXHAUSTED!) holds before the reveal map.
+  const delay = () => (Round.result && (Round.result.reason === 'spotted' || Round.result.reason === 'exhausted') ? 1.5 : 0.6);
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
   // ---- the map (world space, over a dimmed arena) ------------------------
@@ -59,11 +60,17 @@
     const sub = document.getElementById('end-sub');
     const board = document.getElementById('end-board');
 
-    if (res.reason === 'spotted') { title.textContent = 'SPOTTED!'; title.className = 'spotted'; }
-    else if (res.reason === 'all-found') { title.textContent = 'ALL FOUND'; title.className = 'spotted'; }
-    else { title.textContent = 'YOU SURVIVED'; title.className = 'safe'; }
+    // One title + sub-line per end state (Concept Brief v3.4 — four ways to end).
+    const TITLES = {
+      spotted:    ['SPOTTED!', 'spotted', 'The seeker found you.'],
+      'all-found':['ALL FOUND', 'spotted', 'The seekers cleared the map.'],
+      timeout:    ['YOU SURVIVED', 'safe', 'You outlasted the clock — hiders win.'],
+      exhausted:  ['SEEKERS EXHAUSTED!', 'safe', 'The seekers spent their tags — hiders win.'],
+    };
+    const [ttl, cls, tail] = TITLES[res.reason] || TITLES.timeout;
+    title.textContent = ttl; title.className = cls;
 
-    sub.innerHTML = `Score <b>${res.playerScore.toLocaleString()}</b> · survived <b>${fmt(res.playerTime)}</b>` +
+    sub.innerHTML = `${tail}<br>Score <b>${res.playerScore.toLocaleString()}</b> · survived <b>${fmt(res.playerTime)}</b>` +
       ` · ${res.rows.filter((r) => r.found).length}/${res.rows.length} found`;
 
     board.innerHTML = res.rows.map((r, i) => `

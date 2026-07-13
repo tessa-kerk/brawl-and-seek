@@ -102,6 +102,18 @@
       STATE.repaintTime = this.repaintTime();
       if (this.bonusFlash > 0) this.bonusFlash -= dt;
 
+      // SEEKERS EXHAUSTED (Concept Brief v3.4): every seeker has spent its tag
+      // budget and gone to spectator, and NO tag is still in flight → the hiders
+      // outlasted the threat, the round ends immediately, hiders win. This runs
+      // in the main loop AFTER Tags.update(), so an airborne tag resolves first
+      // (Tags.list only empties once it hits or expires) — a converting hit puts
+      // a fresh seeker back on the map and this check fails, so the round
+      // continues. Checked BEFORE the score block so nothing is earned on the
+      // ending frame (there is no active threat to earn against).
+      if (this.phase === 'seek' && Seekers.active().length === 0 && Tags.list.length === 0) {
+        this.end('exhausted'); return;
+      }
+
       // player score — the camping rule. Canon v3.3 (13-07-2026): scoring, the
       // camp-decay clock and the reposition bank ALL start at SEEKER RELEASE. The
       // 15s hide phase is unscored setup — nothing accrues, decays or banks. So

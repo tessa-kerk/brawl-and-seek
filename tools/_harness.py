@@ -17,6 +17,15 @@ import pathlib, sys
 from contextlib import contextmanager
 from playwright.sync_api import sync_playwright
 
+# Test names carry Unicode (→, ◂). A Windows cp1252 console raises
+# UnicodeEncodeError mid-print and aborts the suite — a false red on a green
+# run. Force UTF-8 with a replace fallback so output can never crash the tests.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
 URL = (pathlib.Path(__file__).resolve().parent.parent / "index.html").as_uri()
 
 

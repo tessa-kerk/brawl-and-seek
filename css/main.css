@@ -8,6 +8,27 @@
   --navy-2:#171B33;           /* the letterbox / deepest background */
 }
 
+/* ---- Landscape-only lock (fidelity rule 3g) --------------------------
+   Pure-CSS media-query guard: portrait shows this, hides nothing else (the
+   game keeps running underneath — no state loss on rotate). Landscape hides
+   this entirely (display:none, not just opacity, so it can never eat touches). */
+#rotate-prompt{
+  display:none;
+  position:fixed;inset:0;z-index:20;
+  background:var(--navy-2);
+  flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  text-align:center;padding:24px;
+}
+#rotate-prompt svg{animation:rotateHint 1.8s ease-in-out infinite;}
+#rotate-prompt p{font-family:'Lilita One',cursive;font-size:18px;color:var(--chalk);letter-spacing:.02em;}
+#rotate-prompt p.sub{font-family:'Nunito Sans';font-weight:700;font-size:12.5px;color:rgba(246,244,239,.6);letter-spacing:.02em;max-width:280px;}
+@keyframes rotateHint{0%,100%{transform:rotate(0deg);}50%{transform:rotate(-90deg);}}
+@media (orientation:portrait){
+  #rotate-prompt{display:flex;}
+  #stage{visibility:hidden;}     /* stop touches reaching the game underneath */
+}
+@media (prefers-reduced-motion:reduce){#rotate-prompt svg{animation:none;}}
+
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overscroll-behavior:none;}
 body{

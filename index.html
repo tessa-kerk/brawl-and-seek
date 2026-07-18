@@ -14,10 +14,25 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Brawl & Seek">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/fonts.css?v=18">
-<link rel="stylesheet" href="css/main.css?v=18">
+<link rel="stylesheet" href="css/fonts.css?v=19">
+<link rel="stylesheet" href="css/main.css?v=19">
 </head>
 <body>
+  <!-- Landscape-only (Concept Brief fidelity rule 3g): Brawl Stars is
+       landscape-only; portrait is unfaithful. This overlay covers everything
+       when the device is held portrait — pure CSS media query, no JS needed,
+       so it can never desync from the real orientation. -->
+  <div id="rotate-prompt" aria-hidden="true">
+    <svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true">
+      <rect x="16" y="8" width="32" height="48" rx="6" fill="none" stroke="#F6F4EF" stroke-width="3"/>
+      <circle cx="32" cy="50" r="2" fill="#F6F4EF"/>
+      <path d="M44 20 A16 16 0 1 1 20 20" fill="none" stroke="#35E0D0" stroke-width="3" stroke-linecap="round"/>
+      <path d="M20 20 l-6 -2 l2 7 z" fill="#35E0D0"/>
+    </svg>
+    <p>Turn your phone sideways</p>
+    <p class="sub">Brawl &amp; Seek plays in landscape, like Brawl Stars itself.</p>
+  </div>
+
   <div id="stage">
     <canvas id="game"></canvas>
 
@@ -25,7 +40,7 @@
       <div class="wordmark">BRAWL <span class="amp">&amp;</span> SEEK</div>
       <div class="badges">
         <span class="concept" title="Unofficial fan concept — not a real in-game screenshot">CONCEPT</span>
-        <span class="stamp">v18 · ART</span>
+        <span class="stamp">v19 · ART</span>
       </div>
     </div>
 
@@ -125,24 +140,24 @@
     <div class="disclaimer">Fan concept by Tessa Kerk · unofficial, not endorsed by Supercell · <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">Fan Content Policy</a></div>
   </div>
 
-  <script src="src/config.js?v=18"></script>
-  <script src="src/assets.js?v=18"></script>
-  <script src="data/arena.js?v=18"></script>
-  <script src="data/tuning.js?v=18"></script>
-  <script src="src/input.js?v=18"></script>
-  <script src="src/arena.js?v=18"></script>
-  <script src="src/ai.js?v=18"></script>
-  <script src="src/fx.js?v=18"></script>
-  <script src="src/player.js?v=18"></script>
-  <script src="src/tag.js?v=18"></script>
-  <script src="src/hider.js?v=18"></script>
-  <script src="src/seeker.js?v=18"></script>
-  <script src="src/round.js?v=18"></script>
-  <script src="src/render.js?v=18"></script>
-  <script src="src/reveal.js?v=18"></script>
-  <script src="src/maker.js?v=18"></script>
-  <script src="src/pace.js?v=18"></script>
-  <script src="src/debug.js?v=18"></script>
-  <script src="src/game.js?v=18"></script>
+  <script src="src/config.js?v=19"></script>
+  <script src="src/assets.js?v=19"></script>
+  <script src="data/arena.js?v=19"></script>
+  <script src="data/tuning.js?v=19"></script>
+  <script src="src/input.js?v=19"></script>
+  <script src="src/arena.js?v=19"></script>
+  <script src="src/ai.js?v=19"></script>
+  <script src="src/fx.js?v=19"></script>
+  <script src="src/player.js?v=19"></script>
+  <script src="src/tag.js?v=19"></script>
+  <script src="src/hider.js?v=19"></script>
+  <script src="src/seeker.js?v=19"></script>
+  <script src="src/round.js?v=19"></script>
+  <script src="src/render.js?v=19"></script>
+  <script src="src/reveal.js?v=19"></script>
+  <script src="src/maker.js?v=19"></script>
+  <script src="src/pace.js?v=19"></script>
+  <script src="src/debug.js?v=19"></script>
+  <script src="src/game.js?v=19"></script>
 </body>
 </html>

@@ -5,7 +5,7 @@ import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from _harness import game, Tally, touch  # noqa: E402
 
-with game(width=390, height=844, mobile=True, query="?pace=1") as (pg, errs):  # ?pace shows the demoted picker
+with game(width=844, height=390, mobile=True, query="?pace=1") as (pg, errs):  # landscape-only (fidelity rule 3g); ?pace shows the demoted picker
     t = Tally()
 
     pg.tap("#mk-open"); pg.wait_for_timeout(350)
@@ -20,10 +20,10 @@ with game(width=390, height=844, mobile=True, query="?pace=1") as (pg, errs):  #
     # joystick still drives on the arena (not stolen by the UI exclusion)
     pg.evaluate("Game.resume(); Player.x=Arena.centre(5,4).x; Player.y=Arena.centre(5,4).y; Player.vx=0;Player.vy=0;")
     x0 = pg.evaluate("Player.x")
-    touch(pg, "touchstart", 120, 300, idn=9)
-    touch(pg, "touchmove", 170, 300, idn=9)
+    touch(pg, "touchstart", 120, 200, idn=9)
+    touch(pg, "touchmove", 170, 200, idn=9)
     pg.wait_for_timeout(200)
-    touch(pg, "touchend", 170, 300, idn=9)
+    touch(pg, "touchend", 170, 200, idn=9)
     t.check(f"joystick still drives on the arena ({pg.evaluate('Player.x') - x0:.0f}px)", pg.evaluate("Player.x") - x0 > 8)
 
     pg.tap("#mk-back"); pg.wait_for_timeout(300)
@@ -44,13 +44,13 @@ with game(width=390, height=844, mobile=True, query="?pace=1") as (pg, errs):  #
     # GHOST-TOUCHEND HARDENING: a UI touch id 7 whose touchend never arrives,
     # then id 7 reused for a GAME touch — must NOT be excluded from the stick.
     pg.evaluate("Game.resume(); Player.x=Arena.centre(5,4).x; Player.y=Arena.centre(5,4).y; Player.vx=0;Player.vy=0;")
-    touch(pg, "touchstart", 195, 750, idn=7, ui_sel="#mk-open")   # id7 begins on UI chrome
+    touch(pg, "touchstart", 195, 350, idn=7, ui_sel="#mk-open")   # id7 begins on UI chrome
     # (no touchend for id7 — the iOS ghost)
     gx0 = pg.evaluate("Player.x")
-    touch(pg, "touchstart", 120, 300, idn=7)                       # id7 REUSED as a game touch
-    touch(pg, "touchmove", 175, 300, idn=7)
+    touch(pg, "touchstart", 120, 200, idn=7)                       # id7 REUSED as a game touch
+    touch(pg, "touchmove", 175, 200, idn=7)
     pg.wait_for_timeout(220)
-    touch(pg, "touchend", 175, 300, idn=7)
+    touch(pg, "touchend", 175, 200, idn=7)
     t.check(f"reused id after a dropped UI touchend still drives ({pg.evaluate('Player.x') - gx0:.0f}px)",
             pg.evaluate("Player.x") - gx0 > 8)
 

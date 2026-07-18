@@ -47,7 +47,7 @@ with game(query="?view=maker") as (pg, errs):
     # Event-view regression: fit must equal the pre-M3 formula exactly
     W = pg.evaluate("Arena.W"); H = pg.evaluate("Arena.H")
     ok = True
-    for w, hh in [(1280, 800), (390, 844), (360, 740)]:
+    for w, hh in [(1280, 800), (844, 390), (740, 360)]:   # landscape-only (fidelity rule 3g)
         pg.set_viewport_size({"width": w, "height": hh}); pg.wait_for_timeout(120)
         sc = pg.evaluate("Game.scale"); off = pg.evaluate("Game.off")
         want = min(w / W, hh / H)

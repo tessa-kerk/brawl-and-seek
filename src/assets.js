@@ -6,11 +6,12 @@
  * kick the loads on parse so they're ready by first paint. */
 (function () {
   const specs = {
-    skirt:      'assets/world/skirt-1.png',
+    skirt:      'assets/world/skirt-1.png',   // NOT used in the play view (art pass 18-07) — kept for a future marketing/landing use
     floor:      'assets/world/floor.png',
     water:      'assets/world/water.png',
     wall_drum:  'assets/world/wall_drum.png',
     wall_crate: 'assets/world/wall_crate.png',
+    bush:       'assets/world/bush.png',
   };
   const imgs = {};
   for (const k in specs) { const im = new Image(); im.decoding = 'async'; im.src = specs[k]; imgs[k] = im; }

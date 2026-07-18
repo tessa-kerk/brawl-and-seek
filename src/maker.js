@@ -1,16 +1,18 @@
 /* Brawl & Seek — the MAP MAKER view. The pitch's money shot: camouflage as a
  * tunable map property, not a sentence in a deck. The same arena sits in an
- * editor frame with three properties that change the mechanic LIVE, with no
+ * editor frame with FOUR properties that change the mechanic LIVE, with no
  * restart — flip a toggle and the next second of play obeys it.
  *
- *   • Camo surfaces  — which surfaces paint a hider in (walls / floor / water)
+ *   • Camo surfaces  — which surfaces paint a hider in (walls / floor / water /
+ *     bush — bush added art pass 18-07-2026, a real Brawl hiding verb, not
+ *     decoration; priority wall > bush > water > floor)
  *   • Repaint time   — how long stillness takes to hide you (0.5 / 1 / 2s)
  *   • Ripple tell    — do hidden brawlers ripple when someone moves close
  *
  * It's a test-play sandbox, not a round: one bot seeker patrols so the tell and
  * the Tag stay meaningful, and being tagged just respawns you. */
 (function () {
-  const DEFAULTS = { surfaces: { wall: true, floor: true, water: true }, repaint: 1.0, ripple: true };
+  const DEFAULTS = { surfaces: { wall: true, floor: true, water: true, bush: true }, repaint: 1.0, ripple: true };
   const M = { surfaces: { ...DEFAULTS.surfaces }, repaint: DEFAULTS.repaint, ripple: DEFAULTS.ripple };
 
   let toastT = 0, benchT = 0, el = {};
@@ -29,7 +31,7 @@
     for (const b of document.querySelectorAll('#mk-repaint button'))
       b.classList.toggle('on', parseFloat(b.dataset.repaint) === M.repaint);
     if (el.ripple) { el.ripple.classList.toggle('on', M.ripple); el.ripple.setAttribute('aria-checked', String(M.ripple)); }
-    const none = !M.surfaces.wall && !M.surfaces.floor && !M.surfaces.water;
+    const none = !M.surfaces.wall && !M.surfaces.floor && !M.surfaces.water && !M.surfaces.bush;
     if (el.warn) el.warn.hidden = !none;
   }
 

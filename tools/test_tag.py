@@ -37,7 +37,7 @@ with game() as (pg, errs):
     t.check(f"travel speed {measured:.2f} = 2x base ({2*BASE:.2f}) tiles/s", abs(measured - 2 * BASE) < 0.15)
 
     # B) range ~3 tiles, then a MISS costing 30
-    pos = setup(1, 1, 8, 4); fire(pos, pos["sx"] + 300, pos["sy"]); trav = 0
+    pos = setup(1, 1, 8, 7); fire(pos, pos["sx"] + 300, pos["sy"]); trav = 0
     for _ in range(60):
         s = st()
         if s["n"] == 0: break
@@ -46,8 +46,10 @@ with game() as (pg, errs):
     t.check(f"range {trav/T:.2f} tiles (spec ~3)", abs(trav / T - 3.0) < 0.35)
     t.check(f"empty-air miss costs 30 (hp {s['hp']}, mistakes {s['m']})", s['hp'] == 70 and s['m'] == 1)
 
-    # C) walls block it; wall hit is a wrong tag
-    pos = setup(4, 2, 1, 2); fire(pos, pos["dx"], pos["dy"])
+    # C) walls block it; wall hit is a wrong tag. Art-pass grid (18-07-2026):
+    # the row-2 wall cluster sits at cols 4-5, open floor either side — seeker
+    # at col3 fires straight at a dummy placed at col6, directly through it.
+    pos = setup(3, 2, 6, 2); fire(pos, pos["dx"], pos["dy"])
     for _ in range(60):
         if st()["n"] == 0: break
         step()
@@ -73,7 +75,7 @@ with game() as (pg, errs):
     t.check(f"cooldown {cd}s (spec 0.75) and no second shot inside it", abs(cd - 0.75) < 1e-9 and n1 == 1 and n2 == 1 and abs(cd1 - 0.75) < 0.05)
 
     # G) 4th miss -> spectator (via the fired tag)
-    setup(1, 1, 8, 4)
+    setup(1, 1, 8, 7)
     pg.evaluate("Tags.reset(); Seekers.list[0].health=100; Seekers.list[0].mistakes=0; Seekers.list[0].state='patrol';")
     hps = []
     for _ in range(4):

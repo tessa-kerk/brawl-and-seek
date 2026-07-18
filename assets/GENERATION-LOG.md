@@ -13,3 +13,5 @@ Fidelity rule: brawler sprites generated with the official Fankit full-body rend
 | — | Wall drum / crate — `--transparent` rejected by model | — | 2 | $0.00 | $0.84 | ⚠️ API: transparent unsupported; no charge |
 | 4 | Wall: paint drum | 1024² high (green→cutout) | 1 | $0.17 | **$1.01** | ✅ clean cutout, no halo on navy |
 | 5 | Wall: half-painted crate | 1024² high (green→cutout) | 1 | $0.17 | **$1.18** | ✅ clean cutout |
+| — | *(map redirect 18-07: recreated real Spots-of-Yore section replaces the invented v14 layout; floor/water/drum/crate above are REUSED as-is on the new grid — no re-spend)* | | | | | |
+| 6 | Bush cluster (new 4th camo surface, Tessa's ruling) | 1024² high (blue→cutout) | 2 | $0.34 | **$1.52** | ✅ picked comp 2 (rounder, more Brawl-authentic dome silhouette); clean cutout, no halo |

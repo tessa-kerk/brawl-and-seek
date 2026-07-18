@@ -318,7 +318,7 @@ body.maker #makerpanel{
 .mk-row .mk-hint{margin-bottom:0;}
 
 /* surface chips */
-.mk-surfaces{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.mk-surfaces{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
 .mk-surf{
   display:flex;flex-direction:column;align-items:center;gap:6px;
   background:rgba(246,244,239,.05);

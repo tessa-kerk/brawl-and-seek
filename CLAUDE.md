@@ -11,7 +11,7 @@ You are building **Brawl & Seek**, a playable browser prototype of a hide-and-se
 
 ## What to build (v1)
 - Web, single-page: **HTML + CSS + vanilla JavaScript, no build step.** Runs by opening `index.html`; must be **fully responsive down to 360px phone width.**
-- **Two views, one build:** (1) **Event view** — play a hider; move, hold still on a surface to paint in, move to break camo; one bot seeker patrols; AI dummy hiders; on-screen score ticker; wrong-tag → SPOTTED!; end-of-round reveal map. (2) **Map Maker view** — the same map in an editor frame with three live toggles: camo surfaces (walls/floor/water), repaint time (0.5/1/2s), ripple tell on/off.
+- **Two views, one build:** (1) **Event view** — play a hider; move, hold still on a surface to paint in, move to break camo; one bot seeker patrols; AI dummy hiders; on-screen score ticker; wrong-tag → SPOTTED!; end-of-round reveal map. (2) **Map Maker view** — the same map in an editor frame with live toggles: camo surfaces (walls/floor/water/**bushes** — added art pass 18-07-2026, a real Brawl hiding verb, not decoration; priority wall > bush > water > floor), repaint time (0.5/1/2s), ripple tell on/off.
 - **Multi-file, data-driven:** palette + tuning in `src/config.js`; map geometry in `data/`; no colours or map data hard-coded in logic.
 - A **full round must run under 90 seconds** so captures stay clip-length.
 

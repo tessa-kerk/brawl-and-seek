@@ -59,4 +59,24 @@ with game() as (pg, errs):
     t.check("no-clip: collide never ends inside a wall", clip == 0)
     t.check("slide: free X axis always moves", stuckx == 0)
     t.check("slide: free Y axis always moves", stucky == 0)
+
+    # EXPLICIT edge-of-map case set (art pass 18-07-2026): the general sweep
+    # above already samples every free cell across the whole grid — including
+    # cells that sit on the true grid boundary, now that the recreated map has
+    # NO border wall ring (real-map law 1) — so edge geometry was already
+    # implicitly covered. This section makes it an explicit, independently-
+    # named proof per the PM's instruction, rather than a side-effect of the
+    # general sweep: every free cell whose col/row touches 0/cols-1/rows-1,
+    # pushed straight toward the true boundary, must never cross world bounds.
+    edge_starts = [(x, y) for (x, y) in starts
+                   if math.floor((x - h) / T) <= 0 or math.floor((x + h) / T) >= cols - 1
+                   or math.floor((y - h) / T) <= 0 or math.floor((y + h) / T) >= rows - 1]
+    edge_cases = [[px, py, sx * STEP, sy * STEP] for (px, py) in edge_starts for (sx, sy) in DIRS]
+    edge_res = pg.evaluate(
+        "(([cs,h])=>cs.map(c=>{const p=Arena.collide(c[0],c[1],c[2],c[3],h);return [p.x,p.y];}))",
+        [edge_cases, h])
+    out_of_bounds = sum(1 for (rx, ry) in edge_res if rx - h < -0.5 or rx + h > W + 0.5 or ry - h < -0.5 or ry + h > H + 0.5)
+    print(f"  edge-of-map: {len(edge_starts)} boundary-adjacent positions x 8 dirs = {len(edge_cases)} cases")
+    t.check("edge-of-map: the true grid boundary always stops the box (no border wall needed)", out_of_bounds == 0)
+
     t.finish("collision", errs)

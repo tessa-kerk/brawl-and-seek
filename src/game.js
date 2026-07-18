@@ -6,9 +6,10 @@
   window.STATE = {
     view: 'event',                                          // 'event' | 'maker'
     repaintTime: CFG.repaintTime,
-    // Map properties. The Event view always runs canon (all three surfaces
-    // camouflage, the tell is on); the Map Maker view makes them tunable, live.
-    camoSurfaces: { wall: true, floor: true, water: true },
+    // Map properties. The Event view always runs canon (all FOUR surfaces
+    // camouflage — bush added art pass 18-07-2026 — the tell is on); the Map
+    // Maker view makes them tunable, live.
+    camoSurfaces: { wall: true, floor: true, water: true, bush: true },
     rippleTell: true,
     // Global movement pace (see TUNING.speedScale). ?speed=<n> overrides it live
     // for on-device A/B; clamped to a sane range.
@@ -75,17 +76,21 @@
 
   function render() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    // World skirt: the arena sits INSIDE a repaint-site surround instead of
-    // floating on the flat void. Screen-space, cover-fit, drawn under the arena.
-    // Falls back to the signed-off flat letterbox if the image isn't ready.
-    const skirt = window.Assets && Assets.get('skirt');
-    if (skirt) {
-      const s = Math.max(cssW / skirt.naturalWidth, cssH / skirt.naturalHeight);
-      const sw = skirt.naturalWidth * s, sh = skirt.naturalHeight * s;
-      ctx.fillStyle = '#171B33'; ctx.fillRect(0, 0, cssW, cssH);   // base under any transparent edge
-      ctx.drawImage(skirt, (cssW - sw) / 2, (cssH - sh) / 2, sw, sh);
-    } else {
-      ctx.fillStyle = '#171B33'; ctx.fillRect(0, 0, cssW, cssH);
+    // World "skirt" — CORRECTED 18-07-2026: real Brawl Stars never renders
+    // anything beyond a map's own play bounds, so a separate invented diorama
+    // (the original repaint-site skirt-1.png) repeats v14's core mistake.
+    // Instead: a dimmed/blurred CONTINUATION of the same floor+bush ground the
+    // arena itself uses — "more of this map, out of focus" — screen-space,
+    // drawn under the arena. Falls back to the flat letterbox if not ready.
+    const floorImg = window.Assets && Assets.get('floor');
+    ctx.fillStyle = '#171B33'; ctx.fillRect(0, 0, cssW, cssH);   // base under any gap
+    if (floorImg) {
+      ctx.save();
+      ctx.filter = 'blur(7px) brightness(0.55)';
+      const bs = Math.max(cssW / floorImg.naturalWidth, cssH / floorImg.naturalHeight) * 1.3;
+      const bw = floorImg.naturalWidth * bs, bh = floorImg.naturalHeight * bs;
+      ctx.drawImage(floorImg, (cssW - bw) / 2, (cssH - bh) / 2, bw, bh);
+      ctx.restore();
     }
 
     const maker = STATE.view === 'maker';

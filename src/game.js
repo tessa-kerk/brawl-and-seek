@@ -250,6 +250,15 @@
     elHint = document.getElementById('hint');
     elStatus = document.getElementById('status');
     elStatusLabel = document.getElementById('status-label');
+    // Swap the emoji placeholder for the generated paint-brush glyph
+    // (footage/reference batch, 18-07-2026) once it's actually loaded —
+    // non-breaking: on any failure the emoji stays exactly as it was.
+    const iconTest = new Image();
+    iconTest.onload = () => {
+      const holder = document.getElementById('status-icon');
+      if (holder) holder.replaceWith(Object.assign(document.createElement('img'), { src: iconTest.src, id: 'status-icon', alt: '' }));
+    };
+    iconTest.src = 'assets/ui/camo_icon.png';
     elBanner = document.getElementById('banner');
     elBonus = document.getElementById('bonus');
     elTicker = document.getElementById('ticker');

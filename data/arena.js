@@ -56,6 +56,17 @@ window.ARENA = {
     '~###......',
   ].map((row) => row.slice(0, 10)),
 
+  // Decorative floor-level props, footage/reference-batch art pass
+  // (18-07-2026): the two Power-Cube spawn markers traced from the real
+  // corner (see the HONEST-GAP-adjacent note above — they sit on plain
+  // floor, not solid tiles; Power Cube spawns are walkable in real Brawl).
+  // Flat ground decals, drawn on the floor layer — never solid, never
+  // consulted by collide()/isSolid().
+  props: [
+    { c: 3, r: 2, key: 'powercube' },
+    { c: 2, r: 3, key: 'powercube' },
+  ],
+
   surfaces: {
     floorA: '#2A3162',
     floorB: '#313A73',

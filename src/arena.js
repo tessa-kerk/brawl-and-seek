@@ -160,6 +160,7 @@
     }
     drawBush(ctx);
     drawWater(ctx, t);
+    drawProps(ctx);
     // NOTE: walls are NOT drawn here (engineering pass, 18-07-2026) — they now
     // draw as part of the Y-sorted interleave in game.js render(), alongside
     // entities, so a tall block can correctly occlude what's behind it. See
@@ -219,21 +220,41 @@
     return out;
   }
 
+  /* TRUE organic pool silhouette (PM directive, 18-07-2026): Acid Lakes'
+   * pool is a genuine diagonal chain of tiles, unlike Spots of Yore's clean
+   * rounded-square (measured precisely last pass — that pool really was a
+   * square, this one really isn't). A per-REGION bounding box would round
+   * the diagonal off into a rectangle; instead each water TILE gets its own
+   * rounded-rect (same technique drawBush already uses), so the union
+   * traces the actual stair-step diagonal from the real map, not a guess. */
   function drawWater(ctx, t) {
-    const pools = tileRegions((c, r) => grid[r][c] === '~');
-    if (!pools.length) return;
-    // Fill each pool's bounding box as ONE rounded rect (the outer silhouette),
-    // then a lighter inner rim + a slow ripple sheen inside it.
+    const cells = [];
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) if (grid[r][c] === '~') cells.push([c, r]);
+    if (!cells.length) return;
+
+    // Rim first, as a soft shadow cast by the SAME per-tile union: canvas
+    // shadows read the final composited alpha of the fill, not individual
+    // subpaths, so two adjacent water tiles never show a seam where they
+    // touch — the glow traces only the shape's true outer boundary. Colour
+    // sampled directly from genuine in-game reference art (RGB 130,68,46),
+    // matching the Spots of Yore rim tone (both maps use the same terracotta
+    // pool border language).
+    ctx.save();
+    ctx.shadowColor = '#82442E'; ctx.shadowBlur = 3;
+    ctx.fillStyle = '#82442E';
+    ctx.beginPath();
+    for (const [c, r] of cells) roundRectPath(ctx, c * T, r * T, T, T, T * 0.12);
+    ctx.fill(); ctx.fill();   // twice: shadowBlur only casts from an actual fill, and one pass reads faint on some canvases
+    ctx.restore();
+
+    // The water texture/fill covers the rim layer's interior at the exact
+    // same footprint, leaving only the shadow's outward bleed visible —
+    // that bleed IS the rim, no inset math, no seam risk.
     ctx.save();
     ctx.beginPath();
-    for (const p of pools) {
-      const x = p.c0 * T, y = p.r0 * T, w = (p.c1 - p.c0 + 1) * T, h = (p.r1 - p.r0 + 1) * T;
-      roundRectPath(ctx, x, y, w, h, Math.min(T * 0.28, w / 2, h / 2));
-    }
-    // Art pass: paint a teal-paint texture into the pool(s); the ripple sheen
-    // + dark rim below stay procedural (the mechanic's motion). Fallback = flat.
+    for (const [c, r] of cells) roundRectPath(ctx, c * T, r * T, T, T, T * 0.12);
+    ctx.clip();
     const waterImg = window.Assets && Assets.get('water');
-    ctx.save(); ctx.clip();
     if (waterImg) {
       const s = Math.max(W / waterImg.naturalWidth, H / waterImg.naturalHeight);
       const ww = waterImg.naturalWidth * s, wh = waterImg.naturalHeight * s;
@@ -241,8 +262,6 @@
     } else {
       ctx.fillStyle = S.water; ctx.fillRect(0, 0, W, H);
     }
-    ctx.restore();
-    ctx.clip();
     // moving highlight bands
     ctx.globalAlpha = 0.22; ctx.strokeStyle = S.waterHi; ctx.lineWidth = 3;
     for (let i = -2; i < rows + 2; i++) {
@@ -250,15 +269,32 @@
       ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W, yy - 40); ctx.stroke();
     }
     ctx.restore();
-    // A warm terracotta rim around each pool, matching the real map's own pool
-    // border — colour SAMPLED directly from genuine in-game reference art
-    // (the Fandom wiki's map asset, not the brawlify map-SELECTION THUMBNAIL
-    // that misled the first faithful pass; see Art Inventory.md's reference-
-    // class correction, 18-07-2026). Pixel-sampled at RGB(130,68,46).
-    ctx.strokeStyle = '#82442E'; ctx.lineWidth = 5;
-    for (const p of pools) {
-      const x = p.c0 * T, y = p.r0 * T, w = (p.c1 - p.c0 + 1) * T, h = (p.r1 - p.r0 + 1) * T;
-      roundRect(ctx, x, y, w, h, Math.min(T * 0.28, w / 2, h / 2)); ctx.stroke();
+  }
+
+  // Decorative floor-level props (footage/reference batch, 18-07-2026): the
+  // two traced Power-Cube spawn markers. Flat ground decals ON the floor
+  // layer, drawn after water so they read as sitting on the ground, never
+  // consulted by collide()/isSolid()/hideTiles — purely visual, matching
+  // real Brawl where Power Cube spawns are walkable floor markers, not
+  // obstacles. Falls back to a simple procedural badge if no asset loaded.
+  const PROPS = (ARENA.props || []);
+  function drawProps(ctx) {
+    const img = window.Assets && Assets.get('powercube');
+    for (const p of PROPS) {
+      const x = p.c * T + T / 2, y = p.r * T + T / 2;
+      if (img) {
+        const s = T * 0.62 / Math.max(img.naturalWidth, img.naturalHeight);
+        const w = img.naturalWidth * s, h = img.naturalHeight * s;
+        ctx.drawImage(img, x - w / 2, y - h / 2, w, h);
+      } else {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x, y + T * 0.18, T * 0.24, T * 0.1, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = '#E8862E'; ctx.strokeStyle = CFG.palette.ink; ctx.lineWidth = 2.5;
+        roundRect(ctx, x - T * 0.2, y - T * 0.2, T * 0.4, T * 0.4, 6); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = 'rgba(20,23,43,.55)';
+        ctx.beginPath(); ctx.arc(x, y, T * 0.09, 0, 7); ctx.fill();
+        ctx.restore();
+      }
     }
   }
 

@@ -7,10 +7,13 @@
 (function () {
   const specs = {
     skirt:      'assets/world/skirt-1.png',    // NOT used in the play view (art pass 18-07) — kept for a future marketing/landing use
-    floor:      'assets/world/floor.png',      // faithful (18-07 redo): matches Spots of Yore's real two-tone tan checker
-    water:      'assets/world/water.png',      // faithful (18-07 redo): matches the real pool's flat cartoon blue
-    wall_block: 'assets/world/wall_block.png', // faithful (18-07 redo): the real cluster's coiled-cap wood crate; replaces wall_drum/wall_crate (retired, not deleted)
-    bush:       'assets/world/bush.png',       // faithful (18-07 redo): the real map's flat 2-tone scalloped pattern
+    floor:      'assets/world/floor.png',      // Acid Lakes batch (18-07): deep violet two-tone checker + acid-green glow, footage/wiki-referenced
+    water:      'assets/world/water.png',      // Acid Lakes batch (18-07): glowing acid-green pool surface, footage/wiki-referenced
+    wall_block: 'assets/world/wall_block.png', // Acid Lakes batch (18-07): the spiky teal-capped stone block; replaces the Spots of Yore wood crate
+    bush:       'assets/world/bush.png',       // kept for map-agnostic use — Acid Lakes' TL corner has no bush tiles
+    powercube:  'assets/world/powercube.png',  // Acid Lakes batch (18-07): the traced Power-Cube spawn marker prop
+    tag_icon:   'assets/ui/tag_icon.png',      // Acid Lakes batch (18-07): the Tag, styled on Belle's Super "Spotter" (Art Inventory.md)
+    camo_icon:  'assets/ui/camo_icon.png',     // Acid Lakes batch (18-07): the camo-badge's paint-brush glyph
   };
   const imgs = {};
   for (const k in specs) { const im = new Image(); im.decoding = 'async'; im.src = specs[k]; imgs[k] = im; }

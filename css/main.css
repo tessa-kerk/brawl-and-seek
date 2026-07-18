@@ -265,6 +265,7 @@ body{
 }
 #status.visible{opacity:1;}
 #status-icon{font-size:22px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5));}
+img#status-icon{width:26px;height:26px;object-fit:contain;font-size:0;}
 #status.hiding{--ring:var(--magenta);border-color:rgba(255,79,160,.6);}
 #status.hidden{--ring:var(--teal);border-color:rgba(53,224,208,.7);box-shadow:0 0 0 4px rgba(53,224,208,.16),0 6px 18px rgba(0,0,0,.4);}
 #status.exposed{--ring:var(--yellow);border-color:rgba(255,200,0,.6);}

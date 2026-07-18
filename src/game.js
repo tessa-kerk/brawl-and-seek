@@ -25,7 +25,7 @@
   let canvas, ctx, stage;
   let dpr = 1, cssW = 0, cssH = 0, scale = 1, offX = 0, offY = 0;
   let last = 0, tSec = 0;
-  let elHint, elStatus, elBanner, elBonus, elTicker, elPace;
+  let elHint, elStatus, elStatusLabel, elBanner, elBonus, elTicker, elPace;
   let lastPhase = 'hide', bannerT = 0, bonusArmed = false, lastDt = 0.016;
 
   function resize() {
@@ -136,6 +136,8 @@
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
   function hud() {
+    elStatus.style.setProperty('--p', Math.min(Player.progress || 0, 1));
+
     // MAP MAKER has no round HUD — just a state chip that teaches the property.
     if (STATE.view === 'maker') {
       const p = Player;
@@ -144,14 +146,14 @@
       else if (p.progress > 0) { cls = 'hiding'; txt = 'Painting in…'; }
       else if (!p.camo && !p.lastMoving) { cls = 'nocamo'; txt = 'No camo surface here'; }
       elStatus.className = txt ? cls + ' visible' : '';
-      elStatus.textContent = txt;
+      elStatusLabel.textContent = txt;
       return;
     }
 
     const over = Round.phase === 'over';
     const st = Player.found ? 'exposed' : Player.state();
     elStatus.className = (!over && st !== 'exposed') ? st + ' visible' : st;
-    elStatus.textContent = over ? '' : st === 'hidden' ? 'Camouflaged' : st === 'hiding' ? 'Painting in…' : '';
+    elStatusLabel.textContent = over ? '' : st === 'hidden' ? 'Camouflaged' : st === 'hiding' ? 'Painting in…' : '';
     if (STATE.everHidden) elHint.classList.add('dim');
 
     // ticker
@@ -229,6 +231,7 @@
     ctx = canvas.getContext('2d');
     elHint = document.getElementById('hint');
     elStatus = document.getElementById('status');
+    elStatusLabel = document.getElementById('status-label');
     elBanner = document.getElementById('banner');
     elBonus = document.getElementById('bonus');
     elTicker = document.getElementById('ticker');

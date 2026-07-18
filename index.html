@@ -14,8 +14,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Brawl & Seek">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/fonts.css?v=20">
-<link rel="stylesheet" href="css/main.css?v=20">
+<link rel="stylesheet" href="css/fonts.css?v=21">
+<link rel="stylesheet" href="css/main.css?v=21">
 </head>
 <body>
   <!-- Landscape-only (Concept Brief fidelity rule 3g): Brawl Stars is
@@ -40,7 +40,17 @@
       <div class="wordmark">BRAWL <span class="amp">&amp;</span> SEEK</div>
       <div class="badges">
         <span class="concept" title="Unofficial fan concept — not a real in-game screenshot">CONCEPT</span>
-        <span class="stamp">v20 · ART</span>
+        <span class="stamp">v21 · ART</span>
+        <!-- Map Maker entry (landscape HUD rebuild, rule 3c/3h): this is OUR
+             tool, not Brawl's, so it moved out of the play frame's own
+             control-cluster real estate (bottom-right, now the camo badge)
+             and into the top chrome rail alongside the other non-Brawl
+             badges — same distinct teal accent as always, never mistaken
+             for a Brawl control. -->
+        <button id="mk-open" aria-label="Open Map Maker">
+          <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          <span>Map Maker</span>
+        </button>
       </div>
     </div>
 
@@ -56,7 +66,15 @@
 
     <div id="bonus">+100</div>
     <div id="banner"></div>
-    <div id="status"></div>
+
+    <!-- Camo-state badge (landscape HUD rebuild, rule 3g/3h): occupies the
+         same bottom-right slot Brawl's own attack/Super buttons live in, in
+         Brawl's own circular-badge visual language (a ring, an icon, a live
+         fill) — but it's not a fire button, it's real paint-in status, since
+         a hider has no attack. The label above it keeps the state legible
+         for a first-time player. -->
+    <div id="status-label"></div>
+    <div id="status"><span id="status-icon">🖌</span></div>
 
     <p id="hint">
       <b>Move</b> with WASD / arrows (or drag on touch). <span class="paint">Hold still</span>
@@ -83,12 +101,6 @@
       <p class="fanpolicy">This material is unofficial and is not endorsed by Supercell. For more information see Supercell's
         <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">Fan Content Policy</a>.</p>
     </div>
-
-    <!-- Enter the editor (event view only) -->
-    <button id="mk-open" aria-label="Open Map Maker">
-      <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-      <span>Map Maker</span>
-    </button>
 
     <!-- The editor frame: camouflage as a tunable map property, changing live -->
     <aside id="makerpanel">
@@ -140,24 +152,24 @@
     <div class="disclaimer">Fan concept by Tessa Kerk · unofficial, not endorsed by Supercell · <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">Fan Content Policy</a></div>
   </div>
 
-  <script src="src/config.js?v=20"></script>
-  <script src="src/assets.js?v=20"></script>
-  <script src="data/arena.js?v=20"></script>
-  <script src="data/tuning.js?v=20"></script>
-  <script src="src/input.js?v=20"></script>
-  <script src="src/arena.js?v=20"></script>
-  <script src="src/ai.js?v=20"></script>
-  <script src="src/fx.js?v=20"></script>
-  <script src="src/player.js?v=20"></script>
-  <script src="src/tag.js?v=20"></script>
-  <script src="src/hider.js?v=20"></script>
-  <script src="src/seeker.js?v=20"></script>
-  <script src="src/round.js?v=20"></script>
-  <script src="src/render.js?v=20"></script>
-  <script src="src/reveal.js?v=20"></script>
-  <script src="src/maker.js?v=20"></script>
-  <script src="src/pace.js?v=20"></script>
-  <script src="src/debug.js?v=20"></script>
-  <script src="src/game.js?v=20"></script>
+  <script src="src/config.js?v=21"></script>
+  <script src="src/assets.js?v=21"></script>
+  <script src="data/arena.js?v=21"></script>
+  <script src="data/tuning.js?v=21"></script>
+  <script src="src/input.js?v=21"></script>
+  <script src="src/arena.js?v=21"></script>
+  <script src="src/ai.js?v=21"></script>
+  <script src="src/fx.js?v=21"></script>
+  <script src="src/player.js?v=21"></script>
+  <script src="src/tag.js?v=21"></script>
+  <script src="src/hider.js?v=21"></script>
+  <script src="src/seeker.js?v=21"></script>
+  <script src="src/round.js?v=21"></script>
+  <script src="src/render.js?v=21"></script>
+  <script src="src/reveal.js?v=21"></script>
+  <script src="src/maker.js?v=21"></script>
+  <script src="src/pace.js?v=21"></script>
+  <script src="src/debug.js?v=21"></script>
+  <script src="src/game.js?v=21"></script>
 </body>
 </html>

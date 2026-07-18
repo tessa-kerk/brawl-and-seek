@@ -64,7 +64,7 @@ body{
   text-shadow:0 2px 0 var(--ink), 0 0 18px rgba(255,200,0,.25);
 }
 .wordmark .amp{color:var(--magenta);}
-.badges{display:flex;align-items:center;gap:6px;}
+.badges{display:flex;align-items:center;gap:6px;pointer-events:auto;}
 .stamp{
   font-family:'Nunito Sans';font-weight:800;
   font-size:11px;letter-spacing:.14em;text-transform:uppercase;
@@ -215,29 +215,54 @@ body{
 #hint b{color:var(--yellow);font-weight:800;}
 #hint .paint{color:var(--magenta);font-weight:800;}
 #hint.dim{opacity:0;}
+/* Short landscape phones (the joystick's fixed base sits low-left here,
+   src/input.js): lift + narrow the hint so its box clears the ring's
+   bottom edge instead of dipping under it. */
+@media (max-height:430px) and (orientation:landscape){
+  #hint{bottom:calc(env(safe-area-inset-bottom) + 40px);max-width:min(76vw,480px);}
+}
 
-/* ---- Status chip (state read-out, top-centre) ------------------------
-   HUD legibility fix (art pass 18-07-2026): the world art now sits behind
-   every HUD element and its colour varies by prop/ground (and will keep
-   changing as props get re-referenced) — a low-opacity tinted background
-   is not a plate, it's a wash, and reads unplated over a bright/varied
-   ground (found: teal-on-tan on desktop). Match the ticker chip's solid
-   dark plate (rgba(23,27,51,.80) + blur) so legibility never depends on
-   what's rendered underneath; the state colour lives in text + border only. */
+/* ---- Camo badge (bottom-right, landscape HUD rebuild 18-07-2026) ------
+   Concept Brief rule 3g/3h: the play frame's control clusters use Brawl's
+   OWN visual language — joystick bottom-left (src/input.js), a circular
+   ring-badge bottom-right where Brawl's own attack/Super buttons live.
+   A hider has no attack, so this badge shows real information in that same
+   slot instead of a fake fire button: a conic-gradient ring that fills with
+   --p (Player.progress, driven live from game.js hud()) as you paint in,
+   a solid glow once you're camouflaged, and a dim static ring when nothing
+   here camouflages you. Same solid dark plate as the ticker so legibility
+   never depends on what's rendered underneath the badge itself. */
 #status{
-  position:absolute;top:calc(env(safe-area-inset-top) + 90px);left:50%;
-  transform:translateX(-50%);
-  z-index:5;pointer-events:none;
-  font-family:'Lilita One',cursive;font-size:14px;letter-spacing:.06em;
-  text-transform:uppercase;
-  padding:5px 14px;border-radius:999px;
-  background:rgba(23,27,51,.82);backdrop-filter:blur(3px);
-  opacity:0;transition:opacity .35s ease, color .35s ease, border-color .35s ease;
+  position:absolute;right:calc(env(safe-area-inset-right) + 22px);
+  bottom:calc(env(safe-area-inset-bottom) + 22px);
+  width:64px;height:64px;border-radius:50%;
+  z-index:6;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+  background:
+    conic-gradient(var(--ring, rgba(246,244,239,.3)) calc(var(--p,0)*360deg), transparent 0),
+    rgba(23,27,51,.82);
+  border:2.5px solid rgba(246,244,239,.16);
+  box-shadow:0 6px 18px rgba(0,0,0,.4);
+  opacity:.5;transition:opacity .35s ease, border-color .35s ease, box-shadow .35s ease;
 }
 #status.visible{opacity:1;}
-#status.hiding{color:var(--magenta);border:1px solid rgba(255,79,160,.55);}
-#status.hidden{color:var(--teal);border:1px solid rgba(53,224,208,.6);}
-#status.exposed{color:var(--yellow);border:1px solid rgba(255,200,0,.55);}
+#status-icon{font-size:22px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5));}
+#status.hiding{--ring:var(--magenta);border-color:rgba(255,79,160,.6);}
+#status.hidden{--ring:var(--teal);border-color:rgba(53,224,208,.7);box-shadow:0 0 0 4px rgba(53,224,208,.16),0 6px 18px rgba(0,0,0,.4);}
+#status.exposed{--ring:var(--yellow);border-color:rgba(255,200,0,.6);}
+#status.nocamo{--ring:var(--magenta);border-color:rgba(255,79,160,.6);}
+
+#status-label{
+  position:absolute;right:calc(env(safe-area-inset-right) + 22px);
+  bottom:calc(env(safe-area-inset-bottom) + 90px);
+  z-index:6;pointer-events:none;text-align:right;
+  font-family:'Lilita One',cursive;font-size:13px;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--chalk);
+  text-shadow:0 2px 6px rgba(0,0,0,.6);
+  opacity:0;transition:opacity .35s ease;
+  max-width:150px;
+}
+#status-label:not(:empty){opacity:1;}
 
 /* ---- Disclaimer (Fan Content Policy safety, on everything) ------------ */
 .disclaimer{
@@ -272,17 +297,21 @@ body{
    read as a real properties inspector, not a row of debug switches.
    ====================================================================== */
 
-/* Entry pill (event view only) */
+/* Entry pill (event view only) — lives in the top chrome rail now (landscape
+   HUD rebuild, rule 3c/3h): it's OUR tool, not Brawl's, so it moved out of
+   the play frame's own bottom-right control-cluster slot (now the camo
+   badge) rather than compete with Brawl's own UI language there. */
 #mk-open{
-  position:absolute;right:14px;bottom:calc(env(safe-area-inset-bottom) + 26px);
-  z-index:7;display:flex;align-items:center;gap:7px;
-  font-family:'Lilita One',cursive;font-size:14px;letter-spacing:.03em;
+  display:flex;align-items:center;gap:5px;
+  font-family:'Lilita One',cursive;font-size:11px;letter-spacing:.03em;
   color:var(--ink);background:var(--teal);
-  border:none;border-radius:999px;padding:9px 15px;cursor:pointer;
-  box-shadow:0 4px 0 #1FA79A, 0 10px 26px rgba(0,0,0,.35);
+  border:none;border-radius:999px;padding:5px 11px;cursor:pointer;
+  box-shadow:0 3px 0 #1FA79A;
 }
-#mk-open:active{transform:translateY(2px);box-shadow:0 2px 0 #1FA79A;}
+#mk-open svg{flex:none;}
+#mk-open:active{transform:translateY(2px);box-shadow:0 1px 0 #1FA79A;}
 body.maker #mk-open{display:none;}
+@media (max-width:480px){ #mk-open span{display:none;} #mk-open{padding:6px 8px;} }
 
 /* Hide the event HUD while editing */
 body.maker #ticker, body.maker #hint, body.maker #banner,
@@ -423,12 +452,15 @@ body.maker #makerpanel{
    the PLAY AREA rather than the whole viewport. */
 @media (min-width:860px){
   body.maker #topbar{right:340px;}
-  body.maker #status, body.maker #mk-toast{left:calc(50% - 170px);}
+  body.maker #mk-toast{left:calc(50% - 170px);}
+  /* the badge stays bottom-right of the PLAY area, clear of the right rail */
+  body.maker #status{right:calc(340px + 22px);}
+  body.maker #status-label{right:calc(340px + 22px);}
 }
-/* Keep the state chip off the arena (and off the player's head). */
-body.maker #status{top:auto;bottom:18px;}
+/* Phone: lift the badge + its label clear of the bottom sheet. */
 @media (max-width:859px){
-  body.maker #status{bottom:calc(46vh + 12px);}
+  body.maker #status{bottom:calc(46vh + 16px);}
+  body.maker #status-label{bottom:calc(46vh + 84px);}
 }
 
 /* Interactive chrome must be able to receive touches and scroll: the stage sets

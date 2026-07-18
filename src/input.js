@@ -1,9 +1,14 @@
 /* Brawl & Seek — input. One normalised move vector out.
  *   WASD / Arrow keys on desktop (full speed).
  *   Touch: a thumb-stick, in one of two modes (query-selectable):
- *     float  (default)      — a floating stick that anchors where you first touch.
- *     fixed  (?joystick=fixed) — a standard fixed base bottom-left, generous
- *                                dead-zone, NO re-anchor. Boring, always works.
+ *     fixed  (default, 18-07-2026)  — a standard fixed base bottom-left,
+ *                                generous dead-zone, NO re-anchor. This is
+ *                                real Brawl's own joystick language (Concept
+ *                                Brief rule 3g/3h UI split: only Brawl's own
+ *                                control chrome sits inside the play frame),
+ *                                so it's now the default, not the debug mode.
+ *     float  (?joystick=float)  — a floating stick that anchors where you
+ *                                first touch. Kept as a comparison affordance.
  *
  * iOS-Safari hardening (07-07-2026, after two mobile playtests where the sim
  * passed but the device didn't):
@@ -24,7 +29,7 @@
   addEventListener('keyup', (e) => { const d = KEYMAP[e.code]; if (d) { keys.delete(d); e.preventDefault(); } });
   addEventListener('blur', () => keys.clear());
 
-  const MODE = new URLSearchParams(location.search).get('joystick') === 'fixed' ? 'fixed' : 'float';
+  const MODE = new URLSearchParams(location.search).get('joystick') === 'float' ? 'float' : 'fixed';
 
   // Tuning per mode.
   const F = { DEAD: 4, MAX: 34, MINK: 0.5 };            // floating
@@ -46,13 +51,30 @@
   ring.id = 'stick-ring'; nub.id = 'stick-nub'; ring.appendChild(nub);
   ring.style.display = MODE === 'fixed' ? 'block' : 'none';
   function el(s) { const d = document.createElement('div'); Object.assign(d.style, { position: 'fixed', width: s + 'px', height: s + 'px', borderRadius: '50%', zIndex: 6, pointerEvents: 'none', transform: 'translate(-50%,-50%)', left: '0', top: '0' }); return d; }
-  addEventListener('DOMContentLoaded', () => document.body.appendChild(ring));
+  // Appended into #stage (not document.body): the Map Maker sheet
+  // (#makerpanel, z-index 8) needs to reliably paint OVER the ring
+  // (z-index 6) when the two overlap on a phone. Living as a body-level
+  // sibling of #stage put the ring in a different z-index comparison than
+  // intended — as a child of #stage, both are compared in the same
+  // context and the higher z-index wins, as the numbers already say.
+  addEventListener('DOMContentLoaded', () => (document.getElementById('stage') || document.body).appendChild(ring));
 
-  function base() { return { x: Math.max(78, innerWidth * 0.15), y: innerHeight - Math.max(120, innerHeight * 0.17) }; }
+  // Bottom-left, matching the proportions in Tessa's real screenshot
+  // reference. No maker-mode special-casing needed: Map Maker's phone
+  // bottom-sheet (#makerpanel, z-index 8 vs the ring's 6) already paints
+  // over the ring where the two would overlap, and its touches are already
+  // excluded from the stick by the existing #makerpanel UI-exclusion rule
+  // below — nothing to functionally protect, so keep this one position.
+  function base() {
+    return { x: Math.max(78, innerWidth * 0.15), y: innerHeight - Math.max(120, innerHeight * 0.17) };
+  }
+  // Neutral translucent grey — real Brawl's own control language, not our
+  // brand accent (Concept Brief rule 3g/3h UI split: inside the play frame,
+  // only Brawl's own UI vocabulary; our teal/magenta stays for OUR chrome).
   function styleRing(on) {
-    ring.style.background = 'radial-gradient(circle, rgba(53,224,208,.10), rgba(23,27,51,.5))';
-    ring.style.border = '2px solid rgba(53,224,208,' + (on ? '.4' : '.22') + ')';
-    nub.style.background = 'rgba(255,200,0,' + (on ? '.92' : '.5') + ')';
+    ring.style.background = 'radial-gradient(circle, rgba(255,255,255,.16), rgba(20,20,26,.30))';
+    ring.style.border = '2.5px solid rgba(255,255,255,' + (on ? '.55' : '.34') + ')';
+    nub.style.background = 'rgba(235,235,240,' + (on ? '.92' : '.68') + ')';
     nub.style.boxShadow = '0 3px 10px rgba(0,0,0,.4)';
   }
   function drawVisual() {

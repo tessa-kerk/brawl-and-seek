@@ -224,8 +224,10 @@
       ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W, yy - 40); ctx.stroke();
     }
     ctx.restore();
-    // dark rounded rim around each pool so it reads as depth
-    ctx.strokeStyle = 'rgba(9,20,40,.55)'; ctx.lineWidth = 3;
+    // A warm wood-brown rim around each pool, matching the real map's own pool
+    // border (measured from Spots of Yore's render, 18-07-2026 — the earlier
+    // dark-navy rim didn't match the reference at all).
+    ctx.strokeStyle = '#7A4A2E'; ctx.lineWidth = 5;
     for (const p of pools) {
       const x = p.c0 * T, y = p.r0 * T, w = (p.c1 - p.c0 + 1) * T, h = (p.r1 - p.r0 + 1) * T;
       roundRect(ctx, x, y, w, h, Math.min(T * 0.28, w / 2, h / 2)); ctx.stroke();
@@ -262,17 +264,16 @@
     ctx.restore();
   }
 
-  // Art pass: themed Fresh-Paint obstacles (paint drums + half-painted crates)
-  // replace the procedural rounded blocks, placed only in the grid's scattered
-  // INTERIOR clusters (art pass 18-07-2026 — no border ring, real-map law 1).
-  // A deterministic mix of drum/crate per cell. Each block is drawn a touch
-  // tall with a contact shadow so it reads as a solid object.
-  function drawWallSprites(ctx, drum, crate) {
+  // Art pass (18-07-2026, faithful redo): a single wall-block prop — a
+  // coiled-cap wood crate, reference-guided from Spots of Yore's own wall
+  // cluster (the earlier invented paint-drum/half-painted-crate pair is
+  // retired, not deleted — see GENERATION-LOG.md). Placed only in the grid's
+  // scattered INTERIOR clusters (no border ring, real-map law 1). Each block
+  // is drawn a touch tall with a contact shadow so it reads as a solid object.
+  function drawWallSprites(ctx, block) {
     const lift = T * 0.10;
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
       if (grid[r][c] !== '#') continue;
-      const useCrate = ((c * 3 + r * 7) % 5) < 2;
-      const img = (useCrate ? crate : drum) || drum || crate;
       const x = c * T, y = r * T;
       ctx.save();
       ctx.fillStyle = 'rgba(0,0,0,.32)';
@@ -280,15 +281,14 @@
       // flip alternate blocks so a wall of them doesn't read as one stamped image
       const flip = ((c * 5 + r * 3) & 1) === 1;
       if (flip) { ctx.translate(x + T / 2, 0); ctx.scale(-1, 1); ctx.translate(-(x + T / 2), 0); }
-      ctx.drawImage(img, x, y - lift, T, T);
+      ctx.drawImage(block, x, y - lift, T, T);
       ctx.restore();
     }
   }
 
   function drawWalls(ctx) {
-    const drum = window.Assets && Assets.get('wall_drum');
-    const crate = window.Assets && Assets.get('wall_crate');
-    if (drum || crate) { drawWallSprites(ctx, drum, crate); return; }
+    const block = window.Assets && Assets.get('wall_block');
+    if (block) { drawWallSprites(ctx, block); return; }
     // ---- procedural fallback (the signed-off block look) ----
     const inset = 3, rad = 12, lift = 7;   // rounded, lifted blocks
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {

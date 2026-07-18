@@ -6,12 +6,11 @@
  * kick the loads on parse so they're ready by first paint. */
 (function () {
   const specs = {
-    skirt:      'assets/world/skirt-1.png',   // NOT used in the play view (art pass 18-07) — kept for a future marketing/landing use
-    floor:      'assets/world/floor.png',
-    water:      'assets/world/water.png',
-    wall_drum:  'assets/world/wall_drum.png',
-    wall_crate: 'assets/world/wall_crate.png',
-    bush:       'assets/world/bush.png',
+    skirt:      'assets/world/skirt-1.png',    // NOT used in the play view (art pass 18-07) — kept for a future marketing/landing use
+    floor:      'assets/world/floor.png',      // faithful (18-07 redo): matches Spots of Yore's real two-tone tan checker
+    water:      'assets/world/water.png',      // faithful (18-07 redo): matches the real pool's flat cartoon blue
+    wall_block: 'assets/world/wall_block.png', // faithful (18-07 redo): the real cluster's coiled-cap wood crate; replaces wall_drum/wall_crate (retired, not deleted)
+    bush:       'assets/world/bush.png',       // faithful (18-07 redo): the real map's flat 2-tone scalloped pattern
   };
   const imgs = {};
   for (const k in specs) { const im = new Image(); im.decoding = 'async'; im.src = specs[k]; imgs[k] = im; }

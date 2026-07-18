@@ -195,7 +195,14 @@ body{
 #hint .paint{color:var(--magenta);font-weight:800;}
 #hint.dim{opacity:0;}
 
-/* ---- Status chip (state read-out, top-centre) ------------------------ */
+/* ---- Status chip (state read-out, top-centre) ------------------------
+   HUD legibility fix (art pass 18-07-2026): the world art now sits behind
+   every HUD element and its colour varies by prop/ground (and will keep
+   changing as props get re-referenced) — a low-opacity tinted background
+   is not a plate, it's a wash, and reads unplated over a bright/varied
+   ground (found: teal-on-tan on desktop). Match the ticker chip's solid
+   dark plate (rgba(23,27,51,.80) + blur) so legibility never depends on
+   what's rendered underneath; the state colour lives in text + border only. */
 #status{
   position:absolute;top:calc(env(safe-area-inset-top) + 90px);left:50%;
   transform:translateX(-50%);
@@ -203,12 +210,13 @@ body{
   font-family:'Lilita One',cursive;font-size:14px;letter-spacing:.06em;
   text-transform:uppercase;
   padding:5px 14px;border-radius:999px;
-  opacity:0;transition:opacity .35s ease, background .35s ease, color .35s ease;
+  background:rgba(23,27,51,.82);backdrop-filter:blur(3px);
+  opacity:0;transition:opacity .35s ease, color .35s ease, border-color .35s ease;
 }
 #status.visible{opacity:1;}
-#status.hiding{background:rgba(255,79,160,.16);color:var(--magenta);border:1px solid rgba(255,79,160,.4);}
-#status.hidden{background:rgba(53,224,208,.16);color:var(--teal);border:1px solid rgba(53,224,208,.45);}
-#status.exposed{background:rgba(255,200,0,.14);color:var(--yellow);border:1px solid rgba(255,200,0,.4);}
+#status.hiding{color:var(--magenta);border:1px solid rgba(255,79,160,.55);}
+#status.hidden{color:var(--teal);border:1px solid rgba(53,224,208,.6);}
+#status.exposed{color:var(--yellow);border:1px solid rgba(255,200,0,.55);}
 
 /* ---- Disclaimer (Fan Content Policy safety, on everything) ------------ */
 .disclaimer{
@@ -386,7 +394,7 @@ body.maker #makerpanel{
 #mk-toast.show{opacity:1;transform:translate(-50%,-50%) rotate(-8deg) scale(1);}
 
 /* "no camo surface here" state for the status chip */
-#status.nocamo{background:rgba(255,79,160,.16);color:var(--magenta);border:1px solid rgba(255,79,160,.45);}
+#status.nocamo{color:var(--magenta);border:1px solid rgba(255,79,160,.55);}   /* solid plate inherited from #status */
 
 /* --- Map Maker layout corrections ------------------------------------- */
 /* The CONCEPT badge is a hard line: it must never be occluded, in any view.

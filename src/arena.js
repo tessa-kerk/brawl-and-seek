@@ -224,10 +224,12 @@
       ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W, yy - 40); ctx.stroke();
     }
     ctx.restore();
-    // A warm wood-brown rim around each pool, matching the real map's own pool
-    // border (measured from Spots of Yore's render, 18-07-2026 — the earlier
-    // dark-navy rim didn't match the reference at all).
-    ctx.strokeStyle = '#7A4A2E'; ctx.lineWidth = 5;
+    // A warm terracotta rim around each pool, matching the real map's own pool
+    // border — colour SAMPLED directly from genuine in-game reference art
+    // (the Fandom wiki's map asset, not the brawlify map-SELECTION THUMBNAIL
+    // that misled the first faithful pass; see Art Inventory.md's reference-
+    // class correction, 18-07-2026). Pixel-sampled at RGB(130,68,46).
+    ctx.strokeStyle = '#82442E'; ctx.lineWidth = 5;
     for (const p of pools) {
       const x = p.c0 * T, y = p.r0 * T, w = (p.c1 - p.c0 + 1) * T, h = (p.r1 - p.r0 + 1) * T;
       roundRect(ctx, x, y, w, h, Math.min(T * 0.28, w / 2, h / 2)); ctx.stroke();

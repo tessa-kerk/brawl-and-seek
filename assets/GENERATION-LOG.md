@@ -22,3 +22,10 @@ Fidelity rule: brawler sprites generated with the official Fankit full-body rend
 | 10 | Bush (faithful — flat 2-tone scalloped pattern, matches the real map, supersedes #6) | 1024² high, `--ref` real crop (blue→cutout) | 2 | $0.34 | **$2.88** | ✅ picked comp 1; the earlier 3D spiky bush read as generic-bush clipart, not Brawl's flat graphic language |
 
 **Running total: $2.88** of the ~$5–8 envelope (PM confirmed ~$6.5 headroom before this batch). floor/water/wall/bush v1 assets superseded, not deleted — filed alongside skirt-1 for possible marketing/landing use.
+
+| — | *(SECOND redo, 18-07: wall/bush/floor regenerated from the Fandom wiki's "Spots of Yore" map render — a source class later found to be unconfirmed against true in-game rendering. Tessa's own real screenshot arrived mid-flight and superseded this batch before it could be reviewed. Logged honestly — not used, not hidden.)* | | | | | |
+| 11 | Wall prop (wiki-referenced, SUPERSEDED before use) | 1024² high, `--ref` (blue→cutout) | 2 | $0.34 | **$3.22** | ⛔ superseded — Tessa's real screenshot arrived before review; not wired |
+| 12 | Bush (wiki-referenced, SUPERSEDED before use) | 1024² high, `--ref` (blue→cutout) | 2 | $0.34 | **$3.56** | ⛔ superseded — same reason |
+| 13 | Floor (wiki-referenced, SUPERSEDED before use) | 1024² high, `--ref` | 2 | $0.34 | **$3.90** | ⛔ superseded — same reason |
+
+**Running total: $3.90.** These 3 assets were never wired into the game (still using the v16 faithful set, itself now paused pending Tessa's new map pick). No further generation until she picks a current-rotation map and the PM clears the next batch — see `Research Dossier — Real In-Game References.md` and PLAN.md.

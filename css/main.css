@@ -147,20 +147,31 @@ body{
    every other HUD readout — legibility never depends on what's rendered
    underneath. */
 #banner{
-  position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);
+  position:absolute;top:32%;left:50%;transform:translate(-50%,-50%);
   z-index:6;pointer-events:none;text-align:center;
-  padding:14px 28px 12px;border-radius:16px;
+  padding:9px 20px 8px;border-radius:14px;
   background:rgba(23,27,51,.72);backdrop-filter:blur(4px);
   opacity:0;transition:opacity .3s ease;
+  max-width:80vw;
 }
 #banner.show{opacity:1;}
+/* Right-sized (PM flag, 18-07-2026 — footage-checked against how Brawl
+   scales its own event banners): the plate read oversized relative to a
+   short landscape phone's fitted arena, covering most of the play area
+   while showing. A HUD callout, not a full-screen takeover. */
 #banner .main{
-  display:block;font-family:'Lilita One',cursive;font-size:clamp(26px,7vw,52px);
-  color:var(--yellow);text-shadow:0 3px 0 var(--ink),0 0 26px rgba(255,200,0,.3);
+  display:block;font-family:'Lilita One',cursive;font-size:clamp(18px,4.4vw,30px);
+  color:var(--yellow);text-shadow:0 2px 0 var(--ink),0 0 16px rgba(255,200,0,.3);
   letter-spacing:.02em;line-height:1;
 }
-#banner small{display:block;font-family:'Nunito Sans';font-weight:800;font-size:12px;
-  letter-spacing:.18em;text-transform:uppercase;color:var(--chalk);opacity:.7;margin-top:6px;}
+#banner small{display:block;font-family:'Nunito Sans';font-weight:800;font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--chalk);opacity:.7;margin-top:4px;}
+/* Short landscape phones (the exact case PM's frame flagged): shrink again. */
+@media (max-height:430px) and (orientation:landscape){
+  #banner{padding:7px 16px 6px;}
+  #banner .main{font-size:clamp(16px,4vw,24px);}
+  #banner small{font-size:9px;margin-top:3px;}
+}
 
 /* ---- End-of-round reveal panel ---------------------------------------- */
 #endpanel{

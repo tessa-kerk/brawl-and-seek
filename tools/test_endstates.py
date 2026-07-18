@@ -37,11 +37,11 @@ with game() as (pg, errs):
     # 2b) an airborne tag that HITS converts a hider -> a fresh seeker -> round CONTINUES
     revive = pg.evaluate("""(()=>{
       Round.reset(); Round.phase='seek'; Round.elapsed=20; Tags.reset(); Player.found=false;
-      const d=Hiders.list[0]; const c=Arena.centre(5,1);    // tile CENTRE (clear row, not a wall row)
+      const d=Hiders.list[0]; const c=Arena.centre(6,5);    // tile CENTRE (Acid-Lakes-corner row5, clear floor cols3-9)
       Hiders.list.forEach((h,i)=>h.found=i>0);              // one live dummy
       d.found=false; d.x=c.x; d.y=c.y; d.hidden=true;
       Seekers.list.forEach(s=>{s.state='spectator'; s.health=-10;});
-      const s=Seekers.list[0]; const sc=Arena.centre(3,1); s.x=sc.x; s.y=sc.y;   // fire right, straight at it
+      const s=Seekers.list[0]; const sc=Arena.centre(4,5); s.x=sc.x; s.y=sc.y;   // fire right, straight at it
       Tags.fire(s, 0);
       for(let i=0;i<60 && Tags.list.length;i++) Tags.update(0.016);
       Round.update(0.016);
@@ -52,7 +52,7 @@ with game() as (pg, errs):
     # 3) no tag can fire during the HIDE phase (seekers held)
     fired = pg.evaluate("""(()=>{
       Round.reset(); Round.phase='hide'; Round.elapsed=1; Tags.reset();
-      const T=Arena.T; Player.x=5*T; Player.y=4*T; Player.hidden=false;
+      const T=Arena.T; const c=Arena.centre(7,5); Player.x=c.x; Player.y=c.y; Player.hidden=false;
       const s=Seekers.list[0]; s.x=Player.x+T; s.y=Player.y; s.hold=0; s.speedEMA=0;
       for(let i=0;i<120;i++) Seekers.update(0.016);
       return Tags.list.length;})()""")
@@ -66,10 +66,10 @@ with game() as (pg, errs):
     #    that seeker was on its last mistake — no bench, no 'tagged-out'.
     sim = pg.evaluate("""(()=>{
       Round.reset(); Round.phase='seek'; Round.elapsed=20; Tags.reset();
-      const c=Arena.centre(6,1); Player.x=c.x; Player.y=c.y; Player.hidden=true; Player.found=false;
+      const c=Arena.centre(7,5); Player.x=c.x; Player.y=c.y; Player.hidden=true; Player.found=false;
       Hiders.list.forEach(h=>h.found=true);
       const s=Seekers.list[0]; s.state='patrol'; s.health=10; s.mistakes=3;
-      const sc=Arena.centre(4,1); s.x=sc.x; s.y=sc.y;
+      const sc=Arena.centre(5,5); s.x=sc.x; s.y=sc.y;
       Seekers.list.length=1;
       Tags.fire(s, 0);
       for(let i=0;i<60 && Tags.list.length;i++) Tags.update(0.016);

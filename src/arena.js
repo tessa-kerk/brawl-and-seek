@@ -169,6 +169,28 @@
     const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.8);
     g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.28)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+    drawCutEdgeFade(ctx);
+  }
+
+  /* "Never feel cut off" (Concept Brief rule 3g). This recreated section has
+   * TWO genuine map edges (top + left — the real spiky wall border, traced
+   * from the reference, drawn as-is — never faded) and TWO crop edges (right
+   * + bottom — not a real boundary, just where our 10x9 window on the actual
+   * 61x61 map stops). Rather than let those two sides read as a hard wall, a
+   * soft gradient fades them toward the exact tone the screen-space world-skirt
+   * already uses beyond the arena's own bounds (game.js render() — a dimmed
+   * continuation of the same floor ground) — "the map keeps going, just past
+   * legible focus," not a stop. Only right + bottom get this; top + left, the
+   * map's own true edge, stay sharp. */
+  function drawCutEdgeFade(ctx) {
+    const fadeW = T * 1.3, tone = 'rgba(23,27,51,0.82)', clear = 'rgba(23,27,51,0)';
+    let g = ctx.createLinearGradient(W - fadeW, 0, W, 0);
+    g.addColorStop(0, clear); g.addColorStop(1, tone);
+    ctx.fillStyle = g; ctx.fillRect(W - fadeW, 0, fadeW, H);
+    g = ctx.createLinearGradient(0, H - fadeW, 0, H);
+    g.addColorStop(0, clear); g.addColorStop(1, tone);
+    ctx.fillStyle = g; ctx.fillRect(0, H - fadeW, W, fadeW);
   }
 
   // Bounding boxes of contiguous same-type tile regions, 4-way flood fill.

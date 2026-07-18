@@ -18,7 +18,7 @@ with game(width=844, height=390, mobile=True, query="?pace=1") as (pg, errs):  #
     t.check("panel controls fire on touch", s["rp"] == 0.5 and s["water"] is False and s["tell"] is False)
 
     # joystick still drives on the arena (not stolen by the UI exclusion)
-    pg.evaluate("Game.resume(); Player.x=Arena.centre(5,4).x; Player.y=Arena.centre(5,4).y; Player.vx=0;Player.vy=0;")
+    pg.evaluate("Game.resume(); Player.x=Arena.centre(3,5).x; Player.y=Arena.centre(3,5).y; Player.vx=0;Player.vy=0;")
     x0 = pg.evaluate("Player.x")
     touch(pg, "touchstart", 120, 200, idn=9)
     touch(pg, "touchmove", 170, 200, idn=9)
@@ -43,7 +43,7 @@ with game(width=844, height=390, mobile=True, query="?pace=1") as (pg, errs):  #
 
     # GHOST-TOUCHEND HARDENING: a UI touch id 7 whose touchend never arrives,
     # then id 7 reused for a GAME touch — must NOT be excluded from the stick.
-    pg.evaluate("Game.resume(); Player.x=Arena.centre(5,4).x; Player.y=Arena.centre(5,4).y; Player.vx=0;Player.vy=0;")
+    pg.evaluate("Game.resume(); Player.x=Arena.centre(3,5).x; Player.y=Arena.centre(3,5).y; Player.vx=0;Player.vy=0;")
     touch(pg, "touchstart", 195, 350, idn=7, ui_sel="#mk-open")   # id7 begins on UI chrome
     # (no touchend for id7 — the iOS ghost)
     gx0 = pg.evaluate("Player.x")

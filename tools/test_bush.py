@@ -2,14 +2,27 @@
 surface, not decoration). Oracle = a hand-copied grid string and hand-reasoned
 adjacency, written independently here — NOT derived by calling any function
 under test (the standing rule: probe and actual must never share logic).
+
+PIVOT (18-07-2026, THIRD map — Acid Lakes top-left corner): the live played
+map is now a real recreated section that honestly has ZERO bush tiles (see
+the "HONEST GAP" note in data/arena.js — this specific corner is pool + wall
++ open floor + two crate props only; bush stays a map-agnostic mechanic with
+nothing to demonstrate on THIS map). Coupling this test to the live grid would
+either force fake bush tiles into a faithful recreation (wrong) or make the
+test vacuous (0 real cells, false confidence). Neither is acceptable, so this
+test now feeds the REAL, unmodified src/arena.js a dedicated synthetic bush
+fixture via network interception (Playwright route) instead of trusting
+whatever the currently art-directed map happens to contain — the code under
+test is still the genuine implementation, only the input data is swapped.
+This is MORE correct than map-coupling: it proves the mechanic itself,
+independent of any one map's content, exactly as the toggle is meant to be.
 """
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from _harness import game, Tally  # noqa: E402
+from _harness import game, Tally, URL  # noqa: E402
 
-# Hand-copied from data/arena.js — if this ever drifts from the real file, the
-# walkability/adjacency assertions below will simply fail loudly, which is the
-# point of an independent oracle.
+# Independent synthetic fixture (NOT the live played map) — hand-written here,
+# never derived from any function under test.
 GRID = [
     '..........',
     '..........',
@@ -23,7 +36,24 @@ GRID = [
 ]
 BUSH_CELLS = [(c, r) for r, row in enumerate(GRID) for c, ch in enumerate(row) if ch == 'b']
 
+FIXTURE_JS = """window.ARENA = {
+  grid: %s,
+  surfaces: {
+    floorA: '#2A3162', floorB: '#313A73',
+    wallTop: '#5A63A8', wallSide: '#333A72',
+    water: '#1C93C4', waterHi: '#48BCE6',
+    bush: '#2E9C52', bushHi: '#3BD16B',
+  },
+};""" % (GRID,)
+
 with game() as (pg, errs):
+    # Swap data/arena.js for the synthetic bush fixture, then reload so
+    # src/arena.js (untouched) parses the fixture instead of the live map.
+    pg.route("**/data/arena.js*", lambda route: route.fulfill(
+        content_type="application/javascript", body=FIXTURE_JS))
+    pg.goto(URL)
+    pg.wait_for_function("window.Game && window.Round && window.Arena", timeout=9000)
+    pg.wait_for_timeout(300)
     pg.evaluate("Game.pause()")
     T = pg.evaluate("Arena.T"); h = pg.evaluate("Player.h")
     t = Tally()

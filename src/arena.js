@@ -131,12 +131,20 @@
 
   // ---- Rendering --------------------------------------------------------
   function draw(ctx, t) {
-    // Floor checker (drawn under everything).
-    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-      const cell = grid[r][c];
-      if (cell === '#') continue;              // walls painted later, on top
-      ctx.fillStyle = ((c + r) & 1) ? S.floorB : S.floorA;
-      ctx.fillRect(c * T, r * T, T, T);
+    // Floor (drawn under everything). Art pass: a textured painted-ground image,
+    // cover-fit across the arena; falls back to the signed-off 2-shade checker.
+    const floorImg = window.Assets && Assets.get('floor');
+    if (floorImg) {
+      const s = Math.max(W / floorImg.naturalWidth, H / floorImg.naturalHeight);
+      const fw = floorImg.naturalWidth * s, fh = floorImg.naturalHeight * s;
+      ctx.drawImage(floorImg, (W - fw) / 2, (H - fh) / 2, fw, fh);
+    } else {
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const cell = grid[r][c];
+        if (cell === '#') continue;            // walls painted later, on top
+        ctx.fillStyle = ((c + r) & 1) ? S.floorB : S.floorA;
+        ctx.fillRect(c * T, r * T, T, T);
+      }
     }
     drawWater(ctx, t);
     drawWalls(ctx);
@@ -151,8 +159,19 @@
     ctx.save();
     ctx.beginPath();
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++)
-      if (grid[r][c] === '~') ctx.rect(c * T + 1, r * T + 1, T - 2, T - 2);
-    ctx.fillStyle = S.water; ctx.fill();
+      if (grid[r][c] === '~') ctx.rect(c * T, r * T, T, T);   // full cells → seamless pool
+    // Art pass: paint a teal-paint texture into the pool cells; the ripple sheen
+    // + dark contour below stay procedural (the mechanic's motion). Fallback = flat.
+    const waterImg = window.Assets && Assets.get('water');
+    ctx.save(); ctx.clip();
+    if (waterImg) {
+      const s = Math.max(W / waterImg.naturalWidth, H / waterImg.naturalHeight);
+      const ww = waterImg.naturalWidth * s, wh = waterImg.naturalHeight * s;
+      ctx.drawImage(waterImg, (W - ww) / 2, (H - wh) / 2, ww, wh);
+    } else {
+      ctx.fillStyle = S.water; ctx.fillRect(0, 0, W, H);
+    }
+    ctx.restore();
     ctx.clip();
     // moving highlight bands
     ctx.globalAlpha = 0.22; ctx.strokeStyle = S.waterHi; ctx.lineWidth = 3;
@@ -172,7 +191,34 @@
     }
   }
 
+  // Art pass: themed Fresh-Paint obstacles (paint drums + half-painted crates)
+  // replace the procedural rounded blocks. Border cells frame the arena in
+  // crates; interior cells are mostly drums, in a deterministic mix. Each block
+  // is drawn a touch tall with a contact shadow so it reads as a solid object.
+  function drawWallSprites(ctx, drum, crate) {
+    const lift = T * 0.10;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      if (grid[r][c] !== '#') continue;
+      const border = (r === 0 || c === 0 || r === rows - 1 || c === cols - 1);
+      const useCrate = border ? true : (((c * 3 + r * 7) % 5) < 2);
+      const img = (useCrate ? crate : drum) || drum || crate;
+      const x = c * T, y = r * T;
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,.32)';
+      ctx.beginPath(); ctx.ellipse(x + T / 2, y + T * 0.9, T * 0.42, T * 0.15, 0, 0, 7); ctx.fill();
+      // flip alternate blocks so a wall of them doesn't read as one stamped image
+      const flip = ((c * 5 + r * 3) & 1) === 1;
+      if (flip) { ctx.translate(x + T / 2, 0); ctx.scale(-1, 1); ctx.translate(-(x + T / 2), 0); }
+      ctx.drawImage(img, x, y - lift, T, T);
+      ctx.restore();
+    }
+  }
+
   function drawWalls(ctx) {
+    const drum = window.Assets && Assets.get('wall_drum');
+    const crate = window.Assets && Assets.get('wall_crate');
+    if (drum || crate) { drawWallSprites(ctx, drum, crate); return; }
+    // ---- procedural fallback (the signed-off block look) ----
     const inset = 3, rad = 12, lift = 7;   // rounded, lifted blocks
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
       if (grid[r][c] !== '#') continue;

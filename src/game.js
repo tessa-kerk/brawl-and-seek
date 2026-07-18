@@ -75,7 +75,18 @@
 
   function render() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = '#171B33'; ctx.fillRect(0, 0, cssW, cssH);
+    // World skirt: the arena sits INSIDE a repaint-site surround instead of
+    // floating on the flat void. Screen-space, cover-fit, drawn under the arena.
+    // Falls back to the signed-off flat letterbox if the image isn't ready.
+    const skirt = window.Assets && Assets.get('skirt');
+    if (skirt) {
+      const s = Math.max(cssW / skirt.naturalWidth, cssH / skirt.naturalHeight);
+      const sw = skirt.naturalWidth * s, sh = skirt.naturalHeight * s;
+      ctx.fillStyle = '#171B33'; ctx.fillRect(0, 0, cssW, cssH);   // base under any transparent edge
+      ctx.drawImage(skirt, (cssW - sw) / 2, (cssH - sh) / 2, sw, sh);
+    } else {
+      ctx.fillStyle = '#171B33'; ctx.fillRect(0, 0, cssW, cssH);
+    }
 
     const maker = STATE.view === 'maker';
     ctx.setTransform(scale * dpr, 0, 0, scale * dpr, offX * dpr, offY * dpr);

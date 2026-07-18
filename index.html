@@ -14,8 +14,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Brawl & Seek">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/fonts.css?v=21">
-<link rel="stylesheet" href="css/main.css?v=21">
+<link rel="stylesheet" href="css/fonts.css?v=22">
+<link rel="stylesheet" href="css/main.css?v=22">
 </head>
 <body>
   <!-- Landscape-only (Concept Brief fidelity rule 3g): Brawl Stars is
@@ -40,7 +40,7 @@
       <div class="wordmark">BRAWL <span class="amp">&amp;</span> SEEK</div>
       <div class="badges">
         <span class="concept" title="Unofficial fan concept — not a real in-game screenshot">CONCEPT</span>
-        <span class="stamp">v21 · ART</span>
+        <span class="stamp">v22 · ART</span>
         <!-- Map Maker entry (landscape HUD rebuild, rule 3c/3h): this is OUR
              tool, not Brawl's, so it moved out of the play frame's own
              control-cluster real estate (bottom-right, now the camo badge)
@@ -114,11 +114,16 @@
       <section class="mk-group">
         <h4>Camo surfaces</h4>
         <p class="mk-hint">Which surfaces paint a hider in.</p>
+        <!-- Per-surface tile-count hint (PM directive, 18-07-2026): faithful
+             to how the real Map Maker works — a map's own tile mix decides
+             what it can hide you in, and a bushless map having "0" here
+             teaches that, rather than hiding the honest gap. Counts are
+             computed live from Arena.grid in src/maker.js, never hard-coded. -->
         <div class="mk-surfaces">
-          <button class="mk-surf" data-surface="wall"><i style="--sw:#5A63A8"></i><span>Walls</span></button>
-          <button class="mk-surf" data-surface="floor"><i style="--sw:#313A73"></i><span>Floor</span></button>
-          <button class="mk-surf" data-surface="water"><i style="--sw:#1C93C4"></i><span>Water</span></button>
-          <button class="mk-surf" data-surface="bush"><i style="--sw:#2E9C52"></i><span>Bushes</span></button>
+          <button class="mk-surf" data-surface="wall"><i style="--sw:#5A63A8"></i><span>Walls</span><b class="mk-count"></b></button>
+          <button class="mk-surf" data-surface="floor"><i style="--sw:#313A73"></i><span>Floor</span><b class="mk-count"></b></button>
+          <button class="mk-surf" data-surface="water"><i style="--sw:#1C93C4"></i><span>Water</span><b class="mk-count"></b></button>
+          <button class="mk-surf" data-surface="bush"><i style="--sw:#2E9C52"></i><span>Bushes</span><b class="mk-count"></b></button>
         </div>
         <p class="mk-warn" id="mk-warn" hidden>No surface camouflages — nobody can hide on this map.</p>
       </section>
@@ -152,24 +157,24 @@
     <div class="disclaimer">Fan concept by Tessa Kerk · unofficial, not endorsed by Supercell · <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">Fan Content Policy</a></div>
   </div>
 
-  <script src="src/config.js?v=21"></script>
-  <script src="src/assets.js?v=21"></script>
-  <script src="data/arena.js?v=21"></script>
-  <script src="data/tuning.js?v=21"></script>
-  <script src="src/input.js?v=21"></script>
-  <script src="src/arena.js?v=21"></script>
-  <script src="src/ai.js?v=21"></script>
-  <script src="src/fx.js?v=21"></script>
-  <script src="src/player.js?v=21"></script>
-  <script src="src/tag.js?v=21"></script>
-  <script src="src/hider.js?v=21"></script>
-  <script src="src/seeker.js?v=21"></script>
-  <script src="src/round.js?v=21"></script>
-  <script src="src/render.js?v=21"></script>
-  <script src="src/reveal.js?v=21"></script>
-  <script src="src/maker.js?v=21"></script>
-  <script src="src/pace.js?v=21"></script>
-  <script src="src/debug.js?v=21"></script>
-  <script src="src/game.js?v=21"></script>
+  <script src="src/config.js?v=22"></script>
+  <script src="src/assets.js?v=22"></script>
+  <script src="data/arena.js?v=22"></script>
+  <script src="data/tuning.js?v=22"></script>
+  <script src="src/input.js?v=22"></script>
+  <script src="src/arena.js?v=22"></script>
+  <script src="src/ai.js?v=22"></script>
+  <script src="src/fx.js?v=22"></script>
+  <script src="src/player.js?v=22"></script>
+  <script src="src/tag.js?v=22"></script>
+  <script src="src/hider.js?v=22"></script>
+  <script src="src/seeker.js?v=22"></script>
+  <script src="src/round.js?v=22"></script>
+  <script src="src/render.js?v=22"></script>
+  <script src="src/reveal.js?v=22"></script>
+  <script src="src/maker.js?v=22"></script>
+  <script src="src/pace.js?v=22"></script>
+  <script src="src/debug.js?v=22"></script>
+  <script src="src/game.js?v=22"></script>
 </body>
 </html>

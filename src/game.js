@@ -202,7 +202,7 @@
     if (Round.bonusFlash <= 0) bonusArmed = false;
   }
   function showBanner(main, sub) {
-    elBanner.innerHTML = `${main}<small>${sub}</small>`;
+    elBanner.innerHTML = `<span class="main">${main}</span><small>${sub}</small>`;
     elBanner.classList.add('show');
   }
 

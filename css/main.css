@@ -132,15 +132,25 @@ body{
   100%{opacity:0;transform:translateX(-50%) translateY(-26px) scale(1);}
 }
 
-/* Phase banner: HIDE! / SEEKER RELEASED */
+/* Phase banner: HIDE! / SEEKER RELEASED. HUD legibility fix (PM flag,
+   18-07-2026, same class of bug as the earlier "unplated teal-on-tan"
+   status chip): a text-shadow alone doesn't hold up over the world art's
+   varied ground colour (thin on the tan floor). Same solid dark plate as
+   every other HUD readout — legibility never depends on what's rendered
+   underneath. */
 #banner{
   position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);
   z-index:6;pointer-events:none;text-align:center;
-  font-family:'Lilita One',cursive;font-size:clamp(26px,7vw,52px);
-  color:var(--yellow);text-shadow:0 3px 0 var(--ink),0 0 26px rgba(255,200,0,.3);
-  opacity:0;transition:opacity .3s ease;letter-spacing:.02em;
+  padding:14px 28px 12px;border-radius:16px;
+  background:rgba(23,27,51,.72);backdrop-filter:blur(4px);
+  opacity:0;transition:opacity .3s ease;
 }
 #banner.show{opacity:1;}
+#banner .main{
+  display:block;font-family:'Lilita One',cursive;font-size:clamp(26px,7vw,52px);
+  color:var(--yellow);text-shadow:0 3px 0 var(--ink),0 0 26px rgba(255,200,0,.3);
+  letter-spacing:.02em;line-height:1;
+}
 #banner small{display:block;font-family:'Nunito Sans';font-weight:800;font-size:12px;
   letter-spacing:.18em;text-transform:uppercase;color:var(--chalk);opacity:.7;margin-top:6px;}
 
@@ -391,6 +401,14 @@ body.maker #makerpanel{
 .mk-surf.on{border-color:var(--teal);background:rgba(53,224,208,.10);}
 .mk-surf.on i{opacity:1;box-shadow:0 0 0 1.5px rgba(53,224,208,.55);}
 .mk-surf.on span{opacity:1;color:var(--teal);}
+/* Per-surface tile-count hint (PM directive, 18-07-2026) — a small, honest
+   readout under the label; a "0" (this map has none of this surface) is
+   dimmer rather than alarming, since it's expected map-to-map variance,
+   not an error. */
+.mk-count{font-family:'Nunito Sans';font-weight:800;font-size:8.5px;letter-spacing:.03em;color:var(--chalk);opacity:.4;}
+.mk-count.zero{opacity:.28;font-style:italic;}
+.mk-surf.on .mk-count{opacity:.7;}
+.mk-surf.on .mk-count.zero{opacity:.4;}
 
 .mk-warn{
   margin-top:9px;font-size:10.5px;line-height:1.35;

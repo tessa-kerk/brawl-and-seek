@@ -25,9 +25,27 @@
     syncPanel();
   }
 
+  // Per-surface tile counts (PM directive, 18-07-2026): computed once from
+  // the live grid, not hard-coded — faithful to how the real Map Maker
+  // works (a map's own tile mix decides what it can hide you in). A "0"
+  // here is an honest report, not a bug — this Acid Lakes corner has no
+  // bush tiles, and the count says so instead of hiding it.
+  let counts = null;
+  function tileCounts() {
+    if (counts) return counts;
+    counts = { wall: 0, floor: 0, water: 0, bush: 0 };
+    for (let r = 0; r < Arena.rows; r++) for (let c = 0; c < Arena.cols; c++) counts[Arena.typeAt(c, r)]++;
+    return counts;
+  }
+
   function syncPanel() {
-    for (const b of document.querySelectorAll('.mk-surf'))
+    const n = tileCounts();
+    for (const b of document.querySelectorAll('.mk-surf')) {
       b.classList.toggle('on', !!M.surfaces[b.dataset.surface]);
+      const count = n[b.dataset.surface] || 0;
+      const badge = b.querySelector('.mk-count');
+      if (badge) { badge.textContent = count + (count === 1 ? ' tile' : ' tiles'); badge.classList.toggle('zero', count === 0); }
+    }
     for (const b of document.querySelectorAll('#mk-repaint button'))
       b.classList.toggle('on', parseFloat(b.dataset.repaint) === M.repaint);
     if (el.ripple) { el.ripple.classList.toggle('on', M.ripple); el.ripple.setAttribute('aria-checked', String(M.ripple)); }

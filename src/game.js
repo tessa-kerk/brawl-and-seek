@@ -95,12 +95,30 @@
 
     const maker = STATE.view === 'maker';
     ctx.setTransform(scale * dpr, 0, 0, scale * dpr, offX * dpr, offY * dpr);
-    Arena.draw(ctx, tSec);
-    if (maker) Arena.drawCamoOverlay(ctx);         // show which surfaces paint you
+    Arena.draw(ctx, tSec);                          // ground layer: floor, bush, water (flat, always first)
     FX.draw(ctx);
-    for (const d of Hiders.list) Render.drawHider(ctx, d, tSec, false);
-    for (const s of Seekers.list) Render.drawSeeker(ctx, s, tSec);
-    Render.drawPlayer(ctx, tSec);
+
+    // Camera-tilt draw order (engineering pass, 18-07-2026): walls and
+    // entities are merged into ONE list, sorted by ground-contact Y, and
+    // drawn in that order — a tall block correctly occludes what's further
+    // from the camera (drawn first, wall paints over it) while anything
+    // nearer (drawn after) paints over the wall's own base. Art + draw order
+    // ONLY (Concept Brief rule 3d) — collision, mechanics and the fit
+    // geometry are untouched; this changes what's painted where, not what
+    // collides or scores. See Arena.wallDrawables() for the wall side.
+    const drawables = Arena.wallDrawables();
+    for (const d of Hiders.list) drawables.push({ y: d.y + d.r, draw: (c) => Render.drawHider(c, d, tSec, false) });
+    for (const s of Seekers.list) drawables.push({ y: s.y + s.r, draw: (c) => Render.drawSeeker(c, s, tSec) });
+    drawables.push({ y: Player.y + Player.r, draw: (c) => Render.drawPlayer(c, tSec) });
+    drawables.sort((a, b) => a.y - b.y);
+    for (const d of drawables) d.draw(ctx);
+
+    // Map Maker's "which surfaces camouflage you" scrim (M3, signed off) now
+    // draws AFTER the interleave rather than strictly between walls and
+    // entities — those two are merged now, so a clean split isn't possible.
+    // Flagged consequence, not silent: the low-alpha scrim can lightly tint
+    // entities in the maker sandbox too; it never appears in the Event view.
+    if (maker) Arena.drawCamoOverlay(ctx);
     Tags.draw(ctx);
     if (!maker) Reveal.frame(ctx, tSec);           // dim + reveal markers when over
 

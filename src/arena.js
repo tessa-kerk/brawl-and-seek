@@ -160,7 +160,11 @@
     }
     drawBush(ctx);
     drawWater(ctx, t);
-    drawWalls(ctx);
+    // NOTE: walls are NOT drawn here (engineering pass, 18-07-2026) — they now
+    // draw as part of the Y-sorted interleave in game.js render(), alongside
+    // entities, so a tall block can correctly occlude what's behind it. See
+    // wallDrawables() below. Ground layers (floor/bush/water) stay flat and
+    // always-first, since they have no height to occlude anything with.
     // subtle vignette to seat the arena on the navy stage
     const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.8);
     g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.28)');
@@ -266,52 +270,68 @@
     ctx.restore();
   }
 
-  // Art pass (18-07-2026, faithful redo): a single wall-block prop — a
-  // coiled-cap wood crate, reference-guided from Spots of Yore's own wall
-  // cluster (the earlier invented paint-drum/half-painted-crate pair is
-  // retired, not deleted — see GENERATION-LOG.md). Placed only in the grid's
-  // scattered INTERIOR clusters (no border ring, real-map law 1). Each block
-  // is drawn a touch tall with a contact shadow so it reads as a solid object.
-  function drawWallSprites(ctx, block) {
-    const lift = T * 0.10;
+  // ---- Camera-tilt draw order (engineering pass, 18-07-2026) -------------
+  // Real Brawl renders on a tilted camera, not flat top-down: chunky blocks
+  // show both a top face and a front face, and whether a block sits "in
+  // front of" or "behind" a character depends on ROW position, not a fixed
+  // layer. Art + draw order ONLY (PM-scoped, Concept Brief rule 3d) — the
+  // collision grid, all mechanics and the fit geometry are untouched; this
+  // changes what gets painted where, never what collides or scores.
+  //
+  // wallDrawables() returns one entry per wall tile: {y, draw(ctx)}, where y
+  // is the tile's ground-contact edge (its south side, y=(r+1)*T) — the same
+  // "how close to the camera is this thing's base" measure game.js uses for
+  // entities (feet ≈ e.y + e.r). game.js merges walls + entities into ONE
+  // array and sorts it ascending by y before drawing, so a wall correctly
+  // occludes an entity further away (smaller y, drawn first, wall paints
+  // over it) while an entity nearer the camera (larger y, drawn after) paints
+  // over the wall's own base — real occlusion, not a fixed z-order guess.
+  const FRONT_FACE_H = 0.24;   // fraction of T the front face extends below the tile
+
+  function wallDrawables() {
+    const block = window.Assets && Assets.get('wall_block');
+    const out = [];
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
       if (grid[r][c] !== '#') continue;
-      const x = c * T, y = r * T;
-      ctx.save();
-      ctx.fillStyle = 'rgba(0,0,0,.32)';
-      ctx.beginPath(); ctx.ellipse(x + T / 2, y + T * 0.9, T * 0.42, T * 0.15, 0, 0, 7); ctx.fill();
+      out.push({ y: (r + 1) * T, draw: (ctx) => drawOneWall(ctx, c, r, block) });
+    }
+    return out;
+  }
+
+  function drawOneWall(ctx, c, r, block) {
+    const x = c * T, y = r * T, lift = T * 0.10;
+    ctx.save();
+    // contact shadow
+    ctx.fillStyle = 'rgba(0,0,0,.32)';
+    ctx.beginPath(); ctx.ellipse(x + T / 2, y + T * 0.9, T * 0.42, T * 0.15, 0, 0, 7); ctx.fill();
+    if (block) {
+      // Front face: a flat dark strip extending below the block's own top-
+      // down art, so the block reads as a 3D object (top face + front face)
+      // without needing separate front-face art. Drawn first so the block's
+      // sprite visually sits above/behind it, like a lip under the block.
+      ctx.fillStyle = 'rgba(8,6,18,.46)';
+      roundRect(ctx, x + T * 0.06, y + T - T * 0.04, T * 0.88, T * FRONT_FACE_H, T * 0.08); ctx.fill();
       // flip alternate blocks so a wall of them doesn't read as one stamped image
       const flip = ((c * 5 + r * 3) & 1) === 1;
       if (flip) { ctx.translate(x + T / 2, 0); ctx.scale(-1, 1); ctx.translate(-(x + T / 2), 0); }
       ctx.drawImage(block, x, y - lift, T, T);
-      ctx.restore();
-    }
-  }
-
-  function drawWalls(ctx) {
-    const block = window.Assets && Assets.get('wall_block');
-    if (block) { drawWallSprites(ctx, block); return; }
-    // ---- procedural fallback (the signed-off block look) ----
-    const inset = 3, rad = 12, lift = 7;   // rounded, lifted blocks
-    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-      if (grid[r][c] !== '#') continue;
-      const x = c * T + inset, y = r * T + inset, w = T - inset * 2, hh = T - inset * 2;
-      // drop shadow
+    } else {
+      // ---- procedural fallback (the signed-off block look; already has a
+      // top-face/side-face split, so it needs no separate front-face strip) ----
+      const inset = 3, rad = 12, plift = 7;
+      const wx = x + inset, wy = y + inset, w = T - inset * 2, hh = T - inset * 2;
       ctx.fillStyle = 'rgba(0,0,0,.30)';
-      roundRect(ctx, x + 2, y + lift, w, hh, rad); ctx.fill();
-      // side (front face)
+      roundRect(ctx, wx + 2, wy + plift, w, hh, rad); ctx.fill();
       ctx.fillStyle = S.wallSide;
-      roundRect(ctx, x, y + lift * 0.5, w, hh, rad); ctx.fill();
-      // top face
+      roundRect(ctx, wx, wy + plift * 0.5, w, hh, rad); ctx.fill();
       ctx.fillStyle = S.wallTop;
-      roundRect(ctx, x, y, w, hh - 2, rad); ctx.fill();
-      // top highlight
+      roundRect(ctx, wx, wy, w, hh - 2, rad); ctx.fill();
       ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.lineWidth = 2;
-      roundRect(ctx, x + 2, y + 2, w - 4, hh - 8, rad - 2); ctx.stroke();
-      // ink outline (Brawl-thick)
+      roundRect(ctx, wx + 2, wy + 2, w - 4, hh - 8, rad - 2); ctx.stroke();
       ctx.strokeStyle = CFG.palette.ink; ctx.lineWidth = 2.5;
-      roundRect(ctx, x, y, w, hh - 2, rad); ctx.stroke();
+      roundRect(ctx, wx, wy, w, hh - 2, rad); ctx.stroke();
     }
+    ctx.restore();
   }
 
   function line(ctx, x1, y1, x2, y2) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
@@ -335,6 +355,6 @@
 
   window.Arena = {
     T, cols, rows, W, H, grid, isSolid, isWall, isWater, isBush, spawn, collide, camoSurface, draw, roundRect, roundRectPath,
-    freeTiles, hideTiles, centre, tileOf, path, pick, drawCamoOverlay, typeAt,
+    freeTiles, hideTiles, centre, tileOf, path, pick, drawCamoOverlay, typeAt, wallDrawables,
   };
 })();

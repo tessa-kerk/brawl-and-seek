@@ -1,6 +1,18 @@
 """M3 Map Maker: the three properties change the mechanic live, AND the Event
-view (a signed-off regression surface) still fits by the pre-M3 formula exactly.
-Geometry oracle = the original fit formula, recomputed here."""
+view (a signed-off regression surface) fits by its CURRENT formula exactly.
+
+CANON-DRIVEN FORMULA CHANGE (PM fit fix, 18-07-2026, flagged not silent): the
+pre-M3 formula fit the arena against the full viewport with zero chrome
+reservation. On a landscape phone (844x390) that let the arena's top rows
+render under the wordmark/ticker and its bottom row behind the disclaimer --
+real, PM-caught clipping, not a false alarm. The Event view now reserves a
+fixed top/bottom margin (src/game.js resize(), padT=92/padB=40, matching the
+chrome's own measured footprint) the same way Map Maker's panel already
+reserved room for itself. This oracle is updated to prove THAT formula, not
+the old one -- an independent oracle proves the code matches a stated spec,
+and the spec itself changed here, deliberately.
+
+Geometry oracle = the current fit formula, recomputed here from scratch."""
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from _harness import game, Tally  # noqa: E402
@@ -44,15 +56,20 @@ with game(query="?view=maker") as (pg, errs):
     t.check("ripple tell OFF -> bot never locks onto a hidden hider (camo perfect)", not noticed)
     pg.evaluate("Maker.exit()")
 
-    # Event-view regression: fit must equal the pre-M3 formula exactly
+    # Event-view regression: fit must equal the CURRENT formula exactly —
+    # padT=92/padB=40 reserved for chrome, padR=0 (Event view has no side
+    # panel). Independently recomputed here, not read from src/game.js.
     W = pg.evaluate("Arena.W"); H = pg.evaluate("Arena.H")
+    PAD_T, PAD_B = 92, 40
     ok = True
     for w, hh in [(1280, 800), (844, 390), (740, 360)]:   # landscape-only (fidelity rule 3g)
         pg.set_viewport_size({"width": w, "height": hh}); pg.wait_for_timeout(120)
         sc = pg.evaluate("Game.scale"); off = pg.evaluate("Game.off")
-        want = min(w / W, hh / H)
-        if not (abs(sc - want) < 1e-6 and abs(off["x"] - (w - W * want) / 2) < 1e-4 and abs(off["y"] - (hh - H * want) / 2) < 1e-4):
+        availH = hh - PAD_T - PAD_B
+        want = min(w / W, availH / H)
+        want_offy = PAD_T + (availH - H * want) / 2
+        if not (abs(sc - want) < 1e-6 and abs(off["x"] - (w - W * want) / 2) < 1e-4 and abs(off["y"] - want_offy) < 1e-4):
             ok = False
-    t.check("Event view fit unchanged from pre-M3 (independent formula oracle)", ok)
+    t.check("Event view fit matches the current chrome-reserving formula (independent oracle)", ok)
 
     t.finish("map-maker", errs)

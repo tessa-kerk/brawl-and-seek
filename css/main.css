@@ -64,6 +64,14 @@ body{
   text-shadow:0 2px 0 var(--ink), 0 0 18px rgba(255,200,0,.25);
 }
 .wordmark .amp{color:var(--magenta);}
+/* Maker's side rail now claims 340px on every landscape width (PM fit fix,
+   18-07-2026 — previously only ever happened at >=860px, wide enough that
+   this never came up). At the narrowest supported width (740px) that
+   leaves ~400px for the wordmark + badges row, too tight for the wordmark
+   at its max clamp size without wrapping into the CONCEPT badge. */
+@media (orientation:landscape) and (max-width:800px){
+  body.maker .wordmark{font-size:18px;white-space:nowrap;}
+}
 .badges{display:flex;align-items:center;gap:6px;pointer-events:auto;}
 .stamp{
   font-family:'Nunito Sans';font-weight:800;
@@ -337,16 +345,23 @@ body.maker #makerpanel{
   box-shadow:0 -14px 40px rgba(0,0,0,.45);
   overflow-y:auto;-webkit-overflow-scrolling:touch;
 }
-/* desktop: docked right rail, like an inspector */
-@media (min-width:860px){
+/* Landscape: docked right rail, like an inspector — the horizontal room
+   landscape gives you. PM fit fix (18-07-2026): was a raw min-width:860px
+   breakpoint, which a narrow LANDSCAPE phone (844x390) fell under and got
+   the portrait sheet instead, eating ~60% of its height for a postage-
+   stamp arena. Real devices only ever reach this view in landscape (the
+   rotate-prompt blocks portrait), so orientation is the correct axis. */
+@media (orientation:landscape){
   body.maker #makerpanel{
     top:0;right:0;bottom:0;width:340px;
     border-left:1px solid rgba(53,224,208,.22);border-radius:0;
     padding:calc(env(safe-area-inset-top) + 16px) 18px 18px;
   }
 }
-/* phone: bottom sheet */
-@media (max-width:859px){
+/* Portrait: bottom sheet (unreachable in real play — the rotate-prompt
+   already covers the whole screen there — kept for narrow-viewport tooling
+   and as the honest fallback if that guard is ever bypassed). */
+@media (orientation:portrait){
   body.maker #makerpanel{
     left:0;right:0;bottom:0;
     max-height:46vh;
@@ -468,15 +483,17 @@ body.maker #makerpanel{
 /* The CONCEPT badge is a hard line: it must never be occluded, in any view.
    Pull the top bar clear of the right rail, and centre the floating chips over
    the PLAY AREA rather than the whole viewport. */
-@media (min-width:860px){
+@media (orientation:landscape){
   body.maker #topbar{right:340px;}
   body.maker #mk-toast{left:calc(50% - 170px);}
   /* the badge stays bottom-right of the PLAY area, clear of the right rail */
   body.maker #status{right:calc(340px + 22px);}
   body.maker #status-label{right:calc(340px + 22px);}
 }
-/* Phone: lift the badge + its label clear of the bottom sheet. */
-@media (max-width:859px){
+/* Portrait: lift the badge + its label clear of the bottom sheet (see the
+   sheet's own note above — unreachable in real play, kept as the honest
+   fallback). */
+@media (orientation:portrait){
   body.maker #status{bottom:calc(46vh + 16px);}
   body.maker #status-label{bottom:calc(46vh + 84px);}
 }

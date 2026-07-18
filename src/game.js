@@ -34,13 +34,31 @@
     canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
     canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px';
 
-    // The editor reserves room for its panel (right rail on desktop, bottom
-    // sheet on phone). Event view keeps ZERO padding — it's a signed-off
-    // surface and must fit exactly as it always has.
+    // The editor reserves room for its panel — a side rail in landscape (the
+    // horizontal room landscape gives you), a bottom sheet in portrait (PM
+    // fit fix, 18-07-2026: was a raw min-width:860px breakpoint, which a
+    // narrow LANDSCAPE phone like 844x390 fell under and got the sheet,
+    // eating ~60% of its height for a postage-stamp arena — wrong axis to
+    // gate on. Real devices only ever reach this view in landscape (the
+    // rotate-prompt blocks portrait), so orientation is the correct signal).
     let padR = 0, padB = 0, padT = 0;
     if (STATE.view === 'maker') {
-      if (cssW >= 860) padR = 340; else padB = Math.min(Math.round(cssH * 0.46), 360);
+      if (cssW > cssH) padR = 340; else padB = Math.min(Math.round(cssH * 0.46), 360);
       padT = 52;
+    } else {
+      // Event view fit (PM fit fix, 18-07-2026 — CANON-DRIVEN CHANGE to the
+      // signed-off M3 fit formula, not a screen-size patch; the M3 test
+      // oracle is updated deliberately alongside this, see PLAN.md). The old
+      // formula fit the arena against the FULL viewport with zero
+      // reservation. The top chrome (wordmark + ticker) occupies a fixed
+      // ~84px regardless of viewport (measured via getBoundingClientRect,
+      // not guessed), and on any landscape-ish aspect — which is every real
+      // device now that portrait is blocked — height is the binding fit
+      // constraint, so the arena filled edge-to-edge: its top rows rendered
+      // UNDER the chrome and its bottom row behind the disclaimer bar.
+      // Reserve real space instead, the same principle Map Maker's padT
+      // already used for its own top bar.
+      padT = 92; padB = 40;
     }
     const availW = cssW - padR, availH = cssH - padT - padB;
     scale = Math.min(availW / Arena.W, availH / Arena.H);

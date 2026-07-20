@@ -154,10 +154,11 @@
   const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
   function hud() {
-    elStatus.style.setProperty('--p', Math.min(Player.progress || 0, 1));
-
-    // MAP MAKER has no round HUD — just a state chip that teaches the property.
+    // MAP MAKER keeps its teaching state chip — it's a debug/sandbox surface,
+    // not real gameplay chrome, so the muscle-memory ruling below doesn't
+    // apply to it (Concept Brief rule 3k).
     if (STATE.view === 'maker') {
+      elStatus.style.setProperty('--p', Math.min(Player.progress || 0, 1));
       const p = Player;
       let cls = '', txt = '';
       if (p.hidden) { cls = 'hidden'; txt = 'Camouflaged'; }
@@ -168,21 +169,34 @@
       return;
     }
 
+    // Event view (rule 3k, 20-07-2026 — "no one looks at their control
+    // buttons when they play, it's all muscle memory"): camo state reads on
+    // the brawler itself (paint fill + the FX.youAreHere pulse in render.js),
+    // never in this slot. The bottom-right badge is controls-only — a Tag
+    // fire button once M5 adds the seeker role; until then it's the empty,
+    // disabled attack slot a hider's footage shows (no ring, no label).
     const over = Round.phase === 'over';
-    const st = Player.found ? 'exposed' : Player.state();
-    elStatus.className = (!over && st !== 'exposed') ? st + ' visible' : st;
-    elStatusLabel.textContent = over ? '' : st === 'hidden' ? 'Camouflaged' : st === 'hiding' ? 'Painting in…' : '';
+    elStatus.className = over ? 'over' : 'disabled visible';
+    elStatusLabel.textContent = '';
     if (STATE.everHidden) elHint.classList.add('dim');
 
     // in-game overlays (rule 3j — two sparse plates, not a chrome chip row;
     // repaint time and the camp-decay coin dropped from persistent display,
     // conveyed instead by the camo badge's own live fill)
+    // Wording matches her own footage's exact HUD copy ("Brawlers left: N",
+    // top-left plate — confirmed frame-by-frame, contact sheet t=36-66s) —
+    // "left" is real Brawl grammar, not an invented label; plural still
+    // needs its own agreement (her fixed "Brawlers" sidesteps it, ours can't
+    // since hiders/seekers are two separate countable rows).
     document.getElementById('tk-score').textContent = Math.round(Round.score).toLocaleString();
-    document.getElementById('tk-hiders').textContent = Round.hidersAlive();
+    const nHide = Round.hidersAlive();
+    document.getElementById('tk-hiders').textContent = nHide;
+    document.getElementById('tk-hiders-lbl').textContent = (nHide === 1 ? 'hider' : 'hiders') + ' left';
     // Seekers-remaining: makes the tag budget legible, so TAGGED OUT! reads
     // (v12, canon v3.4). Goes low/magenta when only one seeker is left on the map.
     const nSeek = Seekers.active().length;
     document.getElementById('tk-seekers').textContent = nSeek;
+    document.getElementById('tk-seekers-lbl').textContent = (nSeek === 1 ? 'seeker' : 'seekers') + ' left';
     document.getElementById('tk-seekrow').classList.toggle('low', Round.phase === 'seek' && nSeek <= 1);
     const tl = Round.timeLeft();
     document.getElementById('tk-time').textContent = fmt(tl);

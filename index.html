@@ -14,8 +14,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Brawl & Seek">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/fonts.css?v=26">
-<link rel="stylesheet" href="css/main.css?v=26">
+<link rel="stylesheet" href="css/fonts.css?v=27">
+<link rel="stylesheet" href="css/main.css?v=27">
 </head>
 <body>
   <!-- Landscape-only (Concept Brief fidelity rule 3g): Brawl Stars is
@@ -45,7 +45,7 @@
          surface (Map Maker returns behind ?debug=1/?maker=1, see maker.js). -->
     <div id="topbar">
       <span class="concept" title="Unofficial fan concept — not a real in-game screenshot">CONCEPT</span>
-      <span class="stamp">v26 · ART</span>
+      <span class="stamp">V27 · ART</span>
     </div>
 
     <!-- In-game overlays, not a chrome chip row (rule 3j): learned from her
@@ -55,8 +55,8 @@
          mechanic has no real Brawl analogue, so it earns its own plate in
          the same visual language rather than inventing new chrome). -->
     <div id="ov-left" class="ov-plate">
-      <div class="ov-row"><b id="tk-hiders">6</b><span class="ov-lbl">hiders</span></div>
-      <div class="ov-row ov-sub" id="tk-seekrow"><b id="tk-seekers">1</b><span class="ov-lbl">seekers</span></div>
+      <div class="ov-row"><b id="tk-hiders">6</b><span class="ov-lbl" id="tk-hiders-lbl">hiders</span></div>
+      <div class="ov-row ov-sub" id="tk-seekrow"><b id="tk-seekers">1</b><span class="ov-lbl" id="tk-seekers-lbl">seekers</span></div>
     </div>
     <div id="ov-right" class="ov-plate">
       <div class="ov-row"><b id="tk-score">0</b><span class="ov-lbl">score</span></div>
@@ -76,12 +76,15 @@
       <span>Map Maker</span>
     </button>
 
-    <!-- Camo-state badge (landscape HUD rebuild, rule 3g/3h): occupies the
-         same bottom-right slot Brawl's own attack/Super buttons live in, in
-         Brawl's own circular-badge visual language (a ring, an icon, a live
-         fill) — but it's not a fire button, it's real paint-in status, since
-         a hider has no attack. The label above it keeps the state legible
-         for a first-time player. -->
+    <!-- Bottom-right badge (rule 3k, 20-07-2026 — supersedes the earlier
+         camo-badge idea): controls only, same slot Brawl's own attack/Super
+         button lives in. Camo state reads ON THE BRAWLER now (paint fill +
+         the youAreHere shimmer pulse, render.js/fx.js), never here — "no one
+         looks at their control buttons when they play." As a hider this
+         renders as the empty/disabled attack slot (game.js hud() forces
+         class="disabled", no label, no icon); becomes the real Tag fire
+         button once M5 adds the seeker role. #status-label stays wired for
+         the Map Maker sandbox's own teaching state chip (untouched). -->
     <div id="status-label"></div>
     <div id="status"><span id="status-icon">🖌</span></div>
 
@@ -90,9 +93,10 @@
       on a surface to paint yourself in — <b>move</b> to break camo.
     </p>
 
-    <!-- Pace picker — DEMOTED to a debug/capture affordance (Tessa picked A=0.70,
-         now baked into TUNING.speedScale). Hidden by default; shown with
-         ?debug=1 or ?pace=1. See src/pace.js. -->
+    <!-- Pace picker — DEMOTED to a debug/capture affordance. Default speedScale
+         is now footage-measured (0.57, v26 — supersedes the earlier blind-A/B
+         0.70 pick baked from this picker's own "A" button). Hidden by default;
+         shown with ?debug=1 or ?pace=1. See src/pace.js. -->
     <div id="pace" role="group" aria-label="Movement pace">
       <span class="lbl">Pace</span>
       <div class="mk-seg" id="pace-seg">
@@ -166,24 +170,24 @@
     <div class="disclaimer">Fan concept by Tessa Kerk · unofficial, not endorsed by Supercell · <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">Fan Content Policy</a></div>
   </div>
 
-  <script src="src/config.js?v=26"></script>
-  <script src="src/assets.js?v=26"></script>
-  <script src="data/arena.js?v=26"></script>
-  <script src="data/tuning.js?v=26"></script>
-  <script src="src/input.js?v=26"></script>
-  <script src="src/arena.js?v=26"></script>
-  <script src="src/ai.js?v=26"></script>
-  <script src="src/fx.js?v=26"></script>
-  <script src="src/player.js?v=26"></script>
-  <script src="src/tag.js?v=26"></script>
-  <script src="src/hider.js?v=26"></script>
-  <script src="src/seeker.js?v=26"></script>
-  <script src="src/round.js?v=26"></script>
-  <script src="src/render.js?v=26"></script>
-  <script src="src/reveal.js?v=26"></script>
-  <script src="src/maker.js?v=26"></script>
-  <script src="src/pace.js?v=26"></script>
-  <script src="src/debug.js?v=26"></script>
-  <script src="src/game.js?v=26"></script>
+  <script src="src/config.js?v=27"></script>
+  <script src="src/assets.js?v=27"></script>
+  <script src="data/arena.js?v=27"></script>
+  <script src="data/tuning.js?v=27"></script>
+  <script src="src/input.js?v=27"></script>
+  <script src="src/arena.js?v=27"></script>
+  <script src="src/ai.js?v=27"></script>
+  <script src="src/fx.js?v=27"></script>
+  <script src="src/player.js?v=27"></script>
+  <script src="src/tag.js?v=27"></script>
+  <script src="src/hider.js?v=27"></script>
+  <script src="src/seeker.js?v=27"></script>
+  <script src="src/round.js?v=27"></script>
+  <script src="src/render.js?v=27"></script>
+  <script src="src/reveal.js?v=27"></script>
+  <script src="src/maker.js?v=27"></script>
+  <script src="src/pace.js?v=27"></script>
+  <script src="src/debug.js?v=27"></script>
+  <script src="src/game.js?v=27"></script>
 </body>
 </html>

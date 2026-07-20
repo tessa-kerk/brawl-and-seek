@@ -7,10 +7,10 @@
 (function () {
   const specs = {
     skirt:      'assets/world/skirt-1.png',    // NOT used in the play view (art pass 18-07) — kept for a future marketing/landing use
-    floor:      'assets/world/floor.png',      // Acid Lakes batch (18-07): deep violet two-tone checker + acid-green glow, footage/wiki-referenced
-    water:      'assets/world/water.png',      // Acid Lakes batch (18-07): glowing acid-green pool surface, footage/wiki-referenced
-    wall_block: 'assets/world/wall_block.png', // Acid Lakes batch (18-07): the spiky teal-capped stone block; replaces the Spots of Yore wood crate
-    bush:       'assets/world/bush.png',       // kept for map-agnostic use — Acid Lakes' TL corner has no bush tiles
+    floor:      'assets/world/floor.png',      // v27 (20-07): deep plum-purple ground, ref'd DIRECTLY from Tessa's own footage crops (rule 3i/3j) — replaces the wiki-referenced v2 (now REJECTED, archived as floor_v2_wiki-referenced-superseded.png)
+    water:      'assets/world/water.png',      // v27 (20-07): glowing acid-green slime pool, footage-referenced — replaces the rejected wiki-referenced v2
+    wall_block: 'assets/world/wall_block.png', // v27 (20-07): capped lavender-purple pillar block w/ spike trim, footage-referenced — replaces the rejected wiki-referenced v2
+    bush:       'assets/world/bush.png',       // v27 (20-07): dense teal-cyan spiky foliage, footage-referenced — now genuinely used (16x9 grid has 3 real bush tiles, v26) — replaces the rejected wiki-referenced v2
     powercube:  'assets/world/powercube.png',  // Acid Lakes batch (18-07): the traced Power-Cube spawn marker prop
     tag_icon:   'assets/ui/tag_icon.png',      // Acid Lakes batch (18-07): the Tag, styled on Belle's Super "Spotter" (Art Inventory.md)
     camo_icon:  'assets/ui/camo_icon.png',     // Acid Lakes batch (18-07): the camo-badge's paint-brush glyph

@@ -222,36 +222,36 @@ body{
   #hint{bottom:calc(env(safe-area-inset-bottom) + 40px);max-width:min(76vw,480px);}
 }
 
-/* ---- Camo badge (bottom-right, landscape HUD rebuild 18-07-2026) ------
-   Concept Brief rule 3g/3h: the play frame's control clusters use Brawl's
-   OWN visual language — joystick bottom-left (src/input.js), a circular
-   ring-badge bottom-right where Brawl's own attack/Super buttons live.
-   A hider has no attack, so this badge shows real information in that same
-   slot instead of a fake fire button: a conic-gradient ring that fills with
-   --p (Player.progress, driven live from game.js hud()) as you paint in,
-   a solid glow once you're camouflaged, and a dim static ring when nothing
-   here camouflages you. Same solid dark plate as the ticker so legibility
-   never depends on what's rendered underneath the badge itself. */
+/* ---- Bottom-right badge: controls only (rule 3k, 20-07-2026) ---------
+   Camo-badge idea is DEAD — Tessa's ruling: "no one looks at their control
+   buttons when they play, it's all muscle memory." Camo state now reads
+   ON THE BRAWLER (paint fill + FX.youAreHere pulse, see render.js/fx.js),
+   never here. This slot sits where Brawl's own attack/Super button lives
+   and is CONTROLS ONLY: the empty/disabled attack slot for a hider (no
+   icon, no ring fill, no label — matching what her footage shows for a
+   brawler with nothing to fire), and becomes the real Tag fire button once
+   M5 adds the playable seeker. The Map Maker sandbox (below) keeps its own
+   state-chip behaviour — it's a debug teaching tool, not real gameplay chrome. */
 #status{
   position:absolute;right:calc(env(safe-area-inset-right) + 22px);
   bottom:calc(env(safe-area-inset-bottom) + 22px);
   width:64px;height:64px;border-radius:50%;
   z-index:6;pointer-events:none;
   display:flex;align-items:center;justify-content:center;
-  background:
-    conic-gradient(var(--ring, rgba(246,244,239,.3)) calc(var(--p,0)*360deg), transparent 0),
-    rgba(23,27,51,.82);
-  border:2.5px solid rgba(246,244,239,.16);
-  box-shadow:0 6px 18px rgba(0,0,0,.4);
+  background:rgba(23,27,51,.55);
+  border:2.5px solid rgba(246,244,239,.14);
   opacity:.5;transition:opacity .35s ease, border-color .35s ease, box-shadow .35s ease;
 }
 #status.visible{opacity:1;}
+#status.disabled{background:rgba(23,27,51,.4);border-color:rgba(246,244,239,.1);box-shadow:none;}
+#status.disabled #status-icon{display:none;}
 #status-icon{font-size:22px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5));}
 img#status-icon{width:26px;height:26px;object-fit:contain;font-size:0;}
-#status.hiding{--ring:var(--magenta);border-color:rgba(255,79,160,.6);}
-#status.hidden{--ring:var(--teal);border-color:rgba(53,224,208,.7);box-shadow:0 0 0 4px rgba(53,224,208,.16),0 6px 18px rgba(0,0,0,.4);}
-#status.exposed{--ring:var(--yellow);border-color:rgba(255,200,0,.6);}
-#status.nocamo{--ring:var(--magenta);border-color:rgba(255,79,160,.6);}
+/* Map Maker sandbox state chip only (STATE.view === 'maker') */
+#status.hiding{--ring:var(--magenta);background:conic-gradient(var(--ring) calc(var(--p,0)*360deg), transparent 0),rgba(23,27,51,.82);border-color:rgba(255,79,160,.6);}
+#status.hidden{--ring:var(--teal);background:conic-gradient(var(--ring) calc(var(--p,0)*360deg), transparent 0),rgba(23,27,51,.82);border-color:rgba(53,224,208,.7);box-shadow:0 0 0 4px rgba(53,224,208,.16),0 6px 18px rgba(0,0,0,.4);}
+#status.exposed{--ring:var(--yellow);background:conic-gradient(var(--ring) calc(var(--p,0)*360deg), transparent 0),rgba(23,27,51,.82);border-color:rgba(255,200,0,.6);}
+#status.nocamo{--ring:var(--magenta);background:conic-gradient(var(--ring) calc(var(--p,0)*360deg), transparent 0),rgba(23,27,51,.82);border-color:rgba(255,79,160,.6);}
 
 #status-label{
   position:absolute;right:calc(env(safe-area-inset-right) + 22px);

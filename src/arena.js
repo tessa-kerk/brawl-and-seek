@@ -147,14 +147,14 @@
   // W×H bounds for callers that don't pass one (e.g. any older/direct call).
   function draw(ctx, t, bleed) {
     drawGround(ctx, bleed || { x0: 0, y0: 0, x1: W, y1: H });
-    drawBush(ctx);
     drawWater(ctx, t);
-    drawProps(ctx);
-    // NOTE: walls are NOT drawn here (engineering pass, 18-07-2026) — they now
-    // draw as part of the Y-sorted interleave in game.js render(), alongside
-    // entities, so a tall block can correctly occlude what's behind it. See
-    // wallDrawables() below. Ground layers (floor/bush/water) stay flat and
-    // always-first, since they have no height to occlude anything with.
+    drawDecals(ctx);
+    // NOTE: the fence, bush and stump/barrel props are NOT drawn here — they
+    // all join the Y-sorted interleave in game.js render() alongside
+    // entities (wallDrawables/bushCanopyDrawables/propDrawables), so a tall
+    // structure correctly occludes what's behind it and characters can sink
+    // into foliage. The floor + pools + flat bone decals stay here: no
+    // height, so no occlusion story to get right.
   }
 
   /* Full-bleed ground (Concept Brief rule 3l, 20-07-2026 — "kill the
@@ -222,18 +222,27 @@
    * the diagonal off into a rectangle; instead each water TILE gets its own
    * rounded-rect (same technique drawBush already uses), so the union
    * traces the actual stair-step diagonal from the real map, not a guess. */
+  // Deterministic per-tile pseudo-random, 0..1 — stable across frames (no
+  // flicker) without a stored seed table. Used by the water bubbles and the
+  // bush-tuft jitter below.
+  function hashTile(a, b) {
+    let h = (a | 0) * 374761393 + (b | 0) * 668265263;
+    h = (h ^ (h >>> 13)) * 1274126177;
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  }
+
+  /* Layer 1 — pools: pure code-drawn, ZERO generation (Concept Brief rule 3l,
+   * Tessa's layered-build spec, 21-07-2026 — "the real acid is that calm;
+   * code guarantees the shape"). Flat bright fill + the same per-tile-union
+   * rim-shadow technique as before (still the right call — organic
+   * silhouette, no seam where tiles touch) + a couple of soft darker
+   * patches and sparse bubble accents, deliberately calm, not a busy
+   * animated blob pattern. No water.png asset any more. */
   function drawWater(ctx, t) {
     const cells = [];
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) if (grid[r][c] === '~') cells.push([c, r]);
     if (!cells.length) return;
 
-    // Rim first, as a soft shadow cast by the SAME per-tile union: canvas
-    // shadows read the final composited alpha of the fill, not individual
-    // subpaths, so two adjacent water tiles never show a seam where they
-    // touch — the glow traces only the shape's true outer boundary. Colour
-    // sampled directly from genuine in-game reference art (RGB 130,68,46),
-    // matching the Spots of Yore rim tone (both maps use the same terracotta
-    // pool border language).
     ctx.save();
     ctx.shadowColor = '#82442E'; ctx.shadowBlur = 3;
     ctx.fillStyle = '#82442E';
@@ -242,137 +251,161 @@
     ctx.fill(); ctx.fill();   // twice: shadowBlur only casts from an actual fill, and one pass reads faint on some canvases
     ctx.restore();
 
-    // The water texture/fill covers the rim layer's interior at the exact
-    // same footprint, leaving only the shadow's outward bleed visible —
-    // that bleed IS the rim, no inset math, no seam risk.
     ctx.save();
     ctx.beginPath();
     for (const [c, r] of cells) roundRectPath(ctx, c * T, r * T, T, T, T * 0.12);
     ctx.clip();
-    const waterImg = window.Assets && Assets.get('water');
-    if (waterImg) {
-      const s = Math.max(W / waterImg.naturalWidth, H / waterImg.naturalHeight);
-      const ww = waterImg.naturalWidth * s, wh = waterImg.naturalHeight * s;
-      ctx.drawImage(waterImg, (W - ww) / 2, (H - wh) / 2, ww, wh);
-    } else {
-      ctx.fillStyle = S.water; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = S.water; ctx.fillRect(0, 0, W, H);
+    // one or two soft darker patches per pool, calm not busy
+    ctx.globalAlpha = 0.14; ctx.fillStyle = '#1E9A3E';
+    for (const [c, r] of cells) {
+      if (hashTile(c, r) < 0.3) {
+        const cx = c * T + T * (0.3 + hashTile(c + 50, r) * 0.4);
+        const cy = r * T + T * (0.3 + hashTile(c, r + 50) * 0.4);
+        ctx.beginPath(); ctx.arc(cx, cy, T * 0.34, 0, 7); ctx.fill();
+      }
     }
-    // moving highlight bands
-    ctx.globalAlpha = 0.22; ctx.strokeStyle = S.waterHi; ctx.lineWidth = 3;
-    for (let i = -2; i < rows + 2; i++) {
-      const yy = i * 26 + (t * 14) % 26;
-      ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W, yy - 40); ctx.stroke();
+    ctx.globalAlpha = 1;
+    // sparse bubble accents, a gentle pulse so the pool still reads as liquid
+    ctx.fillStyle = 'rgba(255,255,255,.55)';
+    for (const [c, r] of cells) {
+      if (hashTile(c + 200, r) >= 0.35) continue;
+      const bx = c * T + T * (0.2 + hashTile(c, r) * 0.6);
+      const by = r * T + T * (0.2 + hashTile(c + 300, r) * 0.6);
+      const pulse = 0.4 + 0.3 * Math.sin(t * 1.1 + c * 3 + r * 5);
+      ctx.globalAlpha = pulse;
+      ctx.beginPath(); ctx.arc(bx, by, T * (0.03 + hashTile(c, r + 300) * 0.03), 0, 7); ctx.fill();
     }
+    ctx.globalAlpha = 1;
     ctx.restore();
   }
 
-  // Decorative floor-level props (footage/reference batch, 18-07-2026): the
-  // two traced Power-Cube spawn markers. Flat ground decals ON the floor
-  // layer, drawn after water so they read as sitting on the ground, never
-  // consulted by collide()/isSolid()/hideTiles — purely visual, matching
-  // real Brawl where Power Cube spawns are walkable floor markers, not
-  // obstacles. Falls back to a simple procedural badge if no asset loaded.
+  /* Layer 2 ground decals — bone/fossil fragments (Concept Brief rule 3l,
+   * Tessa's layered-build spec, 21-07-2026): flat, no height, drawn on the
+   * floor layer before the Y-sorted interleave (never consulted by
+   * collide()/isSolid()/hideTiles — purely visual). Stumps/barrels DO have
+   * height and join the Y-sort instead — see propDrawables() below.
+   * Power-Cube crates are REMOVED outright (Tessa's design ruling: Solo
+   * Showdown power-up furniture, not map furniture — they'd falsely
+   * promise power cubes in our camo mode); their old traced tile positions
+   * are simply open floor now, not backfilled with anything. */
   const PROPS = (ARENA.props || []);
-  function drawProps(ctx) {
-    const img = window.Assets && Assets.get('powercube');
-    for (const p of PROPS) {
-      const x = p.c * T + T / 2, y = p.r * T + T / 2;
-      if (img) {
-        const s = T * 0.62 / Math.max(img.naturalWidth, img.naturalHeight);
-        const w = img.naturalWidth * s, h = img.naturalHeight * s;
-        ctx.drawImage(img, x - w / 2, y - h / 2, w, h);
-      } else {
-        ctx.save();
-        ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x, y + T * 0.18, T * 0.24, T * 0.1, 0, 0, 7); ctx.fill();
-        ctx.fillStyle = '#E8862E'; ctx.strokeStyle = CFG.palette.ink; ctx.lineWidth = 2.5;
-        roundRect(ctx, x - T * 0.2, y - T * 0.2, T * 0.4, T * 0.4, 6); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = 'rgba(20,23,43,.55)';
-        ctx.beginPath(); ctx.arc(x, y, T * 0.09, 0, 7); ctx.fill();
-        ctx.restore();
-      }
-    }
+  const DECAL_KEYS = { bones_skull: 1, bones_pair: 1, bones_ribs: 1 };
+
+  function drawDecals(ctx) {
+    for (const p of PROPS) if (DECAL_KEYS[p.key]) drawOneProp(ctx, p);
   }
 
-  // Bush (art pass, 18-07-2026): a walkable, textured foliage cluster — flat
-  // ground cover, not a raised object like walls. Each cell clipped with a
-  // touch of rounding so a cluster's outer edge softens instead of a hard
-  // tile grid. Fallback = a flat themed green (never the raw Brawl-IP asset).
-  function drawBush(ctx) {
-    const clusters = tileRegions((c, r) => grid[r][c] === 'b');
-    if (!clusters.length) return;
-    const bushImg = window.Assets && Assets.get('bush');
-    ctx.save();
-    ctx.beginPath();
-    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++)
-      if (grid[r][c] === 'b') roundRectPath(ctx, c * T + 1, r * T + 1, T - 2, T - 2, T * 0.22);
-    ctx.clip();
-    if (bushImg) {
-      const s = Math.max(W / bushImg.naturalWidth, H / bushImg.naturalHeight);
-      const bw = bushImg.naturalWidth * s, bh = bushImg.naturalHeight * s;
-      ctx.drawImage(bushImg, (W - bw) / 2, (H - bh) / 2, bw, bh);
-    } else {
-      ctx.fillStyle = S.bush; ctx.fillRect(0, 0, W, H);
-      ctx.globalAlpha = 0.5; ctx.fillStyle = S.bushHi;
-      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-        if (grid[r][c] !== 'b') continue;
-        ctx.beginPath(); ctx.arc(c * T + T * 0.3, r * T + T * 0.35, T * 0.16, 0, 7); ctx.fill();
-        ctx.beginPath(); ctx.arc(c * T + T * 0.68, r * T + T * 0.62, T * 0.14, 0, 7); ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-    }
-    ctx.restore();
-  }
-
-  /* Bush canopy — organic overlapping mass with height, characters sink into
-   * it (Concept Brief rule 3l, 20-07-2026 — Tessa: "bushes are actual bushes
-   * not 2D flat objects"). drawBush() above stays the flat walkable/camo
-   * ground layer (unchanged); this is a SEPARATE taller layer that joins the
-   * Y-sorted wall+entity interleave in game.js, so a hider standing at or
-   * behind a clump's near edge gets genuinely partly occluded by foliage —
-   * the same "front of / behind" read walls already get, not a flat sheet
-   * painted under everyone. Silhouette is several overlapping soft blobs,
-   * not a rounded-rect union, so the outer edge reads organic rather than a
-   * tile-grid outline with the corners filed off. */
-  function bushCanopyDrawables() {
-    const regions = tileRegions((c, r) => grid[r][c] === 'b');
+  function propDrawables() {
     const out = [];
-    for (const reg of regions) out.push({ y: (reg.r1 + 1) * T, draw: (ctx) => drawBushCanopy(ctx, reg) });
+    for (const p of PROPS) if (!DECAL_KEYS[p.key]) out.push({ y: (p.r + 1) * T, draw: (ctx) => drawOneProp(ctx, p) });
     return out;
   }
 
-  function drawBushCanopy(ctx, reg) {
+  function drawOneProp(ctx, p) {
+    const img = window.Assets && Assets.get(p.key);
+    const x = p.c * T + T / 2, y = p.r * T + T / 2;
+    const decal = !!DECAL_KEYS[p.key];
+    if (!img) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(200,200,210,.6)'; ctx.strokeStyle = CFG.palette.ink; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(x, y, T * 0.14, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.restore();
+      return;
+    }
+    const sizeFrac = decal ? 0.4 : 0.62;
+    const s = T * sizeFrac / Math.max(img.naturalWidth, img.naturalHeight);
+    const w = img.naturalWidth * s, h = img.naturalHeight * s;
+    ctx.save();
+    if (!decal) {
+      ctx.fillStyle = 'rgba(0,0,0,.25)';
+      ctx.beginPath(); ctx.ellipse(x, y + h * 0.34, w * 0.34, h * 0.14, 0, 0, 7); ctx.fill();
+    }
+    ctx.translate(x, y);
+    if (p.rot) ctx.rotate(p.rot * Math.PI / 180);
+    ctx.drawImage(img, -w / 2, -h / 2, w, h);
+    ctx.restore();
+  }
+
+  /* Layer 2 — bush: ONE small tuft sprite duplicated with jitter/overlap
+   * into an organic mass (Concept Brief rule 3l, Tessa's layered-build
+   * spec, 21-07-2026 — "actual bushes not 2D flat objects", supersedes the
+   * earlier single-stretched-texture version). A darker base layer draws
+   * first (her "darker bases"), then several jittered tuft copies on top —
+   * two per bush tile (one centred, one offset toward a neighbour) so the
+   * outer edge overlaps raggedly instead of reading as a tile grid. Joins
+   * the Y-sorted wall+entity interleave (game.js), so characters standing
+   * at or behind a clump's near edge get genuine partial foliage occlusion. */
+  function bushCanopyDrawables() {
+    const regions = tileRegions((c, r) => grid[r][c] === 'b');
+    const out = [];
+    for (const reg of regions) out.push({ y: (reg.r1 + 1) * T, draw: (ctx) => drawBushCluster(ctx, reg) });
+    return out;
+  }
+
+  function drawBushCluster(ctx, reg) {
     const x0 = reg.c0 * T, y0 = reg.r0 * T, x1 = (reg.c1 + 1) * T, y1 = (reg.r1 + 1) * T;
     const w = x1 - x0, h = y1 - y0, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
-    const bushImg = window.Assets && Assets.get('bush');
-    // A handful of overlapping blobs, offset beyond the tile footprint on
-    // every side and lifted above the tile tops — the "puffs out and rises
-    // above the grid" cue a flat per-tile fill can't give.
-    const n = Math.max(3, reg.c1 - reg.c0 + 2);
-    const blobs = [];
-    for (let i = 0; i < n; i++) {
-      const t = n > 1 ? i / (n - 1) : 0.5;
-      blobs.push({
-        x: x0 + w * t,
-        y: cy - h * (0.18 + 0.1 * Math.sin(i * 2.4)),
-        r: Math.max(w, h) * (0.3 + 0.06 * ((i * 7) % 3)),
-      });
-    }
+    const tuftImg = window.Assets && Assets.get('bush_tuft');
+
     ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,.22)';
-    ctx.beginPath(); ctx.ellipse(cx, y1 - 2, w * 0.42, h * 0.16, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,.25)';
+    ctx.beginPath(); ctx.ellipse(cx, y1 - 2, w * 0.44, h * 0.18, 0, 0, 7); ctx.fill();
+
+    // darker base mass -- a SMALL plain-filled blob per tile, just enough
+    // to back-fill any sliver a tuft stamp doesn't cover; kept subordinate
+    // (small radius) so it reads as shadow between leaves, never competes
+    // with the tuft texture for visual weight (first pass had this too
+    // large — it was reading as flat green circles, not foliage).
+    ctx.fillStyle = S.bush;
     ctx.beginPath();
-    for (const b of blobs) { ctx.moveTo(b.x + b.r, b.y); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); }
-    ctx.clip();
-    if (bushImg) {
-      const bleedW = w * 1.5, bleedH = h * 1.8;
-      const s = Math.max(bleedW / bushImg.naturalWidth, bleedH / bushImg.naturalHeight);
-      const bw = bushImg.naturalWidth * s, bh = bushImg.naturalHeight * s;
-      ctx.drawImage(bushImg, cx - bw / 2, cy - bh / 2 - h * 0.15, bw, bh);
-    } else {
-      ctx.fillStyle = S.bush; ctx.fillRect(x0 - w * 0.4, y0 - h * 0.5, w * 1.8, h * 1.8);
-      ctx.globalAlpha = 0.5; ctx.fillStyle = S.bushHi;
-      for (const b of blobs) { ctx.beginPath(); ctx.arc(b.x, b.y - b.r * 0.3, b.r * 0.4, 0, 7); ctx.fill(); }
-      ctx.globalAlpha = 1;
+    for (let r = reg.r0; r <= reg.r1; r++) for (let c = reg.c0; c <= reg.c1; c++) {
+      if (grid[r][c] !== 'b') continue;
+      const bx = c * T + T / 2, by = r * T + T / 2;
+      ctx.moveTo(bx + T * 0.3, by);
+      ctx.arc(bx, by, T * 0.3, 0, Math.PI * 2);
+    }
+    ctx.fill();
+
+    // Dense jittered tuft stamps: FOUR per bush tile, spread and overlapping
+    // across the tile and into its neighbours, so adjacent tiles' foliage
+    // physically overlaps and the cluster reads as one continuous ragged
+    // mass rather than one distinguishable blob per tile (first pass used
+    // 2 sparse stamps at near-tile-size — gaps of bare base colour showed
+    // between tiles; this quadruples coverage and enlarges the stamp).
+    const stamps = [];
+    for (let r = reg.r0; r <= reg.r1; r++) for (let c = reg.c0; c <= reg.c1; c++) {
+      if (grid[r][c] !== 'b') continue;
+      for (let i = 0; i < 4; i++) {
+        const a = hashTile(c * 4 + i, r * 4 + i) * Math.PI * 2;
+        const d = T * (0.15 + hashTile(c + i, r - i) * 0.4);
+        stamps.push({
+          tx: c * T + T / 2 + Math.cos(a) * d,
+          ty: r * T + T / 2 + Math.sin(a) * d,
+          seed: c * 97 + r * 53 + i * 13,
+        });
+      }
+    }
+    for (const s of stamps) {
+      const jx = (hashTile(s.seed, 1) - 0.5) * T * 0.15;
+      const jy = (hashTile(s.seed, 2) - 0.5) * T * 0.15;
+      const scale = 0.85 + hashTile(s.seed, 3) * 0.5;
+      const rot = (hashTile(s.seed, 4) - 0.5) * 0.9;
+      const px = s.tx + jx, py = s.ty + jy;
+      if (tuftImg) {
+        const size = T * 0.95 * scale;
+        const iw = size, ih = size * (tuftImg.naturalHeight / tuftImg.naturalWidth);
+        ctx.save();
+        ctx.translate(px, py); ctx.rotate(rot);
+        ctx.drawImage(tuftImg, -iw / 2, -ih / 2, iw, ih);
+        ctx.restore();
+      } else {
+        ctx.save();
+        ctx.globalAlpha = 0.55; ctx.fillStyle = S.bushHi;
+        ctx.beginPath(); ctx.arc(px, py, T * 0.22 * scale, 0, 7); ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
     }
     ctx.restore();
   }
@@ -393,75 +426,79 @@
   // occludes an entity further away (smaller y, drawn first, wall paints
   // over it) while an entity nearer the camera (larger y, drawn after) paints
   // over the wall's own base — real occlusion, not a fixed z-order guess.
-  const FRONT_FACE_H = 0.24;   // fraction of T the front face extends below the tile
-
+  /* Layer 2 — the fence: a COMPOUND object, not two separate structures
+   * (Concept Brief rule 3l, Tessa's layered-build spec, 21-07-2026, with
+   * her own reference crop): "low purple wall-slab run as the base, with
+   * dark iron pointy posts/spikes layered on top at intervals." Built
+   * exactly as she specified: a flush, gapless SLAB-MATERIAL base (the
+   * same merge technique the v29 wall pass used, now painting a real
+   * stone-slab texture instead of a discrete pillar icon, so there's no
+   * per-tile object silhouette left to leave gaps) + spike POSTS
+   * composited on top only at INTERVALS along the structure's true
+   * boundary edges — never per-tile, which would just be the old
+   * stamped-icon defect wearing a different asset. */
   function wallDrawables() {
-    const block = window.Assets && Assets.get('wall_block');
+    const slab = window.Assets && Assets.get('fence_slab');
+    const spike = window.Assets && Assets.get('fence_spike');
     const out = [];
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
       if (grid[r][c] !== '#') continue;
-      out.push({ y: (r + 1) * T, draw: (ctx) => drawOneWall(ctx, c, r, block) });
+      out.push({ y: (r + 1) * T, draw: (ctx) => drawOneFence(ctx, c, r, slab, spike) });
     }
     return out;
   }
 
-  /* Wall tiles MERGE into one continuous structure, not per-cell stamped
-   * icons (Concept Brief rule 3l, 20-07-2026 — Tessa: "what even are these
-   * purple blocks" over the old look). The wall_block asset is a discrete
-   * capped-pillar OBJECT with transparent margins on every side (checked
-   * directly: alpha=0 at all four tile corners) — drawn edge-to-edge per
-   * tile as before, that transparency shows raw floor between adjacent
-   * pillars, which IS the board-game "stamped icon with gaps" defect. Fix,
-   * code-only (no new art): a flush, gapless base fill in the wall's own
-   * body colour goes down FIRST across every wall tile — since tiles are
-   * already flush squares, this alone reads as one continuous mass, no
-   * union/clip math needed — then the pillar art layers on top as surface
-   * ornamentation (the dome+spike pattern still reads, just no longer the
-   * thing defining the silhouette). Front face + drop shadow now draw ONLY
-   * on a tile's true south-facing cluster edge (its south neighbour isn't
-   * also a wall) — marching-squares-style local edge detection, so a
-   * multi-tile-tall block gets ONE base lip, not one per row. */
-  function drawOneWall(ctx, c, r, block) {
+  // Any tile bordering a non-fence tile — the structure's true outer
+  // boundary, used both for the outline and for spike-post placement.
+  function isFenceEdge(c, r) {
+    return !isWall(c - 1, r) || !isWall(c + 1, r) || !isWall(c, r - 1) || !isWall(c, r + 1);
+  }
+
+  function drawOneFence(ctx, c, r, slab, spike) {
     const x = c * T, y = r * T;
     const edgeS = !isWall(c, r + 1);   // true south-facing edge of this structure
     ctx.save();
     // Shared drop shadow — only at the structure's true base, once per span.
     if (edgeS) {
-      ctx.fillStyle = 'rgba(0,0,0,.30)';
-      ctx.beginPath(); ctx.ellipse(x + T / 2, y + T * 0.98, T * 0.5, T * 0.13, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,.28)';
+      ctx.beginPath(); ctx.ellipse(x + T / 2, y + T * 0.96, T * 0.48, T * 0.12, 0, 0, 7); ctx.fill();
     }
-    // Gapless base — every wall tile, flush, no per-tile inset or rounding,
-    // so touching tiles form one unbroken mass at the fill level regardless
-    // of what the pillar art's own silhouette does on top.
-    ctx.fillStyle = S.wallSide;
-    ctx.fillRect(x, y, T, T + (edgeS ? T * FRONT_FACE_H * 0.4 : 0));
-    ctx.fillStyle = S.wallTop;
-    ctx.fillRect(x, y, T, T);
-    if (block) {
-      // Front face: a flat dark strip, only on a true south edge.
-      if (edgeS) {
-        ctx.fillStyle = 'rgba(8,6,18,.46)';
-        roundRect(ctx, x + T * 0.02, y + T - T * 0.03, T * 0.96, T * FRONT_FACE_H, T * 0.06); ctx.fill();
-      }
-      // flip alternate tiles so the repeating pillar/dome art doesn't read
-      // as one stamped image copy-pasted across the mass
-      const flip = ((c * 5 + r * 3) & 1) === 1;
-      if (flip) { ctx.translate(x + T / 2, 0); ctx.scale(-1, 1); ctx.translate(-(x + T / 2), 0); }
-      ctx.drawImage(block, x, y, T, T);
-    } else if (edgeS) {
-      // procedural fallback front face only (base fill above already gives
-      // the flat colour read; this just adds the edge lip)
-      ctx.fillStyle = 'rgba(0,0,0,.22)';
-      roundRect(ctx, x + 2, y + T - T * 0.18, T - 4, T * 0.18, 4); ctx.fill();
+    // Gapless slab base: flush per-tile fill of the MATERIAL texture, not a
+    // discrete object, so touching tiles form one continuous low rail with
+    // zero gap regardless of the texture's own pattern.
+    if (slab) {
+      const s = Math.max(T / slab.naturalWidth, T / slab.naturalHeight) * 1.4;
+      const sw = slab.naturalWidth * s, sh = slab.naturalHeight * s;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(x, y, T, T + (edgeS ? T * 0.14 : 0)); ctx.clip();
+      ctx.drawImage(slab, x + T / 2 - sw / 2, y + T / 2 - sh / 2, sw, sh);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = S.wallSide;
+      ctx.fillRect(x, y, T, T + (edgeS ? T * 0.14 : 0));
+      ctx.fillStyle = S.wallTop;
+      ctx.fillRect(x, y, T, T);
     }
-    // Single-pass outline: stroke ONLY the edges that border a non-wall
-    // tile (or the map's own out-of-bounds edge) — the marching-squares
-    // step that keeps internal seams between same-cluster tiles from
-    // showing at all, so the whole structure reads with one outline.
-    // Softened (full-frame gate, 20-07-2026): a full-strength ink stroke
-    // read as a hard cartoon-sticker outline next to her footage's soft
-    // painted block shading, which has no comparable hard edge — thinner,
-    // semi-transparent dark-purple instead of solid ink.
+    // Spike posts: discrete props, only at intervals along a true boundary
+    // edge. Even (c+r) parity spaces a post every second tile along a
+    // straight run — the post-rail-post-rail rhythm her reference shows —
+    // rather than one per tile.
+    if (spike && isFenceEdge(c, r) && ((c + r) & 1) === 0) {
+      const ps = T * 0.62 / Math.max(spike.naturalWidth, spike.naturalHeight);
+      const pw = spike.naturalWidth * ps, ph = spike.naturalHeight * ps;
+      ctx.drawImage(spike, x + T / 2 - pw / 2, y + T * 0.45 - ph, pw, ph);
+    } else if (!spike && isFenceEdge(c, r) && ((c + r) & 1) === 0) {
+      ctx.fillStyle = 'rgba(20,16,42,.7)';
+      ctx.beginPath();
+      ctx.moveTo(x + T / 2, y + T * 0.06); ctx.lineTo(x + T * 0.68, y + T * 0.32); ctx.lineTo(x + T * 0.32, y + T * 0.32);
+      ctx.closePath(); ctx.fill();
+    }
+    // Single-pass outline: stroke ONLY the edges that border a non-fence
+    // tile — the marching-squares step that keeps internal seams between
+    // same-cluster tiles from showing at all. Softened (v29 full-frame
+    // gate): a full-strength ink stroke read as a hard cartoon-sticker edge
+    // next to her footage's soft painted shading — thin, semi-transparent
+    // dark-purple instead.
     ctx.strokeStyle = 'rgba(20,16,42,.5)'; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
     if (!isWall(c, r - 1)) line(ctx, x, y, x + T, y);
     if (edgeS) line(ctx, x, y + T, x + T, y + T);
@@ -491,6 +528,6 @@
 
   window.Arena = {
     T, cols, rows, W, H, grid, isSolid, isWall, isWater, isBush, spawn, collide, camoSurface, draw, roundRect, roundRectPath,
-    freeTiles, hideTiles, centre, tileOf, path, pick, drawCamoOverlay, typeAt, wallDrawables, bushCanopyDrawables,
+    freeTiles, hideTiles, centre, tileOf, path, pick, drawCamoOverlay, typeAt, wallDrawables, bushCanopyDrawables, propDrawables,
   };
 })();

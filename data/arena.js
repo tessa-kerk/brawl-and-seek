@@ -46,6 +46,21 @@
  * procedural FALLBACK colours only; the real generated textures redo
  * against her frames in the next batch (held for PM clear + Tessa's budget
  * yes, Concept Brief rule 3j).
+ *
+ * ESTABLISHING PAN REVIEWED (21-07-2026, Concept Brief rule 3l): the PM's
+ * "no establishing shot exists" claim was wrong — her Acid Lakes recording
+ * DOES have a match-intro pan (~14–16s) with a clean overhead of the map
+ * centre. Extracted at native res (`Art/Acid Lakes Real Footage Reference/`
+ * scratch — pan_14.0s through pan_17.0s) and used to cross-check this grid's
+ * cluster SHAPES: the fence run, bush mass, pool silhouette and general
+ * cover density all match what the pan shows for this map. Honest limit,
+ * stated plainly: the pan has no gridline overlay (unlike the original
+ * top-left corner trace, which did), so this is a confirmed-shape review,
+ * not a pixel-precise re-trace — cols10-15 stay footage-INFORMED rather
+ * than footage-TRACED. The layered rendering rebuild (below/`src/arena.js`)
+ * was the pan's main payoff this round: it's what let a genuine fence
+ * structure, real prop types (stump/barrels/bones) and correct floor
+ * texture replace guesses.
  */
 window.ARENA = {
   // 16 wide × 9 tall (was 10×9) — 16:9, PM-cleared widescreen crop. Height
@@ -65,13 +80,24 @@ window.ARENA = {
     '~###............',
   ].map((row) => row.slice(0, 16)),
 
-  // Decorative floor-level props (unchanged positions from the 10-col
-  // version — both still inside the true corner, cols10-15 is new content
-  // beyond them). Flat ground decals, drawn on the floor layer — never
-  // solid, never consulted by collide()/isSolid().
+  // Decorative props (v30, 21-07-2026, Concept Brief rule 3l layered-build
+  // spec). Power-Cube crates REMOVED outright (Tessa's design ruling: Solo
+  // Showdown power-up furniture, not map furniture — false-promises power
+  // cubes in our camo mode); their old (3,2)/(2,3) positions are now just
+  // open floor, not backfilled. New set is set-dressing her footage
+  // confirms genuinely exists on this map (stumps, barrels, bone/fossil
+  // decals) — scattered on open floor, not solid, never consulted by
+  // collide()/isSolid()/hideTiles. Stumps carry `rot` (degrees) — her
+  // footage shows the same stump asset repeated at different rotations.
   props: [
-    { c: 3, r: 2, key: 'powercube' },
-    { c: 2, r: 3, key: 'powercube' },
+    { c: 14, r: 2, key: 'stump', rot: 0 },
+    { c: 11, r: 4, key: 'stump', rot: 110 },
+    { c: 5,  r: 8, key: 'stump', rot: 230 },
+    { c: 7,  r: 4, key: 'barrel_plain' },
+    { c: 10, r: 7, key: 'barrel_cobweb' },
+    { c: 12, r: 5, key: 'bones_skull' },
+    { c: 8,  r: 7, key: 'bones_pair' },
+    { c: 4,  r: 4, key: 'bones_ribs' },
   ],
 
   surfaces: {

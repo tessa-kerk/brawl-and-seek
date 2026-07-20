@@ -124,7 +124,7 @@
     // ONLY (Concept Brief rule 3d) — collision, mechanics and the fit
     // geometry are untouched; this changes what's painted where, not what
     // collides or scores. See Arena.wallDrawables() for the wall side.
-    const drawables = Arena.wallDrawables().concat(Arena.bushCanopyDrawables());
+    const drawables = Arena.wallDrawables().concat(Arena.bushCanopyDrawables(), Arena.propDrawables());
     for (const d of Hiders.list) drawables.push({ y: d.y + d.r, draw: (c) => Render.drawHider(c, d, tSec, false) });
     for (const s of Seekers.list) drawables.push({ y: s.y + s.r, draw: (c) => Render.drawSeeker(c, s, tSec) });
     drawables.push({ y: Player.y + Player.r, draw: (c) => Render.drawPlayer(c, tSec) });

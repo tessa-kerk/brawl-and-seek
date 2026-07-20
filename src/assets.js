@@ -6,14 +6,24 @@
  * kick the loads on parse so they're ready by first paint. */
 (function () {
   const specs = {
-    skirt:      'assets/world/skirt-1.png',    // NOT used in the play view (art pass 18-07) — kept for a future marketing/landing use
-    floor:      'assets/world/floor.png',      // v28 (20-07): flat matte plum ground, PM retry — v27's v3 read too busy/cracked next to her near-flat footage (archived floor_v3_too-busy-superseded.png)
-    water:      'assets/world/water.png',      // v28 (20-07): calm flat green fill, PM retry — v27's v3 read as a busy lava-lamp next to her calm footage (archived water_v3_too-busy-superseded.png)
-    wall_block: 'assets/world/wall_block.png', // v27 (20-07): capped lavender-purple pillar block w/ spike trim, footage-referenced — replaces the rejected wiki-referenced v2
-    bush:       'assets/world/bush.png',       // v27 (20-07): dense teal-cyan spiky foliage, footage-referenced — now genuinely used (16x9 grid has 3 real bush tiles, v26) — replaces the rejected wiki-referenced v2
-    powercube:  'assets/world/powercube.png',  // Acid Lakes batch (18-07): the traced Power-Cube spawn marker prop
-    tag_icon:   'assets/ui/tag_icon.png',      // Acid Lakes batch (18-07): the Tag, styled on Belle's Super "Spotter" (Art Inventory.md)
-    camo_icon:  'assets/ui/camo_icon.png',     // Acid Lakes batch (18-07): the camo-badge's paint-brush glyph
+    skirt:        'assets/world/skirt-1.png',    // NOT used in the play view (art pass 18-07) — kept for a future marketing/landing use
+    // v30 (21-07, Concept Brief rule 3l THE COMPOSITION LAW, Tessa's layered-build spec):
+    floor:        'assets/world/floor.png',        // Layer 0 — full-bleed, generated: subtle mottled patchwork (her correction: v28's flat colour "lacks any texture whatsoever"). Archived: floor_v4_flat-color-only-superseded.png
+    // water: DELIBERATELY NOT an asset any more — Layer 1 (pools) is pure code-drawn per her spec (drawWater in arena.js), zero generation.
+    fence_slab:   'assets/world/fence_slab.png',   // Layer 2 — the fence's low connecting base, a flat stone-slab MATERIAL (drawn gapless/merged, same technique as the old wall fill)
+    fence_spike:  'assets/world/fence_spike.png',  // Layer 2 — the fence's dark iron post/spike, a discrete PROP composited on top of the slab at intervals, never per-tile
+    bush_tuft:    'assets/world/bush_tuft.png',    // Layer 2 — ONE small foliage tuft, stamped with jitter/overlap into a cluster (replaces the old single stretched-texture bush)
+    stump:        'assets/world/stump.png',        // Layer 2 — ONE tree-stump prop, placed at multiple rotations per instance
+    barrel_plain: 'assets/world/barrel_plain.png', // Layer 2 — barrel variant 1 of 2
+    barrel_cobweb:'assets/world/barrel_cobweb.png',// Layer 2 — barrel variant 2 of 2 (cobwebbed)
+    bones_skull:  'assets/world/bones_skull.png',  // Layer 2 — bone/fossil ground decal 1 of 3
+    bones_pair:   'assets/world/bones_pair.png',   // Layer 2 — bone/fossil ground decal 2 of 3
+    bones_ribs:   'assets/world/bones_ribs.png',   // Layer 2 — bone/fossil ground decal 3 of 3
+    // powercube: REMOVED (Tessa's design ruling, 21-07) — Solo Showdown power-up
+    // furniture, not map furniture; would falsely promise power cubes in our
+    // camo mode. Old asset file kept on disk, unregistered, never deleted.
+    tag_icon:     'assets/ui/tag_icon.png',      // Acid Lakes batch (18-07): the Tag, styled on Belle's Super "Spotter" (Art Inventory.md)
+    camo_icon:    'assets/ui/camo_icon.png',     // Acid Lakes batch (18-07): the camo-badge's paint-brush glyph
   };
   const imgs = {};
   for (const k in specs) { const im = new Image(); im.decoding = 'async'; im.src = specs[k]; imgs[k] = im; }

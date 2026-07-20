@@ -125,7 +125,18 @@ body{
    status chip): a text-shadow alone doesn't hold up over the world art's
    varied ground colour (thin on the tan floor). Same solid dark plate as
    every other HUD readout — legibility never depends on what's rendered
-   underneath. */
+   underneath.
+   TESTED against the footage-referenced environment (v28, 20-07-2026,
+   PM directive): her own BRAWL/SHOWDOWN! banners are bare outlined text,
+   no plate, so a bare A/B was run for real before keeping this. Verdict:
+   bare loses. A thick text-stroke keeps "HIDE!" itself legible, but the
+   subtitle line straddles wall/bush/floor in the same frame and reads
+   thin wherever it crosses busy texture — our banner has to survive an
+   ARBITRARY background (any tile mix, any moment), unlike her reference
+   clips which happen to land on comparatively even ground. The plate
+   stays as a deliberate, tested exception, not an untried default —
+   screenshots: Art/2026-07-20 - v28 banner AB - plated (kept).png /
+   ...bare (rejected, subtitle illegible).png. */
 #banner{
   position:absolute;top:32%;left:50%;transform:translate(-50%,-50%);
   z-index:6;pointer-events:none;text-align:center;

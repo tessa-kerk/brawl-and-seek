@@ -7,8 +7,8 @@
 (function () {
   const specs = {
     skirt:      'assets/world/skirt-1.png',    // NOT used in the play view (art pass 18-07) — kept for a future marketing/landing use
-    floor:      'assets/world/floor.png',      // v27 (20-07): deep plum-purple ground, ref'd DIRECTLY from Tessa's own footage crops (rule 3i/3j) — replaces the wiki-referenced v2 (now REJECTED, archived as floor_v2_wiki-referenced-superseded.png)
-    water:      'assets/world/water.png',      // v27 (20-07): glowing acid-green slime pool, footage-referenced — replaces the rejected wiki-referenced v2
+    floor:      'assets/world/floor.png',      // v28 (20-07): flat matte plum ground, PM retry — v27's v3 read too busy/cracked next to her near-flat footage (archived floor_v3_too-busy-superseded.png)
+    water:      'assets/world/water.png',      // v28 (20-07): calm flat green fill, PM retry — v27's v3 read as a busy lava-lamp next to her calm footage (archived water_v3_too-busy-superseded.png)
     wall_block: 'assets/world/wall_block.png', // v27 (20-07): capped lavender-purple pillar block w/ spike trim, footage-referenced — replaces the rejected wiki-referenced v2
     bush:       'assets/world/bush.png',       // v27 (20-07): dense teal-cyan spiky foliage, footage-referenced — now genuinely used (16x9 grid has 3 real bush tiles, v26) — replaces the rejected wiki-referenced v2
     powercube:  'assets/world/powercube.png',  // Acid Lakes batch (18-07): the traced Power-Cube spawn marker prop

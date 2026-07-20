@@ -4,8 +4,12 @@
  * design fact; this file is the single place those facts become code.
  */
 window.CFG = {
-  // Build stamp — bump n + the ?v= token in index.html on every commit.
-  BUILD: { n: 26, date: '20-07-2026', milestone: 'ART' },
+  // Build stamp — bump n + the ?v= token in index.html on EVERY commit, together.
+  // PM caught a real drift (v27: ?v= tokens bumped, this constant wasn't — the
+  // live stamp still read "v26" on v27 content). tools/test_touch.py now
+  // asserts n === the max ?v= token in index.html, so this can't silently
+  // desync again.
+  BUILD: { n: 28, date: '20-07-2026', milestone: 'ART' },
 
   // Palette — the six locked roles. Never invent a colour per deliverable.
   palette: {

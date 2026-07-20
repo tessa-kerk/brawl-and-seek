@@ -22,9 +22,11 @@
  * Real edges vs. cut edges, unchanged in kind: row0/col0 are the map's own
  * TRUE boundary (top + left, the spiky wall border — now continued across
  * the full 16-wide top edge, since a border doesn't stop mid-map). Col15
- * (right, was col9) and row8 (bottom) are crop cuts, not real edges, and
- * get the same dimmed/blurred "map keeps going, past legible focus"
- * continuation treatment (Arena.drawCutEdgeFade) as before.
+ * (right, was col9) and row8 (bottom) are crop cuts, not real edges.
+ * REVISED 20-07-2026 (Concept Brief rule 3l): these no longer get a dimmed
+ * fade — the full-bleed ground (Arena.drawGround) just keeps going past
+ * them at full brightness, which reads as "the map continues" more honestly
+ * than a fade ever did (a fade that stops is itself a visible rectangle).
  *
  * BUSH GAP RESOLVED (was HONEST GAP in the 10-col version): the original
  * corner genuinely had zero bush tiles, flagged not hidden. Her own footage

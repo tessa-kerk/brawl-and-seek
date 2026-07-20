@@ -12,23 +12,6 @@
    Pure-CSS media-query guard: portrait shows this, hides nothing else (the
    game keeps running underneath — no state loss on rotate). Landscape hides
    this entirely (display:none, not just opacity, so it can never eat touches). */
-#rotate-prompt{
-  display:none;
-  position:fixed;inset:0;z-index:20;
-  background:var(--navy-2);
-  flex-direction:column;align-items:center;justify-content:center;gap:10px;
-  text-align:center;padding:24px;
-}
-#rotate-prompt svg{animation:rotateHint 1.8s ease-in-out infinite;}
-#rotate-prompt p{font-family:'Lilita One',cursive;font-size:18px;color:var(--chalk);letter-spacing:.02em;}
-#rotate-prompt p.sub{font-family:'Nunito Sans';font-weight:700;font-size:12.5px;color:rgba(246,244,239,.6);letter-spacing:.02em;max-width:280px;}
-@keyframes rotateHint{0%,100%{transform:rotate(0deg);}50%{transform:rotate(-90deg);}}
-@media (orientation:portrait){
-  #rotate-prompt{display:flex;}
-  #stage{visibility:hidden;}     /* stop touches reaching the game underneath */
-}
-@media (prefers-reduced-motion:reduce){#rotate-prompt svg{animation:none;}}
-
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overscroll-behavior:none;}
 body{
@@ -48,6 +31,27 @@ body{
    pan / pinch / double-tap-zoom eating a game touch. */
 #stage{position:fixed;inset:0;overflow:hidden;touch-action:none;overscroll-behavior:none;}
 #game{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;}
+
+/* No rotate prompt (Concept Brief rule 3l, 20-07-2026 — "it loads landscape
+   and you turn," never a stop-and-ask screen). Held portrait, #stage itself
+   rotates 90° to fill the physical viewport landscape-style: its OWN layout
+   box is sized 100vh×100vw (so canvas.clientWidth/Height, read in game.js
+   resize(), naturally comes out as a landscape box regardless of which way
+   the phone is held — zero fit-formula changes needed), then rotated into
+   place. transform-origin:top left keeps the math simple and matches the
+   coordinate remap in src/input.js exactly (documented there). A CSS
+   transform on #stage makes it the containing block for its position:fixed
+   descendants too (the joystick ring/nub, appended into #stage) — they
+   already compute their positions in this same rotated-box coordinate
+   space, so they land correctly with no extra CSS needed. */
+@media (orientation:portrait){
+  #stage{
+    top:0; left:0; right:auto; bottom:auto;
+    width:100vh; height:100vw;
+    transform-origin:top left;
+    transform:rotate(90deg) translateY(-100%);
+  }
+}
 
 /* ---- Top bar: hard-line badges ONLY (rule 3j, 20-07-2026) -------------
    The public event surface is "her bot-match recording: controls only" —

@@ -9,7 +9,7 @@ window.CFG = {
   // live stamp still read "v26" on v27 content). tools/test_touch.py now
   // asserts n === the max ?v= token in index.html, so this can't silently
   // desync again.
-  BUILD: { n: 28, date: '20-07-2026', milestone: 'ART' },
+  BUILD: { n: 29, date: '21-07-2026', milestone: 'ART' },
 
   // Palette — the six locked roles. Never invent a colour per deliverable.
   palette: {

@@ -142,22 +142,11 @@
   const pick = (arr) => arr[(Math.random() * arr.length) | 0];
 
   // ---- Rendering --------------------------------------------------------
-  function draw(ctx, t) {
-    // Floor (drawn under everything). Art pass: a textured painted-ground image,
-    // cover-fit across the arena; falls back to the signed-off 2-shade checker.
-    const floorImg = window.Assets && Assets.get('floor');
-    if (floorImg) {
-      const s = Math.max(W / floorImg.naturalWidth, H / floorImg.naturalHeight);
-      const fw = floorImg.naturalWidth * s, fh = floorImg.naturalHeight * s;
-      ctx.drawImage(floorImg, (W - fw) / 2, (H - fh) / 2, fw, fh);
-    } else {
-      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-        const cell = grid[r][c];
-        if (cell === '#') continue;            // walls painted later, on top
-        ctx.fillStyle = ((c + r) & 1) ? S.floorB : S.floorA;
-        ctx.fillRect(c * T, r * T, T, T);
-      }
-    }
+  // bleed = the world-space rect that exactly covers the full visible canvas
+  // at the current fit (game.js render()); falls back to the arena's own
+  // W×H bounds for callers that don't pass one (e.g. any older/direct call).
+  function draw(ctx, t, bleed) {
+    drawGround(ctx, bleed || { x0: 0, y0: 0, x1: W, y1: H });
     drawBush(ctx);
     drawWater(ctx, t);
     drawProps(ctx);
@@ -166,32 +155,38 @@
     // entities, so a tall block can correctly occlude what's behind it. See
     // wallDrawables() below. Ground layers (floor/bush/water) stay flat and
     // always-first, since they have no height to occlude anything with.
-    // subtle vignette to seat the arena on the navy stage
-    const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.8);
-    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.28)');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-
-    drawCutEdgeFade(ctx);
   }
 
-  /* "Never feel cut off" (Concept Brief rule 3g). This recreated section has
-   * TWO genuine map edges (top + left — the real spiky wall border, traced
-   * from the reference, drawn as-is — never faded) and TWO crop edges (right
-   * + bottom — not a real boundary, just where our 10x9 window on the actual
-   * 61x61 map stops). Rather than let those two sides read as a hard wall, a
-   * soft gradient fades them toward the exact tone the screen-space world-skirt
-   * already uses beyond the arena's own bounds (game.js render() — a dimmed
-   * continuation of the same floor ground) — "the map keeps going, just past
-   * legible focus," not a stop. Only right + bottom get this; top + left, the
-   * map's own true edge, stay sharp. */
-  function drawCutEdgeFade(ctx) {
-    const fadeW = T * 1.3, tone = 'rgba(23,27,51,0.82)', clear = 'rgba(23,27,51,0)';
-    let g = ctx.createLinearGradient(W - fadeW, 0, W, 0);
-    g.addColorStop(0, clear); g.addColorStop(1, tone);
-    ctx.fillStyle = g; ctx.fillRect(W - fadeW, 0, fadeW, H);
-    g = ctx.createLinearGradient(0, H - fadeW, 0, H);
-    g.addColorStop(0, clear); g.addColorStop(1, tone);
-    ctx.fillStyle = g; ctx.fillRect(0, H - fadeW, W, fadeW);
+  /* Full-bleed ground (Concept Brief rule 3l, 20-07-2026 — "kill the
+   * letterbox completely"). The floor texture now covers the ENTIRE visible
+   * world rect, not just the playable Arena.W×H footprint, so there is no
+   * rectangle edge or dimmed void anywhere on screen — the SAME ground just
+   * keeps going. The two true map edges (top+left) already carry a wall
+   * cluster as their natural boundary feature; the two crop edges (right+
+   * bottom) now read as "the map keeps going" simply because the ground
+   * genuinely does, at full brightness, with nothing marking a stop. This
+   * supersedes the old per-arena floor fill AND the old drawCutEdgeFade
+   * gradient (both retired — a fade that stops at W/H is itself a visible
+   * rectangle edge once the ground bleeds past it). */
+  function drawGround(ctx, bleed) {
+    const floorImg = window.Assets && Assets.get('floor');
+    const bw = bleed.x1 - bleed.x0, bh = bleed.y1 - bleed.y0;
+    if (floorImg) {
+      const s = Math.max(bw / floorImg.naturalWidth, bh / floorImg.naturalHeight);
+      const fw = floorImg.naturalWidth * s, fh = floorImg.naturalHeight * s;
+      const cx = bleed.x0 + bw / 2, cy = bleed.y0 + bh / 2;
+      ctx.drawImage(floorImg, cx - fw / 2, cy - fh / 2, fw, fh);
+    } else {
+      // Procedural fallback: the checker only inside the actual grid (it has
+      // no meaning beyond it), on a flat fill matching floorA everywhere else
+      // in the bleed rect so there's still no visible seam.
+      ctx.fillStyle = S.floorA; ctx.fillRect(bleed.x0, bleed.y0, bw, bh);
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        if (grid[r][c] === '#') continue;
+        ctx.fillStyle = ((c + r) & 1) ? S.floorB : S.floorA;
+        ctx.fillRect(c * T, r * T, T, T);
+      }
+    }
   }
 
   // Bounding boxes of contiguous same-type tile regions, 4-way flood fill.
@@ -328,6 +323,60 @@
     ctx.restore();
   }
 
+  /* Bush canopy — organic overlapping mass with height, characters sink into
+   * it (Concept Brief rule 3l, 20-07-2026 — Tessa: "bushes are actual bushes
+   * not 2D flat objects"). drawBush() above stays the flat walkable/camo
+   * ground layer (unchanged); this is a SEPARATE taller layer that joins the
+   * Y-sorted wall+entity interleave in game.js, so a hider standing at or
+   * behind a clump's near edge gets genuinely partly occluded by foliage —
+   * the same "front of / behind" read walls already get, not a flat sheet
+   * painted under everyone. Silhouette is several overlapping soft blobs,
+   * not a rounded-rect union, so the outer edge reads organic rather than a
+   * tile-grid outline with the corners filed off. */
+  function bushCanopyDrawables() {
+    const regions = tileRegions((c, r) => grid[r][c] === 'b');
+    const out = [];
+    for (const reg of regions) out.push({ y: (reg.r1 + 1) * T, draw: (ctx) => drawBushCanopy(ctx, reg) });
+    return out;
+  }
+
+  function drawBushCanopy(ctx, reg) {
+    const x0 = reg.c0 * T, y0 = reg.r0 * T, x1 = (reg.c1 + 1) * T, y1 = (reg.r1 + 1) * T;
+    const w = x1 - x0, h = y1 - y0, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    const bushImg = window.Assets && Assets.get('bush');
+    // A handful of overlapping blobs, offset beyond the tile footprint on
+    // every side and lifted above the tile tops — the "puffs out and rises
+    // above the grid" cue a flat per-tile fill can't give.
+    const n = Math.max(3, reg.c1 - reg.c0 + 2);
+    const blobs = [];
+    for (let i = 0; i < n; i++) {
+      const t = n > 1 ? i / (n - 1) : 0.5;
+      blobs.push({
+        x: x0 + w * t,
+        y: cy - h * (0.18 + 0.1 * Math.sin(i * 2.4)),
+        r: Math.max(w, h) * (0.3 + 0.06 * ((i * 7) % 3)),
+      });
+    }
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,.22)';
+    ctx.beginPath(); ctx.ellipse(cx, y1 - 2, w * 0.42, h * 0.16, 0, 0, 7); ctx.fill();
+    ctx.beginPath();
+    for (const b of blobs) { ctx.moveTo(b.x + b.r, b.y); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); }
+    ctx.clip();
+    if (bushImg) {
+      const bleedW = w * 1.5, bleedH = h * 1.8;
+      const s = Math.max(bleedW / bushImg.naturalWidth, bleedH / bushImg.naturalHeight);
+      const bw = bushImg.naturalWidth * s, bh = bushImg.naturalHeight * s;
+      ctx.drawImage(bushImg, cx - bw / 2, cy - bh / 2 - h * 0.15, bw, bh);
+    } else {
+      ctx.fillStyle = S.bush; ctx.fillRect(x0 - w * 0.4, y0 - h * 0.5, w * 1.8, h * 1.8);
+      ctx.globalAlpha = 0.5; ctx.fillStyle = S.bushHi;
+      for (const b of blobs) { ctx.beginPath(); ctx.arc(b.x, b.y - b.r * 0.3, b.r * 0.4, 0, 7); ctx.fill(); }
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+  }
+
   // ---- Camera-tilt draw order (engineering pass, 18-07-2026) -------------
   // Real Brawl renders on a tilted camera, not flat top-down: chunky blocks
   // show both a top face and a front face, and whether a block sits "in
@@ -356,39 +405,68 @@
     return out;
   }
 
+  /* Wall tiles MERGE into one continuous structure, not per-cell stamped
+   * icons (Concept Brief rule 3l, 20-07-2026 — Tessa: "what even are these
+   * purple blocks" over the old look). The wall_block asset is a discrete
+   * capped-pillar OBJECT with transparent margins on every side (checked
+   * directly: alpha=0 at all four tile corners) — drawn edge-to-edge per
+   * tile as before, that transparency shows raw floor between adjacent
+   * pillars, which IS the board-game "stamped icon with gaps" defect. Fix,
+   * code-only (no new art): a flush, gapless base fill in the wall's own
+   * body colour goes down FIRST across every wall tile — since tiles are
+   * already flush squares, this alone reads as one continuous mass, no
+   * union/clip math needed — then the pillar art layers on top as surface
+   * ornamentation (the dome+spike pattern still reads, just no longer the
+   * thing defining the silhouette). Front face + drop shadow now draw ONLY
+   * on a tile's true south-facing cluster edge (its south neighbour isn't
+   * also a wall) — marching-squares-style local edge detection, so a
+   * multi-tile-tall block gets ONE base lip, not one per row. */
   function drawOneWall(ctx, c, r, block) {
-    const x = c * T, y = r * T, lift = T * 0.10;
+    const x = c * T, y = r * T;
+    const edgeS = !isWall(c, r + 1);   // true south-facing edge of this structure
     ctx.save();
-    // contact shadow
-    ctx.fillStyle = 'rgba(0,0,0,.32)';
-    ctx.beginPath(); ctx.ellipse(x + T / 2, y + T * 0.9, T * 0.42, T * 0.15, 0, 0, 7); ctx.fill();
+    // Shared drop shadow — only at the structure's true base, once per span.
+    if (edgeS) {
+      ctx.fillStyle = 'rgba(0,0,0,.30)';
+      ctx.beginPath(); ctx.ellipse(x + T / 2, y + T * 0.98, T * 0.5, T * 0.13, 0, 0, 7); ctx.fill();
+    }
+    // Gapless base — every wall tile, flush, no per-tile inset or rounding,
+    // so touching tiles form one unbroken mass at the fill level regardless
+    // of what the pillar art's own silhouette does on top.
+    ctx.fillStyle = S.wallSide;
+    ctx.fillRect(x, y, T, T + (edgeS ? T * FRONT_FACE_H * 0.4 : 0));
+    ctx.fillStyle = S.wallTop;
+    ctx.fillRect(x, y, T, T);
     if (block) {
-      // Front face: a flat dark strip extending below the block's own top-
-      // down art, so the block reads as a 3D object (top face + front face)
-      // without needing separate front-face art. Drawn first so the block's
-      // sprite visually sits above/behind it, like a lip under the block.
-      ctx.fillStyle = 'rgba(8,6,18,.46)';
-      roundRect(ctx, x + T * 0.06, y + T - T * 0.04, T * 0.88, T * FRONT_FACE_H, T * 0.08); ctx.fill();
-      // flip alternate blocks so a wall of them doesn't read as one stamped image
+      // Front face: a flat dark strip, only on a true south edge.
+      if (edgeS) {
+        ctx.fillStyle = 'rgba(8,6,18,.46)';
+        roundRect(ctx, x + T * 0.02, y + T - T * 0.03, T * 0.96, T * FRONT_FACE_H, T * 0.06); ctx.fill();
+      }
+      // flip alternate tiles so the repeating pillar/dome art doesn't read
+      // as one stamped image copy-pasted across the mass
       const flip = ((c * 5 + r * 3) & 1) === 1;
       if (flip) { ctx.translate(x + T / 2, 0); ctx.scale(-1, 1); ctx.translate(-(x + T / 2), 0); }
-      ctx.drawImage(block, x, y - lift, T, T);
-    } else {
-      // ---- procedural fallback (the signed-off block look; already has a
-      // top-face/side-face split, so it needs no separate front-face strip) ----
-      const inset = 3, rad = 12, plift = 7;
-      const wx = x + inset, wy = y + inset, w = T - inset * 2, hh = T - inset * 2;
-      ctx.fillStyle = 'rgba(0,0,0,.30)';
-      roundRect(ctx, wx + 2, wy + plift, w, hh, rad); ctx.fill();
-      ctx.fillStyle = S.wallSide;
-      roundRect(ctx, wx, wy + plift * 0.5, w, hh, rad); ctx.fill();
-      ctx.fillStyle = S.wallTop;
-      roundRect(ctx, wx, wy, w, hh - 2, rad); ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.lineWidth = 2;
-      roundRect(ctx, wx + 2, wy + 2, w - 4, hh - 8, rad - 2); ctx.stroke();
-      ctx.strokeStyle = CFG.palette.ink; ctx.lineWidth = 2.5;
-      roundRect(ctx, wx, wy, w, hh - 2, rad); ctx.stroke();
+      ctx.drawImage(block, x, y, T, T);
+    } else if (edgeS) {
+      // procedural fallback front face only (base fill above already gives
+      // the flat colour read; this just adds the edge lip)
+      ctx.fillStyle = 'rgba(0,0,0,.22)';
+      roundRect(ctx, x + 2, y + T - T * 0.18, T - 4, T * 0.18, 4); ctx.fill();
     }
+    // Single-pass outline: stroke ONLY the edges that border a non-wall
+    // tile (or the map's own out-of-bounds edge) — the marching-squares
+    // step that keeps internal seams between same-cluster tiles from
+    // showing at all, so the whole structure reads with one outline.
+    // Softened (full-frame gate, 20-07-2026): a full-strength ink stroke
+    // read as a hard cartoon-sticker outline next to her footage's soft
+    // painted block shading, which has no comparable hard edge — thinner,
+    // semi-transparent dark-purple instead of solid ink.
+    ctx.strokeStyle = 'rgba(20,16,42,.5)'; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+    if (!isWall(c, r - 1)) line(ctx, x, y, x + T, y);
+    if (edgeS) line(ctx, x, y + T, x + T, y + T);
+    if (!isWall(c - 1, r)) line(ctx, x, y, x, y + T);
+    if (!isWall(c + 1, r)) line(ctx, x + T, y, x + T, y + T);
     ctx.restore();
   }
 
@@ -413,6 +491,6 @@
 
   window.Arena = {
     T, cols, rows, W, H, grid, isSolid, isWall, isWater, isBush, spawn, collide, camoSurface, draw, roundRect, roundRectPath,
-    freeTiles, hideTiles, centre, tileOf, path, pick, drawCamoOverlay, typeAt, wallDrawables,
+    freeTiles, hideTiles, centre, tileOf, path, pick, drawCamoOverlay, typeAt, wallDrawables, bushCanopyDrawables,
   };
 })();

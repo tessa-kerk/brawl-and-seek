@@ -94,26 +94,26 @@
 
   function render() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    // World "skirt" — CORRECTED 18-07-2026: real Brawl Stars never renders
-    // anything beyond a map's own play bounds, so a separate invented diorama
-    // (the original repaint-site skirt-1.png) repeats v14's core mistake.
-    // Instead: a dimmed/blurred CONTINUATION of the same floor+bush ground the
-    // arena itself uses — "more of this map, out of focus" — screen-space,
-    // drawn under the arena. Falls back to the flat letterbox if not ready.
-    const floorImg = window.Assets && Assets.get('floor');
-    ctx.fillStyle = '#171B33'; ctx.fillRect(0, 0, cssW, cssH);   // base under any gap
-    if (floorImg) {
-      ctx.save();
-      ctx.filter = 'blur(7px) brightness(0.55)';
-      const bs = Math.max(cssW / floorImg.naturalWidth, cssH / floorImg.naturalHeight) * 1.3;
-      const bw = floorImg.naturalWidth * bs, bh = floorImg.naturalHeight * bs;
-      ctx.drawImage(floorImg, (cssW - bw) / 2, (cssH - bh) / 2, bw, bh);
-      ctx.restore();
-    }
+    // Fallback base only — the ground itself now draws FULL-BLEED inside the
+    // world transform below (Concept Brief rule 3l, 20-07-2026: "kill the
+    // letterbox completely" — Tessa rejected the old screen-space dimmed/
+    // blurred "skirt" as a visible arena rectangle sitting in a void, which
+    // reads nothing like Brawl. This fill only shows for a frame before the
+    // floor image decodes, or never, on a loaded page).
+    ctx.fillStyle = '#171B33'; ctx.fillRect(0, 0, cssW, cssH);
 
     const maker = STATE.view === 'maker';
     ctx.setTransform(scale * dpr, 0, 0, scale * dpr, offX * dpr, offY * dpr);
-    Arena.draw(ctx, tSec);                          // ground layer: floor, bush, water (flat, always first)
+    // The world-space rect that exactly covers the full CSS canvas at the
+    // current fit — same undimmed ground continues past the playable Arena
+    // bounds in every direction, so there's no rectangle edge to see: the
+    // boundary reads through where wall/water/entities stop, never through a
+    // visible frame. (rule 3l law 1)
+    const bleed = {
+      x0: -offX / scale, y0: -offY / scale,
+      x1: (cssW - offX) / scale, y1: (cssH - offY) / scale,
+    };
+    Arena.draw(ctx, tSec, bleed);                    // ground layer: full-bleed floor, then bush, water (flat, always first)
     FX.draw(ctx);
 
     // Camera-tilt draw order (engineering pass, 18-07-2026): walls and
@@ -124,7 +124,7 @@
     // ONLY (Concept Brief rule 3d) — collision, mechanics and the fit
     // geometry are untouched; this changes what's painted where, not what
     // collides or scores. See Arena.wallDrawables() for the wall side.
-    const drawables = Arena.wallDrawables();
+    const drawables = Arena.wallDrawables().concat(Arena.bushCanopyDrawables());
     for (const d of Hiders.list) drawables.push({ y: d.y + d.r, draw: (c) => Render.drawHider(c, d, tSec, false) });
     for (const s of Seekers.list) drawables.push({ y: s.y + s.r, draw: (c) => Render.drawSeeker(c, s, tSec) });
     drawables.push({ y: Player.y + Player.r, draw: (c) => Render.drawPlayer(c, tSec) });

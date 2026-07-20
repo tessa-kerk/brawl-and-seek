@@ -31,6 +31,28 @@
 
   const MODE = new URLSearchParams(location.search).get('joystick') === 'float' ? 'float' : 'fixed';
 
+  /* Rotated-portrait coordinate remap (Concept Brief rule 3l, 20-07-2026 —
+   * no rotate prompt; #stage itself renders rotated via CSS, see main.css).
+   * Touch events keep reporting RAW physical clientX/clientY regardless of
+   * any CSS transform on an ancestor — the browser does NOT rotate touch
+   * coordinates for you, only the pixels it paints. Every touch coordinate
+   * used for game logic must be converted into #stage's OWN rotated-box
+   * space to match what game.js's cssW/cssH (stage.clientWidth/Height,
+   * unaffected by the transform) already assume.
+   * Derived from the exact CSS transform (rotate(90deg) translateY(-100%),
+   * transform-origin:top left) on a box sized width=innerHeight,
+   * height=innerWidth: inverting that transform gives
+   *   gameX = physicalClientY
+   *   gameY = innerWidth − physicalClientX
+   * innerWidth here is the PHYSICAL viewport width (the box's own height,
+   * i.e. the translateY(-100%) distance) — always call remap() with the
+   * live window.innerWidth, never a cached value, since orientation can
+   * change mid-session. isRotated() mirrors the exact CSS media query. */
+  function isRotated() { return innerWidth < innerHeight; }
+  function gameW() { return isRotated() ? innerHeight : innerWidth; }
+  function gameH() { return isRotated() ? innerWidth : innerHeight; }
+  function remap(x, y) { return isRotated() ? { x: y, y: innerWidth - x } : { x, y }; }
+
   // Tuning per mode.
   const F = { DEAD: 4, MAX: 34, MINK: 0.5 };            // floating
   const X = { DEAD: 12, RAD: 62, MINK: 0.55 };          // fixed (generous)
@@ -66,7 +88,7 @@
   // excluded from the stick by the existing #makerpanel UI-exclusion rule
   // below — nothing to functionally protect, so keep this one position.
   function base() {
-    return { x: Math.max(78, innerWidth * 0.15), y: innerHeight - Math.max(120, innerHeight * 0.17) };
+    return { x: Math.max(78, gameW() * 0.15), y: gameH() - Math.max(120, gameH() * 0.17) };
   }
   // Neutral translucent grey — real Brawl's own control language, not our
   // brand accent (Concept Brief rule 3g/3h UI split: inside the play frame,
@@ -124,7 +146,7 @@
     if (gameTouch && e.cancelable) { e.preventDefault(); dbg.pdOk = true; }
 
     const list = [];
-    for (const t of e.touches) if (!uiIds.has(t.identifier)) list.push({ id: t.identifier, x: t.clientX, y: t.clientY });
+    for (const t of e.touches) if (!uiIds.has(t.identifier)) { const p = remap(t.clientX, t.clientY); list.push({ id: t.identifier, x: p.x, y: p.y }); }
     dbg.touches = list;
 
     if (MODE === 'fixed') {
@@ -146,7 +168,7 @@
     }
     drawVisual();
   }
-  function inZone(t) { return t.x < innerWidth * 0.62 && t.y > innerHeight * 0.42; }
+  function inZone(t) { return t.x < gameW() * 0.62 && t.y > gameH() * 0.42; }
 
   addEventListener('DOMContentLoaded', () => {
     const surface = document.getElementById('stage') || window;

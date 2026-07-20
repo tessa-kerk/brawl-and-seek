@@ -100,6 +100,17 @@
     el.ripple = document.getElementById('mk-ripple');
     el.warn = document.getElementById('mk-warn');
 
+    // The tuning sandbox is HIDDEN behind the debug flag, not deleted
+    // (Concept Brief rule 3j, 20-07-2026, Tessa): the public prototype is the
+    // in-game event, pure — no Map Maker entry point on that surface. It
+    // returns deliberately later (landing page, a second LinkedIn beat) and
+    // stays fully functional + tested here — ?debug=1 or ?maker=1 reveals the
+    // entry pill; ?view=maker still opens it directly either way (tests use
+    // this path). Same established pattern as src/pace.js.
+    const q = new URLSearchParams(location.search);
+    const mkOpen = document.getElementById('mk-open');
+    if (mkOpen && !(q.has('debug') || q.has('maker'))) mkOpen.style.display = 'none';
+
     document.getElementById('mk-open').addEventListener('click', enter);
     document.getElementById('mk-back').addEventListener('click', exit);
 

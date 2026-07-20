@@ -5,7 +5,7 @@ import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from _harness import game, Tally, touch  # noqa: E402
 
-with game(width=844, height=390, mobile=True, query="?pace=1") as (pg, errs):  # landscape-only (fidelity rule 3g); ?pace shows the demoted picker
+with game(width=844, height=390, mobile=True, query="?pace=1&debug=1") as (pg, errs):  # landscape-only (fidelity rule 3g); ?pace shows the demoted picker, ?debug reveals the Map Maker entry pill (rule 3j — hidden from the public surface by default)
     t = Tally()
 
     pg.tap("#mk-open"); pg.wait_for_timeout(350)

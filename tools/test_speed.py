@@ -10,8 +10,13 @@ from _harness import game, Tally  # noqa: E402
 
 with game() as (pg, errs):
     t = Tally()
+    # Re-derived by measurement (Concept Brief rule 3j, 20-07-2026), not the
+    # earlier blind A/B/C pick — Tessa's real bot-match footage measured
+    # ~2.4 tiles/s (phase-correlation world-scroll, independent of our own
+    # movement code), landing the scale at 0.57. Oracle updated deliberately;
+    # see data/tuning.js for the full measurement writeup.
     pdef = pg.evaluate("STATE.speedScale")
-    t.check(f"default speedScale is the baked Brawl-true pick ({pdef}, want 0.70)", abs(pdef - 0.70) < 1e-9)
+    t.check(f"default speedScale is the footage-measured pick ({pdef}, want 0.57)", abs(pdef - 0.57) < 1e-9)
 
     # ratios are scale-invariant: measure the raw component speeds at 1.0 and 0.6
     def speeds(scale):

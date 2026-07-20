@@ -49,80 +49,60 @@ body{
 #stage{position:fixed;inset:0;overflow:hidden;touch-action:none;overscroll-behavior:none;}
 #game{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;}
 
-/* ---- Top bar: title + build stamp ------------------------------------ */
+/* ---- Top bar: hard-line badges ONLY (rule 3j, 20-07-2026) -------------
+   The public event surface is "her bot-match recording: controls only" —
+   no wordmark, no menu chrome. CONCEPT + the build stamp are the one
+   exception (must never be hidden, in any view — nothing may pass as a
+   real in-game screenshot), so they stay, shrunk into a plain corner row
+   instead of a full title bar. */
 #topbar{
-  position:absolute;top:0;left:0;right:0;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;
+  position:absolute;top:0;right:0;
+  display:flex;align-items:center;gap:6px;
+  padding:calc(env(safe-area-inset-top) + 8px) 10px 8px;
   pointer-events:none;z-index:5;
 }
-.wordmark{
-  font-family:'Lilita One',cursive;font-weight:400;
-  font-size:clamp(20px,4.4vw,30px);line-height:1;
-  letter-spacing:.5px;
-  color:var(--yellow);
-  text-shadow:0 2px 0 var(--ink), 0 0 18px rgba(255,200,0,.25);
-}
-.wordmark .amp{color:var(--magenta);}
-/* Maker's side rail now claims 340px on every landscape width (PM fit fix,
-   18-07-2026 — previously only ever happened at >=860px, wide enough that
-   this never came up). At the narrowest supported width (740px) that
-   leaves ~400px for the wordmark + badges row, too tight for the wordmark
-   at its max clamp size without wrapping into the CONCEPT badge. */
-@media (orientation:landscape) and (max-width:800px){
-  body.maker .wordmark{font-size:18px;white-space:nowrap;}
-}
-.badges{display:flex;align-items:center;gap:6px;pointer-events:auto;}
 .stamp{
   font-family:'Nunito Sans';font-weight:800;
-  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--chalk);opacity:.5;
-  padding:4px 9px;border:1px solid rgba(246,244,239,.22);border-radius:999px;
+  padding:3px 8px;border:1px solid rgba(246,244,239,.22);border-radius:999px;
   white-space:nowrap;
 }
 /* Required by the art hard-lines: nothing can pass as a real in-game screenshot. */
 .concept{
   font-family:'Nunito Sans';font-weight:800;
-  font-size:10px;letter-spacing:.16em;
+  font-size:9px;letter-spacing:.16em;
   color:var(--teal);
-  padding:4px 9px;border:1px solid rgba(53,224,208,.5);border-radius:999px;
+  padding:3px 8px;border:1px solid rgba(53,224,208,.5);border-radius:999px;
   background:rgba(53,224,208,.10);white-space:nowrap;
 }
 
-/* ---- Score ticker (the camping rule, legible at a glance) ------------- */
-#ticker{
-  position:absolute;top:calc(env(safe-area-inset-top) + 50px);left:50%;
-  transform:translateX(-50%);
+/* ---- In-game overlays (rule 3j) — Brawl's own grammar, not a chrome
+   chip row: a single sparse plate per corner, learned from her recording's
+   "Brawlers left: N" (position, plate, bold display type). Two plates only:
+   hiders/seekers (our "brawlers left" equivalent) and score/time (our
+   mechanic's own feedback, since Brawl has no scoring analogue to borrow —
+   given the same plate language rather than invented chrome). ------------ */
+.ov-plate{
+  position:absolute;top:calc(env(safe-area-inset-top) + 10px);
   z-index:5;pointer-events:none;
-  display:flex;gap:6px;align-items:stretch;
-  max-width:96vw;flex-wrap:nowrap;
+  background:rgba(10,12,22,.55);
+  border-radius:8px;padding:5px 10px;
+  backdrop-filter:blur(2px);
 }
-#ticker .chip{
-  display:flex;align-items:center;gap:5px;
-  background:rgba(23,27,51,.80);
-  border:1px solid rgba(246,244,239,.14);
-  border-radius:10px;padding:5px 9px;
-  backdrop-filter:blur(3px);white-space:nowrap;
-}
-#ticker.hidden{opacity:0;transition:opacity .35s ease;}
-#ticker .lbl{
-  font-family:'Nunito Sans';font-weight:800;font-size:9px;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--chalk);opacity:.55;
-}
-#ticker b{font-family:'Lilita One',cursive;font-weight:400;font-size:15px;color:var(--chalk);letter-spacing:.02em;}
-#ticker .big b{font-size:19px;color:var(--yellow);}
-#ticker .time b{color:var(--chalk);}
-#ticker .time.low b{color:var(--magenta);}
-#ticker #tk-seekchip.low b{color:var(--magenta);}   /* last seeker on the map */
-/* the coin fades as the camp-decay eats your rate */
-#ticker .coin{
-  width:13px;height:13px;border-radius:50%;
-  background:radial-gradient(circle at 35% 32%, #FFE58A, var(--yellow) 65%, #C89A00);
-  box-shadow:0 0 0 1.5px rgba(20,23,43,.7) inset;
-  transition:opacity .3s linear;
-}
-#ticker #tk-rate{font-size:13px;color:var(--yellow);}
-#ticker .chip.decayed #tk-rate{color:rgba(246,244,239,.6);}
+.ov-plate.hidden{opacity:0;transition:opacity .35s ease;}
+#ov-left{left:calc(env(safe-area-inset-left) + 10px);}
+/* Clears #topbar's CONCEPT/stamp badges (same corner, hard line — must
+   never be occluded), so this plate sits below them, not overlapping. */
+#ov-right{top:calc(env(safe-area-inset-top) + 38px);right:calc(env(safe-area-inset-right) + 10px);text-align:right;}
+.ov-row{display:flex;align-items:baseline;gap:5px;white-space:nowrap;}
+#ov-right .ov-row{justify-content:flex-end;}
+.ov-row b{font-family:'Lilita One',cursive;font-weight:400;font-size:18px;color:var(--chalk);letter-spacing:.02em;text-shadow:0 1px 0 rgba(0,0,0,.6);}
+.ov-lbl{font-family:'Nunito Sans';font-weight:800;font-size:10px;letter-spacing:.06em;text-transform:lowercase;color:var(--chalk);opacity:.6;}
+.ov-sub{margin-top:1px;}
+.ov-sub b{font-size:13px;opacity:.85;}
+#tk-seekrow.low b{color:var(--magenta);}            /* last seeker on the map */
+#ov-right .ov-sub.low b{color:var(--magenta);}       /* time running low */
 
 /* +100 reposition bonus flash */
 #bonus{
@@ -211,19 +191,10 @@ body{
 .fanpolicy a{color:inherit;}
 
 @media (max-width:430px){
-  #ticker{gap:3px;max-width:99vw;}
-  #ticker .chip{padding:3px 5px;border-radius:8px;gap:3px;}
-  #ticker b{font-size:12px;} #ticker .big b{font-size:15px;}
-  #ticker .lbl{font-size:7px;letter-spacing:.04em;}
-  #ticker #tk-rate{font-size:11px;}
-  #ticker .coin{width:11px;height:11px;}
-}
-/* very narrow: drop the count-chip labels to a single glyph so all six fit */
-@media (max-width:380px){
-  #ticker .chip:not(.big):not(.time) .lbl{display:none;}
-  #ticker #tk-hiders::before{content:'H ';opacity:.55;font-weight:800;}
-  #ticker #tk-seekers::before{content:'S ';opacity:.55;font-weight:800;}
-  #ticker #tk-repaint::before{content:'🖌 ';font-size:9px;}
+  .ov-plate{padding:4px 8px;}
+  .ov-row b{font-size:15px;}
+  .ov-lbl{font-size:8px;}
+  .ov-sub b{font-size:11px;}
 }
 
 /* ---- Bottom hint ----------------------------------------------------- */
@@ -327,11 +298,14 @@ img#status-icon{width:26px;height:26px;object-fit:contain;font-size:0;}
    read as a real properties inspector, not a row of debug switches.
    ====================================================================== */
 
-/* Entry pill (event view only) — lives in the top chrome rail now (landscape
-   HUD rebuild, rule 3c/3h): it's OUR tool, not Brawl's, so it moved out of
-   the play frame's own bottom-right control-cluster slot (now the camo
-   badge) rather than compete with Brawl's own UI language there. */
+/* Entry pill — debug-only (rule 3j, 20-07-2026): the tuning sandbox is off
+   the public event surface entirely now; this pill only exists behind
+   ?debug=1/?maker=1 (src/maker.js toggles its display). Sits just under the
+   corner badges, well clear of the in-game overlay plates. Its own teal
+   accent keeps it visibly OUR tool, distinct from any Brawl control. */
 #mk-open{
+  position:absolute;top:calc(env(safe-area-inset-top) + 84px);right:10px;
+  z-index:5;
   display:flex;align-items:center;gap:5px;
   font-family:'Lilita One',cursive;font-size:11px;letter-spacing:.03em;
   color:var(--ink);background:var(--teal);
@@ -344,7 +318,7 @@ body.maker #mk-open{display:none;}
 @media (max-width:480px){ #mk-open span{display:none;} #mk-open{padding:6px 8px;} }
 
 /* Hide the event HUD while editing */
-body.maker #ticker, body.maker #hint, body.maker #banner,
+body.maker #ov-left, body.maker #ov-right, body.maker #hint, body.maker #banner,
 body.maker #bonus, body.maker #endpanel{display:none !important;}
 
 /* ---- the panel ------------------------------------------------------- */

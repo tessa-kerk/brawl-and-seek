@@ -25,7 +25,7 @@
   let canvas, ctx, stage;
   let dpr = 1, cssW = 0, cssH = 0, scale = 1, offX = 0, offY = 0;
   let last = 0, tSec = 0;
-  let elHint, elStatus, elStatusLabel, elBanner, elBonus, elTicker, elPace;
+  let elHint, elStatus, elStatusLabel, elBanner, elBonus, elOvLeft, elOvRight, elPace;
   let lastPhase = 'hide', bannerT = 0, bonusArmed = false, lastDt = 0.016;
 
   function resize() {
@@ -174,23 +174,19 @@
     elStatusLabel.textContent = over ? '' : st === 'hidden' ? 'Camouflaged' : st === 'hiding' ? 'Painting in…' : '';
     if (STATE.everHidden) elHint.classList.add('dim');
 
-    // ticker
+    // in-game overlays (rule 3j — two sparse plates, not a chrome chip row;
+    // repaint time and the camp-decay coin dropped from persistent display,
+    // conveyed instead by the camo badge's own live fill)
     document.getElementById('tk-score').textContent = Math.round(Round.score).toLocaleString();
-    const rate = Player.hidden ? Round.rate : TUNING.hider.scoreRate;
-    document.getElementById('tk-rate').textContent = `+${rate.toFixed(rate < 10 ? 1 : 0)}/s`;
-    const coinAlpha = Math.max(0.18, rate / TUNING.hider.scoreRate);
-    document.getElementById('tk-coin').style.opacity = coinAlpha;
-    document.getElementById('tk-coinchip').classList.toggle('decayed', rate < TUNING.hider.scoreRate * 0.6);
-    document.getElementById('tk-repaint').textContent = Round.repaintTime().toFixed(1) + 's';
     document.getElementById('tk-hiders').textContent = Round.hidersAlive();
     // Seekers-remaining: makes the tag budget legible, so TAGGED OUT! reads
     // (v12, canon v3.4). Goes low/magenta when only one seeker is left on the map.
     const nSeek = Seekers.active().length;
     document.getElementById('tk-seekers').textContent = nSeek;
-    document.getElementById('tk-seekchip').classList.toggle('low', Round.phase === 'seek' && nSeek <= 1);
+    document.getElementById('tk-seekrow').classList.toggle('low', Round.phase === 'seek' && nSeek <= 1);
     const tl = Round.timeLeft();
     document.getElementById('tk-time').textContent = fmt(tl);
-    document.querySelector('#ticker .time').classList.toggle('low', tl <= 15);
+    document.getElementById('tk-timerow').classList.toggle('low', tl <= 15);
 
     // phase banner
     if (Round.phase !== lastPhase) {
@@ -207,8 +203,9 @@
       bannerT -= lastDt;
       if (bannerT <= 0) elBanner.classList.remove('show');
     }
-    // the reveal map is the shareable artefact — keep the ticker + pace off it
-    elTicker.classList.toggle('hidden', over);
+    // the reveal map is the shareable artefact — keep the overlays + pace off it
+    elOvLeft.classList.toggle('hidden', over);
+    elOvRight.classList.toggle('hidden', over);
     if (elPace) elPace.classList.toggle('hidden', over);
 
     // reposition bonus flash
@@ -261,7 +258,8 @@
     iconTest.src = 'assets/ui/camo_icon.png';
     elBanner = document.getElementById('banner');
     elBonus = document.getElementById('bonus');
-    elTicker = document.getElementById('ticker');
+    elOvLeft = document.getElementById('ov-left');
+    elOvRight = document.getElementById('ov-right');
     elPace = document.getElementById('pace');
 
     newRound();

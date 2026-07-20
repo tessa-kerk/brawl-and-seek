@@ -5,7 +5,7 @@
  */
 window.CFG = {
   // Build stamp — bump n + the ?v= token in index.html on every commit.
-  BUILD: { n: 25, date: '18-07-2026', milestone: 'ART' },
+  BUILD: { n: 26, date: '20-07-2026', milestone: 'ART' },
 
   // Palette — the six locked roles. Never invent a colour per deliverable.
   palette: {
@@ -38,6 +38,13 @@ window.CFG = {
       { name: 'MOX',  body: '#FF8A5C', light: '#FFA97F', dark: '#DB6A3F' },
       { name: 'KIRA', body: '#6FC3E8', light: '#95D8F3', dark: '#4A9DC4' },
       { name: 'BOLT', body: '#E8C46F', light: '#F3D894', dark: '#C4A04A' },
+      // +2 (20-07-2026, PM-approved dummies 5->7 for the 16x9 widescreen
+      // crop). PROVISIONAL roster picks, flagged for confirmation same as
+      // everything else this pass — not yet cross-checked against the
+      // "older brawlers = deepest Fankit coverage" heuristic or a formal
+      // green-count/UI-palette collision pass the way the original 5 were.
+      { name: 'RUST', body: '#D46A4A', light: '#E8896A', dark: '#B0492E' },
+      { name: 'GRIT',  body: '#A8ADC4', light: '#C3C7DB', dark: '#82869E' },
     ],
     seeker: { name: 'SEEKER', body: '#FF4F6D', light: '#FF7A92', dark: '#C93450' },
   },

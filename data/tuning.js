@@ -7,17 +7,26 @@ window.TUNING = {
    * dummies, and the tag via its speedMult), so the validated ratios
    * (player>seeker, tag 2x base) are preserved and only the absolute pace moves.
    *
-   * BAKED 0.70 (13-07-2026) — Tessa's blind A/B/C device pick (A), and it turns
-   * out to be BRAWL-TRUE. Research (Concept Brief §Design tuning, 13 Jul; Pixel
-   * Crux roster data): Brawl speed classes Normal 720u / Fast 770u / Very Fast
-   * 820u. At scale 0.70 our player runs ~2.94 t/s (≈ Very Fast — Leon's class,
-   * a nice "why not just Leon" foil: hiders literally move at his speed) and the
-   * seeker ~2.59 t/s (≈ Normal). Conversion-independent check: our hider:seeker
-   * ratio 0.881 ≈ Brawl's 720/820 = 0.878. NOTE: the unit→tiles/s conversion is
-   * community-disputed (300 vs a measured 273.33 u/t/s), so the absolute t/s
-   * figures carry a band — do NOT "correct" them toward one camp's number.
-   * ?speed=<n> still overrides live (kept for capture work). */
-  speedScale: 0.70,
+   * RE-DERIVED BY MEASUREMENT, not A/B (Concept Brief rule 3j, 20-07-2026).
+   * The 0.70 pick above was a blind on-device A/B/C choice, cross-checked only
+   * against community unit-conversion estimates (themselves disputed). Tessa's
+   * verdict on 0.70 in play: "our movement is way too fast" — this stands until
+   * a real measurement matches. Measured directly from her own bot-match
+   * recording (`Art/2026-07-20 - Tessa's own recording - Acid Lakes bot match.mp4`):
+   * dense-sampled frames (0.15s apart, OpenCV) across a clean single-direction
+   * walk, world-scroll speed extracted via phase correlation (`cv2.phaseCorrelate`,
+   * an independent measurement — never calls our own movement code), summed as
+   * PATH length (not net displacement, since the walk curves slightly) over 2.4s
+   * of footage: ≈101 screen-px/s. Tile size measured the same way, from a wall
+   * block's on-screen width in the same recording: ≈42px/tile. 101/42 ≈ 2.4
+   * tiles/s for a Normal-class brawler — independently consistent with the
+   * community unit-conversion estimate for Normal (720u ÷ ~300u per tile/s ≈
+   * 2.4 t/s), so the two methods agree. New scale = 2.4 / CFG.playerSpeed(4.2)
+   * ≈ 0.57 — down from 0.70, confirming her "too fast" call was right by ~19%.
+   * A second clean segment from the same recording measured 2.28 t/s, bracketing
+   * the same 0.57 result within measurement noise. ?speed=<n> still overrides
+   * live (kept for capture work). */
+  speedScale: 0.57,
 
   hider: {
     scoreRate: 10,          // +10 pts/s while hidden
@@ -82,5 +91,9 @@ window.TUNING = {
     canonCapSeconds: 180,
   },
 
-  counts: { dummies: 5 },   // AI dummy hiders alongside the player
+  // 5 -> 7 (20-07-2026, PM-approved): the 16x9 widescreen crop adds ~60%
+  // more floor (90 -> 144 tiles) than the original 10x9 corner; 7 keeps
+  // hider density roughly proportionate without fully 1:1 scaling entity
+  // count to floor area.
+  counts: { dummies: 7 },   // AI dummy hiders alongside the player
 };

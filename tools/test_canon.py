@@ -30,10 +30,15 @@ with game() as (pg, errs):
     t.check(f"reposition 4 tiles banks +{r3['delta']:.0f} & resets rate", abs(r3['delta'] - 100) < 1 and r3['camp'] < 0.1)
     t.check(f"reposition 1.5 tiles banks nothing (+{r1['delta']:.0f}), keeps camp", r1['delta'] < 1 and r1['camp'] > 1)
 
-    # C) repaint escalation 1.0 -> 1.5 (3 found) -> 2.0 (2 remain)
+    # C) repaint escalation 1.0 -> 1.5 (3 found) -> 2.0 (hidersAlive<=2, which
+    # INCLUDES the still-live player per round.js: alive dummies + 1). Roster
+    # is now 7 dummies (was 5, 20-07-2026 widescreen crop), so the "2 remain"
+    # boundary shifted: alive dummies must drop to 1 (1 dummy + 1 player = 2)
+    # -> found>=6, not found>=4 as it was against the old 5-dummy roster.
+    # Independent oracle, recomputed from the spec, not copied from round.js.
     def esc(found):
         return pg.evaluate(f"(()=>{{Round.reset(); Hiders.list.forEach((d,i)=>d.found=i<{found}); Round.foundCount={found}; return Round.repaintTime();}})()")
-    for k, want in [(0, 1.0), (2, 1.0), (3, 1.5), (4, 2.0), (5, 2.0)]:
+    for k, want in [(0, 1.0), (2, 1.0), (3, 1.5), (6, 2.0), (7, 2.0)]:
         rp = esc(k)
         t.check(f"repaint @{k} found = {rp}s (spec {want}s)", abs(rp - want) < 1e-9)
 

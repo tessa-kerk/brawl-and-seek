@@ -14,8 +14,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Brawl & Seek">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/fonts.css?v=25">
-<link rel="stylesheet" href="css/main.css?v=25">
+<link rel="stylesheet" href="css/fonts.css?v=26">
+<link rel="stylesheet" href="css/main.css?v=26">
 </head>
 <body>
   <!-- Landscape-only (Concept Brief fidelity rule 3g): Brawl Stars is
@@ -36,36 +36,45 @@
   <div id="stage">
     <canvas id="game"></canvas>
 
+    <!-- Two-surface split (Concept Brief rule 3j, 20-07-2026, Tessa): the
+         public prototype is the in-game EVENT, pure — "your controls and
+         nothing else," matching her own bot-match recording. The badge row
+         (CONCEPT + build stamp) is a hard line that must never be hidden in
+         ANY view, so it stays, shrunk into a corner rather than a full
+         top bar; the wordmark and the Map Maker entry both move OFF this
+         surface (Map Maker returns behind ?debug=1/?maker=1, see maker.js). -->
     <div id="topbar">
-      <div class="wordmark">BRAWL <span class="amp">&amp;</span> SEEK</div>
-      <div class="badges">
-        <span class="concept" title="Unofficial fan concept — not a real in-game screenshot">CONCEPT</span>
-        <span class="stamp">v25 · ART</span>
-        <!-- Map Maker entry (landscape HUD rebuild, rule 3c/3h): this is OUR
-             tool, not Brawl's, so it moved out of the play frame's own
-             control-cluster real estate (bottom-right, now the camo badge)
-             and into the top chrome rail alongside the other non-Brawl
-             badges — same distinct teal accent as always, never mistaken
-             for a Brawl control. -->
-        <button id="mk-open" aria-label="Open Map Maker">
-          <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-          <span>Map Maker</span>
-        </button>
-      </div>
+      <span class="concept" title="Unofficial fan concept — not a real in-game screenshot">CONCEPT</span>
+      <span class="stamp">v26 · ART</span>
     </div>
 
-    <!-- Score ticker: the camping rule, legible at a glance. -->
-    <div id="ticker">
-      <div class="chip big"><span class="lbl">SCORE</span><b id="tk-score">0</b></div>
-      <div class="chip" id="tk-coinchip"><span class="coin" id="tk-coin"></span><b id="tk-rate">+10/s</b></div>
-      <div class="chip"><span class="lbl">REPAINT</span><b id="tk-repaint">1.0s</b></div>
-      <div class="chip"><span class="lbl">HIDERS</span><b id="tk-hiders">6</b></div>
-      <div class="chip" id="tk-seekchip"><span class="lbl">SEEKERS</span><b id="tk-seekers">1</b></div>
-      <div class="chip time"><span class="lbl">⏱</span><b id="tk-time">1:15</b></div>
+    <!-- In-game overlays, not a chrome chip row (rule 3j): learned from her
+         recording's own grammar — a single sparse plate top-left ("Brawlers
+         left: N"), nothing else persistent across the top. Two plates only:
+         hiders/seekers left (our "brawlers left" equivalent) and score (our
+         mechanic has no real Brawl analogue, so it earns its own plate in
+         the same visual language rather than inventing new chrome). -->
+    <div id="ov-left" class="ov-plate">
+      <div class="ov-row"><b id="tk-hiders">6</b><span class="ov-lbl">hiders</span></div>
+      <div class="ov-row ov-sub" id="tk-seekrow"><b id="tk-seekers">1</b><span class="ov-lbl">seekers</span></div>
+    </div>
+    <div id="ov-right" class="ov-plate">
+      <div class="ov-row"><b id="tk-score">0</b><span class="ov-lbl">score</span></div>
+      <div class="ov-row ov-sub" id="tk-timerow"><b id="tk-time">1:15</b></div>
     </div>
 
     <div id="bonus">+100</div>
     <div id="banner"></div>
+
+    <!-- Map Maker entry — debug-only (rule 3j): the tuning sandbox is hidden
+         from the public event surface, not deleted. Revealed by ?debug=1 or
+         ?maker=1 (src/maker.js), same pattern as the pace picker below. Its
+         own teal accent keeps it visibly OUR tool, distinct from any Brawl
+         control language, whenever it is shown. -->
+    <button id="mk-open" aria-label="Open Map Maker">
+      <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      <span>Map Maker</span>
+    </button>
 
     <!-- Camo-state badge (landscape HUD rebuild, rule 3g/3h): occupies the
          same bottom-right slot Brawl's own attack/Super buttons live in, in
@@ -109,7 +118,7 @@
         <div class="mk-title">MAP MAKER</div>
         <span class="mk-live">Live</span>
       </div>
-      <div class="mk-map"><b>Fresh Paint</b> · 10 × 9 · camouflage properties</div>
+      <div class="mk-map"><b>Fresh Paint</b> · 16 × 9 · camouflage properties</div>
 
       <section class="mk-group">
         <h4>Camo surfaces</h4>
@@ -157,24 +166,24 @@
     <div class="disclaimer">Fan concept by Tessa Kerk · unofficial, not endorsed by Supercell · <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">Fan Content Policy</a></div>
   </div>
 
-  <script src="src/config.js?v=25"></script>
-  <script src="src/assets.js?v=25"></script>
-  <script src="data/arena.js?v=25"></script>
-  <script src="data/tuning.js?v=25"></script>
-  <script src="src/input.js?v=25"></script>
-  <script src="src/arena.js?v=25"></script>
-  <script src="src/ai.js?v=25"></script>
-  <script src="src/fx.js?v=25"></script>
-  <script src="src/player.js?v=25"></script>
-  <script src="src/tag.js?v=25"></script>
-  <script src="src/hider.js?v=25"></script>
-  <script src="src/seeker.js?v=25"></script>
-  <script src="src/round.js?v=25"></script>
-  <script src="src/render.js?v=25"></script>
-  <script src="src/reveal.js?v=25"></script>
-  <script src="src/maker.js?v=25"></script>
-  <script src="src/pace.js?v=25"></script>
-  <script src="src/debug.js?v=25"></script>
-  <script src="src/game.js?v=25"></script>
+  <script src="src/config.js?v=26"></script>
+  <script src="src/assets.js?v=26"></script>
+  <script src="data/arena.js?v=26"></script>
+  <script src="data/tuning.js?v=26"></script>
+  <script src="src/input.js?v=26"></script>
+  <script src="src/arena.js?v=26"></script>
+  <script src="src/ai.js?v=26"></script>
+  <script src="src/fx.js?v=26"></script>
+  <script src="src/player.js?v=26"></script>
+  <script src="src/tag.js?v=26"></script>
+  <script src="src/hider.js?v=26"></script>
+  <script src="src/seeker.js?v=26"></script>
+  <script src="src/round.js?v=26"></script>
+  <script src="src/render.js?v=26"></script>
+  <script src="src/reveal.js?v=26"></script>
+  <script src="src/maker.js?v=26"></script>
+  <script src="src/pace.js?v=26"></script>
+  <script src="src/debug.js?v=26"></script>
+  <script src="src/game.js?v=26"></script>
 </body>
 </html>

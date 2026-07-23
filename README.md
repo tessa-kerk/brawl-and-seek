@@ -20,7 +20,11 @@ Bushes are walkable cover: the local brawler becomes translucent while moving th
 
 Map Maker is a live sandbox for testing surface-camouflage rules, repaint timing, and the resulting arena behavior without changing the public match.
 
-![Camouflage state](assets/showcase/paint-v43.png)
+![Map Maker controls](assets/showcase/map-maker-v43.png)
+
+## Camouflage in action
+
+![Painted camouflage state](assets/showcase/paint-v43.png)
 
 ## Playing on a phone
 
@@ -53,4 +57,4 @@ This is an unofficial fan concept by Tessa Kerk. It is not affiliated with, endo
 
 ---
 
-Built by [Tessa Kerk](https://www.linkedin.com/in/tessakerk/) · [Portfolio](https://tessakerk.com) · [Play Brawl & Seek](https://tessa-kerk.github.io/brawl-and-seek/)
+Built by [Tessa Kerk](https://linkedin.com/in/tessa-kerk) · [Portfolio](https://www.tessa-kerk.com) · [Play Brawl & Seek](https://tessa-kerk.github.io/brawl-and-seek/)

@@ -44,3 +44,4 @@ tools/capture_motion_004.py
 tools/capture_prop_motion_004.py
 tools/trim_motion_004.py
 tools/clean_fossils.py
+tools/verify_public_004.py

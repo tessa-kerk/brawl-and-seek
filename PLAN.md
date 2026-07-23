@@ -1,5 +1,11 @@
 # Brawl & Seek — build status
 
+## Directive 004 publication receipt (24-07-2026)
+
+- Published commit: `366a17a` (v44 phone corrections), followed by this deployment receipt.
+- GitHub Pages workflow `30037152661` completed successfully; public URL: [tessa-kerk.github.io/brawl-and-seek](https://tessa-kerk.github.io/brawl-and-seek/).
+- System-Chrome public verification passed at 1280×720, 844×390, 740×360 and rotated 576×1280: `V44 · STEP 1 PHONE`, approved world plate present, keyboard movement works, zero page-origin errors. Raw verification is recorded in `Art/2026-07-24 - Directive 004 phone corrections/v44-public-verification.json`.
+
 ## Directive 004 — v44 phone-correction local PM handoff (24-07-2026)
 
 - Build/cache stamp: `v44 · STEP 1 PHONE`; all 21 `?v=` tokens agree.

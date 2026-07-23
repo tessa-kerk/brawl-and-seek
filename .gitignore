@@ -20,3 +20,22 @@ _scratch/
 tools/__pycache__/
 __pycache__/
 *.pyc
+
+# Release-only exclusion of retained local review material
+assets/GENERATION-LOG.md
+assets/world/_*.png
+assets/world/d002-*.png
+assets/world/truth-*.png
+assets/world/floor*.png
+assets/world/water*.png
+assets/world/wall_*.png
+assets/world/bush*.png
+assets/world/fence_*.png
+assets/world/skirt*.png
+assets/world/stump*.png
+assets/world/barrel*.png
+assets/world/bones*.png
+assets/world/powercube.png
+tools/capture_003b.py
+tools/capture_003b_walk.py
+tools/crop_003b.py

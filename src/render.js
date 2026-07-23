@@ -60,9 +60,12 @@
     }
 
     const left = cx - r * 1.12, right = cx + r * 1.12;
+    const inBush = isPlayer && Arena.isBush(Math.floor(cx / Arena.T), Math.floor(cy / Arena.T));
     const sweepX = left + p * (right - left);
     if (p <= 0 || e.found) {
+      if (inBush && e.lastMoving) ctx.globalAlpha = 0.48;
       drawNormal(ctx, cx, cy, r, e.facing, col);
+      ctx.globalAlpha = 1;
     } else {
       ctx.save(); ctx.beginPath(); ctx.rect(sweepX, cy - r * 2, right - sweepX + r, r * 4); ctx.clip();
       drawNormal(ctx, cx, cy, r, e.facing, col); ctx.restore();

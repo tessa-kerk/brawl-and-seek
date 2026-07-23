@@ -68,36 +68,40 @@ window.ARENA = {
   // "don't oversize" per the Meccha lesson still applies to depth, just not
   // width). col0/row0 = the map's true left/top edge, continued in kind
   // across the new width, not reinvented.
+  // Directive 001 (23-07-2026): 32×18 = two footage-measured 16×9 camera
+  // views, deliberately not a full 61×61 map. The top row remains a genuine
+  // edge; the right/bottom are rendered, playable buffer content.
+  // 001A legend: source-visible pan region = rows 0-8 / cols 0-15; all
+  // remaining cells are FOOTAGE-INFORMED CONTINUATION using only recorded
+  // structure/prop types. 50x27 is ~two audited 25.23x13.40 views, not 61x61.
   grid: [
-    '#####~~~~#######',
-    '####~~~~~#######',
-    '###.~~~~~#bbb...',
-    '##..~~~..#..###.',
-    '.....~~..#......',
-    '~~~.........~~..',
-    '~~~~..S.....~~..',
-    '~~~.........~~..',
-    '~###............',
-  ].map((row) => row.slice(0, 16)),
-
-  // Decorative props (v30, 21-07-2026, Concept Brief rule 3l layered-build
-  // spec). Power-Cube crates REMOVED outright (Tessa's design ruling: Solo
-  // Showdown power-up furniture, not map furniture — false-promises power
-  // cubes in our camo mode); their old (3,2)/(2,3) positions are now just
-  // open floor, not backfilled. New set is set-dressing her footage
-  // confirms genuinely exists on this map (stumps, barrels, bone/fossil
-  // decals) — scattered on open floor, not solid, never consulted by
-  // collide()/isSolid()/hideTiles. Stumps carry `rot` (degrees) — her
-  // footage shows the same stump asset repeated at different rotations.
-  props: [
-    { c: 14, r: 2, key: 'stump', rot: 0 },
-    { c: 11, r: 4, key: 'stump', rot: 110 },
-    { c: 5,  r: 8, key: 'stump', rot: 230 },
-    { c: 7,  r: 4, key: 'barrel_plain' },
-    { c: 10, r: 7, key: 'barrel_cobweb' },
-    { c: 12, r: 5, key: 'bones_skull' },
-    { c: 8,  r: 7, key: 'bones_pair' },
-    { c: 4,  r: 4, key: 'bones_ribs' },
+    '##################################################',
+    'b#####bbbbbbbb#bbb#######bbbb#####bbbb####bbbbbbbb',
+    '#########b######bb#bbbbbbb##b#####bbbbbb##..######',
+    '#########b######bbbbbbbbbbbbbbbbbbbbbbbbbb########',
+    '#bbb#####bb####bbbbbbbbbbbbbb...bbbbbbbbb#########',
+    '#bb..~.....#####.............####.....b##..~~~...#',
+    '#b.~~~~.....###.........bb#...###.....###.~~~~~..#',
+    '#b.~~~~~bb...bb###b.....b##........#..###.~~~~~~.#',
+    '#...~~##bbb..b####b......b#.#......#..###..~~~~.##',
+    '#..bb####....b####...#.####........#..###..####..#',
+    '#..bb####....b###...bbb####...........bb#.........',
+    '#..bb###.....b###.bbbbb~~~S....####...bbb.........',
+    '#.................bbbb~~~~~.....bbb....bbb....####',
+    'bbbbb.............bbb~~~~~~~.....b....bbbb....####',
+    'bbbbb.............bbb~~~~~~#....#....bbbbb....###.',
+    'bbbbb...#~~........bbbb~~~##........bbbbbb....###.',
+    'bbbbb..~~~~......#..bbbbbbbbb..#####.bbbbb.....##.',
+    'b.......~~~..####.....bbbbbb..######..bbbb.....##.',
+    'b.............###.............#####....bbb........',
+    '..............~~~...............#####.............',
+    '............~~~~~~~.............######....~~~.....',
+    'b.bb........~~~~~~~~............#####....~~~~~...b',
+    'bbbb#........~~~~~~.......bb.........##.~~~~~~...b',
+    'bbbb##........~~~~.......bbbb..........#.~~~~~....',
+    'bbbb##...#....###......bbbbbb..........##..~~.....',
+    'bbb#######............bbbbbbb....#....#.#........#',
+    'bbbbb....#............bbbbbbb....######.........##',
   ],
 
   surfaces: {

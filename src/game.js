@@ -24,7 +24,8 @@
 
   let canvas, ctx, stage;
   let dpr = 1, cssW = 0, cssH = 0, scale = 1, offX = 0, offY = 0;
-  let last = 0, tSec = 0;
+  let cameraX = 0, cameraY = 0;
+  let last = 0, tSec = 0, renderSerial = 0;
   let elHint, elStatus, elStatusLabel, elBanner, elBonus, elOvLeft, elOvRight, elPace;
   let lastPhase = 'hide', bannerT = 0, bonusArmed = false, lastDt = 0.016;
 
@@ -64,6 +65,21 @@
     scale = Math.min(availW / Arena.W, availH / Arena.H);
     offX = (availW - Arena.W * scale) / 2;
     offY = padT + (availH - Arena.H * scale) / 2;
+    if (STATE.view !== 'maker') {
+      // Public Event: vertically source-normalised to the audited 43px tile
+      // in the 576px footage frame, not an aspect-ratio-dependent map fit.
+      scale = cssH * CFG.camera.source.tilePx / (CFG.camera.source.fieldH * CFG.tile);
+      updateCamera();
+    }
+  }
+
+  function updateCamera() {
+    if (STATE.view === 'maker' || !window.Player) return;
+    const viewW = cssW / scale, viewH = cssH / scale, a = CFG.camera.anchor;
+    cameraX = Math.max(0, Math.min(Arena.W - viewW, Player.x - viewW * a.x));
+    cameraY = Math.max(0, Math.min(Arena.H - viewH, Player.y - viewH * a.y));
+    offX = -cameraX * scale;
+    offY = -cameraY * scale;
   }
 
   function update(dt) {
@@ -103,6 +119,7 @@
     ctx.fillStyle = '#171B33'; ctx.fillRect(0, 0, cssW, cssH);
 
     const maker = STATE.view === 'maker';
+    if (!maker) updateCamera();
     ctx.setTransform(scale * dpr, 0, 0, scale * dpr, offX * dpr, offY * dpr);
     // The world-space rect that exactly covers the full CSS canvas at the
     // current fit — same undimmed ground continues past the playable Arena
@@ -124,7 +141,9 @@
     // ONLY (Concept Brief rule 3d) — collision, mechanics and the fit
     // geometry are untouched; this changes what's painted where, not what
     // collides or scores. See Arena.wallDrawables() for the wall side.
-    const drawables = Arena.wallDrawables().concat(Arena.bushCanopyDrawables(), Arena.propDrawables());
+    const drawables = (window.Assets && Assets.get('world_plate')) ? Arena.plateForegroundDrawables() : (Arena.isTruthPatch
+      ? Arena.truthPatchDrawables()
+      : Arena.wallDrawables().concat(Arena.bushCanopyDrawables(), Arena.propDrawables()));
     for (const d of Hiders.list) drawables.push({ y: d.y + d.r, draw: (c) => Render.drawHider(c, d, tSec, false) });
     for (const s of Seekers.list) drawables.push({ y: s.y + s.r, draw: (c) => Render.drawSeeker(c, s, tSec) });
     drawables.push({ y: Player.y + Player.r, draw: (c) => Render.drawPlayer(c, tSec) });
@@ -148,6 +167,7 @@
 
     hud();
     if (window.Debug && Debug.on) Debug.frame();
+    renderSerial++;
   }
 
   // ---- HUD ---------------------------------------------------------------
@@ -287,7 +307,12 @@
     matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change', (e) => { STATE.reduceMotion = e.matches; });
 
     document.getElementById('replay').addEventListener('click', newRound);
+    document.body.classList.toggle('truth-patch', !!Arena.isTruthPatch);
     const stamp = document.querySelector('.stamp');
+    const concept = document.querySelector('.concept');
+    if (concept) concept.title = 'Unofficial fan concept — not a real in-game screenshot';
+    const cleanText = { '#mk-back': '← Event', '.mk-map': 'Fresh Paint · 50 × 27 · camouflage properties', '#mk-warn': 'No surface camouflages — nobody can hide on this map.', '.mk-note': 'Changes apply live. Move, stop, vanish — every map sets its own rules.' };
+    for (const [sel, value] of Object.entries(cleanText)) { const el = document.querySelector(sel); if (el) el.textContent = value; }
     if (stamp) stamp.textContent = `v${CFG.BUILD.n} · ${CFG.BUILD.milestone}`;
 
     if (window.Maker) Maker.init();                 // wires the editor panel (+ ?view=maker)
@@ -309,23 +334,29 @@
   // ---- Debug / capture API ----------------------------------------------
   window.Game = {
     get scale() { return scale; }, get off() { return { x: offX, y: offY }; },
+    player() { return { x: Player.x, y: Player.y, screenX: Player.x * scale + offX, screenY: Player.y * scale + offY, renderSerial }; },
+    renderNow() { render(); return renderSerial; },
+    get camera() { return { x: cameraX, y: cameraY, anchor: CFG.camera.anchor, clampedTop: cameraY === 0 }; },
     pause() { STATE.paused = true; }, resume() { STATE.paused = false; last = 0; },
     setReduceMotion(b) { STATE.reduceMotion = !!b; },
     newRound,
     refit: resize,
     setSpeed(s) { STATE.speedScale = (s > 0 && s <= 2) ? s : STATE.speedScale; },
     skipHide() { Round.elapsed = Math.max(Round.elapsed, TUNING.round.hidePhase); Round.phase = 'seek'; },
-    pose({ col, row, progress = 0, facing = 1 } = {}) {
+    pose({ col, row, progress = 0, facing = 1, moving = false, vx = null, vy = null } = {}) {
       const T = Arena.T;
       if (col != null) { Player.x = col * T + T / 2; Player.y = row * T + T / 2; }
-      Player.vx = 0; Player.vy = 0;
+      Player.vx = moving ? (vx == null ? Player.speed : vx) : 0;
+      Player.vy = moving ? (vy == null ? 0 : vy) : 0;
+      Player.lastMoving = !!moving;
       Player.facing = facing;
       Player.camo = Arena.camoSurface(Player.x, Player.y, Player.h);
       Player.still = progress * STATE.repaintTime;
       Player.progress = Math.min(progress, 1);
       Player.hidden = Player.progress >= 1;
+      render();
+      return { x: Player.x, y: Player.y, screenX: Player.x * scale + offX, screenY: Player.y * scale + offY, renderSerial };
       STATE.paused = true;
     },
-    player: () => Player,
   };
 })();

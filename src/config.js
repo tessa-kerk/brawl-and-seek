@@ -1,17 +1,17 @@
-/* Brawl & Seek — global config.
+/* Brawl & Seek ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â global config.
  * Visual system v1.0 (LOCKED 07-07-2026) + gameplay constants live here so no
  * module hard-codes a colour or a tuning number. The Concept Brief wins on any
  * design fact; this file is the single place those facts become code.
  */
 window.CFG = {
-  // Build stamp — bump n + the ?v= token in index.html on EVERY commit, together.
-  // PM caught a real drift (v27: ?v= tokens bumped, this constant wasn't — the
+  // Build stamp ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â bump n + the ?v= token in index.html on EVERY commit, together.
+  // PM caught a real drift (v27: ?v= tokens bumped, this constant wasn't ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â the
   // live stamp still read "v26" on v27 content). tools/test_touch.py now
   // asserts n === the max ?v= token in index.html, so this can't silently
   // desync again.
-  BUILD: { n: 30, date: '21-07-2026', milestone: 'ART' },
+  BUILD: { n: 43, date: '24-07-2026', milestone: 'STEP 1 ENV'  },
 
-  // Palette — the six locked roles. Never invent a colour per deliverable.
+  // Palette ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â the six locked roles. Never invent a colour per deliverable.
   palette: {
     navy:    '#1E2340', // background
     yellow:  '#FFC800', // primary accent / display / the player
@@ -22,18 +22,26 @@ window.CFG = {
   },
 
   // World / arena
-  tile: 64,            // world px per tile (arena is a fixed world, fit-contained)
+  tile: 64,            // world px per tile (the camera maps this to the footage-measured screen scale)
+  camera: {
+    // Directive 001A audit: source world x=116..1201 (1085px), y=0..575
+    // (576px); two independent wall runs measure 43px/tile. Ground-contact
+    // anchors at 30/45/60s median to x=.486/y=.582. Do not infer from UI.
+    source: { tilePx: 43, fieldW: 1085, fieldH: 576 },
+    viewTiles: { x: 25.23, y: 13.40 },
+    anchor: { x: 0.486, y: 0.582 },
+  },
 
-  // The mechanic (Concept Brief §"The mechanic")
+  // The mechanic (Concept Brief Ãƒâ€šÃ‚Â§"The mechanic")
   repaintTime: 1.0,    // seconds of stillness to fully paint in (M3 toggle: 0.5 / 1 / 2)
   playerSpeed: 4.2,    // tiles per second
   playerRadius: 0.34,  // as a fraction of a tile (collision half-extent)
-  camoAlpha: 0.24,     // "strong, not perfect" — floor of the hidden silhouette's opacity
+  camoAlpha: 0.24,     // "strong, not perfect" ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â floor of the hidden silhouette's opacity
 
-  /* Character art — PLACEHOLDER vector tokens. Explicit light/body/dark triples
+  /* Character art ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â PLACEHOLDER vector tokens. Explicit light/body/dark triples
    * (not computed) so the player's signed-off M1 look stays pixel-identical.
    * These get replaced wholesale in the art pass (Fankit first, then our own
-   * Brawl-style fan art) — the renderer must stay swap-friendly. */
+   * Brawl-style fan art) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â the renderer must stay swap-friendly. */
   characters: {
     player: { name: 'YOU', body: '#FFC800', light: '#FFD84A', dark: '#E0A800' },
     dummies: [
@@ -44,7 +52,7 @@ window.CFG = {
       { name: 'BOLT', body: '#E8C46F', light: '#F3D894', dark: '#C4A04A' },
       // +2 (20-07-2026, PM-approved dummies 5->7 for the 16x9 widescreen
       // crop). PROVISIONAL roster picks, flagged for confirmation same as
-      // everything else this pass — not yet cross-checked against the
+      // everything else this pass ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â not yet cross-checked against the
       // "older brawlers = deepest Fankit coverage" heuristic or a formal
       // green-count/UI-palette collision pass the way the original 5 were.
       { name: 'RUST', body: '#D46A4A', light: '#E8896A', dark: '#B0492E' },

@@ -65,6 +65,13 @@ body{
   padding:calc(env(safe-area-inset-top) + 8px) 10px 8px;
   pointer-events:none;z-index:5;
 }
+.truth-label{display:none;}
+body.truth-patch .truth-label{
+  display:block;position:fixed;left:50%;top:8px;transform:translateX(-50%);
+  z-index:12;max-width:52vw;text-align:center;font:800 8px/1.2 'Nunito Sans',sans-serif;
+  letter-spacing:.06em;color:var(--chalk);background:rgba(20,23,43,.78);padding:4px 7px;border-radius:5px;
+}
+body.truth-patch #hint,body.truth-patch #ov-left,body.truth-patch #ov-right,body.truth-patch #status-label{display:none!important;}
 .stamp{
   font-family:'Nunito Sans';font-weight:800;
   font-size:10px;letter-spacing:.14em;text-transform:uppercase;

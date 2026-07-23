@@ -6,7 +6,7 @@
 <title>Brawl &amp; Seek</title>
 <meta name="theme-color" content="#1E2340">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%231E2340'/%3E%3Ccircle cx='32' cy='34' r='16' fill='none' stroke='%2335E0D0' stroke-width='3' opacity='.7'/%3E%3Cpath d='M32 12c7 9 12 15 12 21a12 12 0 0 1-24 0c0-6 5-12 12-21z' fill='%23FF4FA0'/%3E%3Ccircle cx='27' cy='31' r='4' fill='%23FFC800'/%3E%3C/svg%3E">
-<meta name="description" content="Brawl & Seek — a hide-and-seek event mode where hiders paint themselves into the arena. Playable prototype. Fan concept, not affiliated with Supercell.">
+<meta name="description" content="Brawl &amp; Seek — a hide-and-seek event mode where hiders paint themselves into the arena. Playable prototype. Fan concept, not affiliated with Supercell.">
 <!-- PWA: "Add to Home Screen" opens fullscreen (no Safari tab/URL bar or gestures). -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,14 +14,14 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Brawl & Seek">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/fonts.css?v=30">
-<link rel="stylesheet" href="css/main.css?v=30">
+<link rel="stylesheet" href="css/fonts.css?v=43">
+<link rel="stylesheet" href="css/main.css?v=43">
 </head>
 <body>
   <!-- Landscape-only (Concept Brief fidelity rule 3g), but no rotate prompt
-       (rule 3l, 20-07-2026 — Tessa: "Brawl never asks you to turn your
+       (rule 3l, 20-07-2026 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â Tessa: "Brawl never asks you to turn your
        phone, it loads landscape and you turn"). In portrait, #stage itself
-       renders rotated 90° via a pure CSS media query (main.css) — no JS
+       renders rotated 90ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° via a pure CSS media query (main.css) ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â no JS
        needed to trigger it, so it can never desync from the real device
        orientation. Touch/joystick coordinates are remapped for the rotated
        state in src/input.js. -->
@@ -29,19 +29,20 @@
     <canvas id="game"></canvas>
 
     <!-- Two-surface split (Concept Brief rule 3j, 20-07-2026, Tessa): the
-         public prototype is the in-game EVENT, pure — "your controls and
+         public prototype is the in-game EVENT, pure ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â "your controls and
          nothing else," matching her own bot-match recording. The badge row
          (CONCEPT + build stamp) is a hard line that must never be hidden in
          ANY view, so it stays, shrunk into a corner rather than a full
          top bar; the wordmark and the Map Maker entry both move OFF this
          surface (Map Maker returns behind ?debug=1/?maker=1, see maker.js). -->
     <div id="topbar">
-      <span class="concept" title="Unofficial fan concept — not a real in-game screenshot">CONCEPT</span>
-      <span class="stamp">V30 · ART</span>
+      <span class="concept" title="Unofficial fan concept ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â not a real in-game screenshot">CONCEPT</span>
+      <span class="stamp">V30 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ART</span>
+      <span class="truth-label">DIRECTIVE 002 TRUTH PATCH — NOT THE FULL ENVIRONMENT GATE</span>
     </div>
 
     <!-- In-game overlays, not a chrome chip row (rule 3j): learned from her
-         recording's own grammar — a single sparse plate top-left ("Brawlers
+         recording's own grammar ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â a single sparse plate top-left ("Brawlers
          left: N"), nothing else persistent across the top. Two plates only:
          hiders/seekers left (our "brawlers left" equivalent) and score (our
          mechanic has no real Brawl analogue, so it earns its own plate in
@@ -58,7 +59,7 @@
     <div id="bonus">+100</div>
     <div id="banner"></div>
 
-    <!-- Map Maker entry — debug-only (rule 3j): the tuning sandbox is hidden
+    <!-- Map Maker entry ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â debug-only (rule 3j): the tuning sandbox is hidden
          from the public event surface, not deleted. Revealed by ?debug=1 or
          ?maker=1 (src/maker.js), same pattern as the pace picker below. Its
          own teal accent keeps it visibly OUR tool, distinct from any Brawl
@@ -68,25 +69,22 @@
       <span>Map Maker</span>
     </button>
 
-    <!-- Bottom-right badge (rule 3k, 20-07-2026 — supersedes the earlier
+    <!-- Bottom-right badge (rule 3k, 20-07-2026 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â supersedes the earlier
          camo-badge idea): controls only, same slot Brawl's own attack/Super
          button lives in. Camo state reads ON THE BRAWLER now (paint fill +
-         the youAreHere shimmer pulse, render.js/fx.js), never here — "no one
+         the youAreHere shimmer pulse, render.js/fx.js), never here ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â "no one
          looks at their control buttons when they play." As a hider this
          renders as the empty/disabled attack slot (game.js hud() forces
          class="disabled", no label, no icon); becomes the real Tag fire
          button once M5 adds the seeker role. #status-label stays wired for
          the Map Maker sandbox's own teaching state chip (untouched). -->
     <div id="status-label"></div>
-    <div id="status"><span id="status-icon">🖌</span></div>
+    <div id="status"><span id="status-icon">ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢</span></div>
 
-    <p id="hint">
-      <b>Move</b> with WASD / arrows (or drag on touch). <span class="paint">Hold still</span>
-      on a surface to paint yourself in — <b>move</b> to break camo.
-    </p>
+    <p id="hint"><b>Move</b> with WASD / arrows (or drag on touch). <span class="paint">Hold still</span> on a surface to paint yourself in — <b>move</b> to break camo.</p>
 
-    <!-- Pace picker — DEMOTED to a debug/capture affordance. Default speedScale
-         is now footage-measured (0.57, v26 — supersedes the earlier blind-A/B
+    <!-- Pace picker ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â DEMOTED to a debug/capture affordance. Default speedScale
+         is now footage-measured (0.57, v26 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â supersedes the earlier blind-A/B
          0.70 pick baked from this picker's own "A" button). Hidden by default;
          shown with ?debug=1 or ?pace=1. See src/pace.js. -->
     <div id="pace" role="group" aria-label="Movement pace">
@@ -110,17 +108,17 @@
     <!-- The editor frame: camouflage as a tunable map property, changing live -->
     <aside id="makerpanel">
       <div class="mk-head">
-        <button id="mk-back" class="mk-back">◂ Event</button>
+        <button id="mk-back" class="mk-back">ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ Event</button>
         <div class="mk-title">MAP MAKER</div>
         <span class="mk-live">Live</span>
       </div>
-      <div class="mk-map"><b>Fresh Paint</b> · 16 × 9 · camouflage properties</div>
+      <div class="mk-map"><b>Fresh Paint</b> ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· 16 ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â 9 ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· camouflage properties</div>
 
       <section class="mk-group">
         <h4>Camo surfaces</h4>
         <p class="mk-hint">Which surfaces paint a hider in.</p>
         <!-- Per-surface tile-count hint (PM directive, 18-07-2026): faithful
-             to how the real Map Maker works — a map's own tile mix decides
+             to how the real Map Maker works ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â a map's own tile mix decides
              what it can hide you in, and a bushless map having "0" here
              teaches that, rather than hiding the honest gap. Counts are
              computed live from Arena.grid in src/maker.js, never hard-coded. -->
@@ -130,7 +128,7 @@
           <button class="mk-surf" data-surface="water"><i style="--sw:#1C93C4"></i><span>Water</span><b class="mk-count"></b></button>
           <button class="mk-surf" data-surface="bush"><i style="--sw:#2E9C52"></i><span>Bushes</span><b class="mk-count"></b></button>
         </div>
-        <p class="mk-warn" id="mk-warn" hidden>No surface camouflages — nobody can hide on this map.</p>
+        <p class="mk-warn" id="mk-warn" hidden>No surface camouflages ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â nobody can hide on this map.</p>
       </section>
 
       <section class="mk-group">
@@ -153,7 +151,7 @@
 
       <div class="mk-foot">
         <button id="mk-reset" class="mk-reset">Reset to defaults</button>
-        <p class="mk-note">Changes apply live. Move, stop, vanish — every map sets its own rules.</p>
+        <p class="mk-note">Changes apply live. Move, stop, vanish ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â every map sets its own rules.</p>
       </div>
     </aside>
 
@@ -162,24 +160,24 @@
     <div class="disclaimer">Fan concept by Tessa Kerk · unofficial, not endorsed by Supercell · <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">Fan Content Policy</a></div>
   </div>
 
-  <script src="src/config.js?v=30"></script>
-  <script src="src/assets.js?v=30"></script>
-  <script src="data/arena.js?v=30"></script>
-  <script src="data/tuning.js?v=30"></script>
-  <script src="src/input.js?v=30"></script>
-  <script src="src/arena.js?v=30"></script>
-  <script src="src/ai.js?v=30"></script>
-  <script src="src/fx.js?v=30"></script>
-  <script src="src/player.js?v=30"></script>
-  <script src="src/tag.js?v=30"></script>
-  <script src="src/hider.js?v=30"></script>
-  <script src="src/seeker.js?v=30"></script>
-  <script src="src/round.js?v=30"></script>
-  <script src="src/render.js?v=30"></script>
-  <script src="src/reveal.js?v=30"></script>
-  <script src="src/maker.js?v=30"></script>
-  <script src="src/pace.js?v=30"></script>
-  <script src="src/debug.js?v=30"></script>
-  <script src="src/game.js?v=30"></script>
+  <script src="src/config.js?v=43"></script>
+  <script src="src/assets.js?v=43"></script>
+  <script src="data/arena.js?v=43"></script>
+  <script src="data/tuning.js?v=43"></script>
+  <script src="src/input.js?v=43"></script>
+  <script src="src/arena.js?v=43"></script>
+  <script src="src/ai.js?v=43"></script>
+  <script src="src/fx.js?v=43"></script>
+  <script src="src/player.js?v=43"></script>
+  <script src="src/tag.js?v=43"></script>
+  <script src="src/hider.js?v=43"></script>
+  <script src="src/seeker.js?v=43"></script>
+  <script src="src/round.js?v=43"></script>
+  <script src="src/render.js?v=43"></script>
+  <script src="src/reveal.js?v=43"></script>
+  <script src="src/maker.js?v=43"></script>
+  <script src="src/pace.js?v=43"></script>
+  <script src="src/debug.js?v=43"></script>
+  <script src="src/game.js?v=43"></script>
 </body>
 </html>

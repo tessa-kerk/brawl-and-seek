@@ -13,7 +13,7 @@ a proof; that mistake shipped the M1 collision bug to a device twice.
     pip install playwright        # once; system Chrome is used, no browser download
     python tools/run_all.py       # or any single tools/test_*.py
 """
-import pathlib, sys
+import pathlib, sys, threading, http.server, socketserver
 from contextlib import contextmanager
 from playwright.sync_api import sync_playwright
 
@@ -26,12 +26,22 @@ for _stream in (sys.stdout, sys.stderr):
     except (AttributeError, ValueError):
         pass
 
-URL = (pathlib.Path(__file__).resolve().parent.parent / "index.html").as_uri()
+GAME_ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+@contextmanager
+def local_origin():
+    class QuietHandler(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, format, *args): pass
+    handler = lambda *a, **k: QuietHandler(*a, directory=str(GAME_ROOT), **k)
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+    try: yield f"http://127.0.0.1:{server.server_address[1]}/index.html"
+    finally: server.shutdown(); server.server_close(); thread.join()
 
 
 @contextmanager
 def game(width=1000, height=700, mobile=False, query=""):
-    with sync_playwright() as p:
+    with local_origin() as url, sync_playwright() as p:
         b = p.chromium.launch(channel="chrome", headless=True)
         ctx = b.new_context(
             viewport={"width": width, "height": height},
@@ -42,7 +52,7 @@ def game(width=1000, height=700, mobile=False, query=""):
         errs = []
         pg.on("console", lambda m: errs.append(m.text) if m.type == "error" else None)
         pg.on("pageerror", lambda e: errs.append("PAGEERR: " + str(e)))
-        pg.goto(URL + query)
+        pg.goto(url + query)
         pg.wait_for_function("window.Game && window.Round && window.Arena", timeout=9000)
         pg.wait_for_timeout(300)
         try:

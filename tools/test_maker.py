@@ -60,16 +60,19 @@ with game(query="?view=maker") as (pg, errs):
     # padT=92/padB=40 reserved for chrome, padR=0 (Event view has no side
     # panel). Independently recomputed here, not read from src/game.js.
     W = pg.evaluate("Arena.W"); H = pg.evaluate("Arena.H")
-    PAD_T, PAD_B = 92, 40
     ok = True
     for w, hh in [(1280, 800), (844, 390), (740, 360)]:   # landscape-only (fidelity rule 3g)
         pg.set_viewport_size({"width": w, "height": hh}); pg.wait_for_timeout(120)
         sc = pg.evaluate("Game.scale"); off = pg.evaluate("Game.off")
-        availH = hh - PAD_T - PAD_B
-        want = min(w / W, availH / H)
-        want_offy = PAD_T + (availH - H * want) / 2
-        if not (abs(sc - want) < 1e-6 and abs(off["x"] - (w - W * want) / 2) < 1e-4 and abs(off["y"] - want_offy) < 1e-4):
+        p = pg.evaluate("({x:Player.x,y:Player.y})")
+        # Independent audit constants: 43px source tile in 576px source height.
+        want = hh * 43 / (576 * 64)
+        vx, vy = w / want, hh / want
+        cx = max(0, min(W - vx, p["x"] - vx * .486))
+        cy = max(0, min(H - vy, p["y"] - vy * .582))
+        if not (abs(sc - want) < 1e-6 and abs(off["x"] + cx * want) < 1e-4 and abs(off["y"] + cy * want) < 1e-4):
             ok = False
-    t.check("Event view fit matches the current chrome-reserving formula (independent oracle)", ok)
+    t.check("Event view uses the independently audited 43px/576px follow-camera formula", ok)
+    t.check("buffer is approximately two audited source viewports (50x27)", W == 50 * 64 and H == 27 * 64)
 
     t.finish("map-maker", errs)

@@ -19,7 +19,7 @@ independent of any one map's content, exactly as the toggle is meant to be.
 """
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from _harness import game, Tally, URL  # noqa: E402
+from _harness import game, Tally  # noqa: E402
 
 # Independent synthetic fixture (NOT the live played map) — hand-written here,
 # never derived from any function under test.
@@ -51,7 +51,7 @@ with game() as (pg, errs):
     # src/arena.js (untouched) parses the fixture instead of the live map.
     pg.route("**/data/arena.js*", lambda route: route.fulfill(
         content_type="application/javascript", body=FIXTURE_JS))
-    pg.goto(URL)
+    pg.goto(pg.url)
     pg.wait_for_function("window.Game && window.Round && window.Arena", timeout=9000)
     pg.wait_for_timeout(300)
     pg.evaluate("Game.pause()")

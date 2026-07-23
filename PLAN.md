@@ -2,7 +2,12 @@
 
 ## Directive 004 publication receipt (24-07-2026)
 
+## CURRENT STATE — v44 · Step 1 phone corrections published
+
+The public playable build is v44 on GitHub Pages at final public SHA `62b5aca`. Gameplay is frozen at the PM-approved phone-correction surface pending the next dated directive; Tessa’s physical-phone feel test remains the device judge.
+
 - Published commit: `366a17a` (v44 phone corrections), followed by this deployment receipt.
+- Final public SHA after the documentation receipt is `62b5aca`; gameplay and README are unchanged.
 - GitHub Pages workflow `30037152661` completed successfully; public URL: [tessa-kerk.github.io/brawl-and-seek](https://tessa-kerk.github.io/brawl-and-seek/).
 - System-Chrome public verification passed at 1280×720, 844×390, 740×360 and rotated 576×1280: `V44 · STEP 1 PHONE`, approved world plate present, keyboard movement works, zero page-origin errors. Raw verification is recorded in `Art/2026-07-24 - Directive 004 phone corrections/v44-public-verification.json`.
 
@@ -17,7 +22,7 @@
 - Dedicated prop motion: clean held-input barrel and stump routes are `v44-prop-barrel-route-final.webm` and `v44-prop-stump-route-final.webm`; `v44-prop-routes-final-contact-sheet.jpg`, both per-route decode reports, and `v44-prop-motion-console.txt` provide the paired visual/console evidence.
 - Regression: **ALL 13 suites passed**, including the focused bush oracle (14 assertions), props oracle, and complete collision sweep. `git diff --check` is clean.
 - Console/phone telemetry: `v44-console.txt`, `v44-motion-console.txt`, and `v44-phone-stage-geometry.json` record zero page-origin errors and actual transformed-stage bounds/mappings.
-- No generation, publication, commit or push occurred; Directive spend remains $0. Physical-phone feel remains the final device judge.
+- Publication is complete at `62b5aca`; no generation or Gemini spend occurred. Directive spend remains $0. Physical-phone feel remains the final device judge.
 
 ## Directive 003C — public release deployment (24-07-2026)
 
@@ -29,6 +34,8 @@
 ## ⚡ CURRENT STATE — v43 · Step 1 environment complete
 
 The public playable build is a browser-based hide-and-seek prototype with a footage-grounded Acid Lakes environment, 50 × 27 arena, follow camera, hider/seeker round loop, Tag interactions, Map Maker sandbox, landscape touch controls, and independent browser regression coverage.
+
+> Historical v43 snapshot below is retained for audit only; the active CURRENT STATE is the published v44 record at the top of this file.
 
 ### Approved gameplay surfaces
 

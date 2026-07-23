@@ -2,10 +2,10 @@
 
 ## Directive 003C — public release deployment (24-07-2026)
 
-- **Curated history:** public `main` was intentionally rebuilt from the approved root-to-tip nine-commit candidate. Previous v30 tip `8c6667b` is preserved remotely as branch `archive/public-main-v30-2026-07-24` and tag `archive-public-v30-2026-07-24`, plus the verified full-history bundle outside the repository.
-- **Published build:** initial release SHA `0cbc27f`; GitHub Pages serves the repository root at [tessa-kerk.github.io/brawl-and-seek](https://tessa-kerk.github.io/brawl-and-seek/) and reported a successful build from `main`.
+- **Curated history:** public `main` was intentionally rebuilt from the approved root-to-tip nine-commit product candidate, followed only by concise public release receipts. Previous v30 tip `8c6667b` is preserved remotely as branch `archive/public-main-v30-2026-07-24` and tag `archive-public-v30-2026-07-24`, plus the verified full-history bundle outside the repository.
+- **Published build:** release-content SHA `0cbc27f` and verified deployment receipt `cac5af7`; GitHub Pages serves the repository root at [tessa-kerk.github.io/brawl-and-seek](https://tessa-kerk.github.io/brawl-and-seek/) and reported successful builds from `main`.
 - **Public-browser checks:** system Chrome verified `V43 · STEP 1 ENV`, persistent `CONCEPT`, zero page-origin errors, desktop 1280×720, landscape 844×390 and 740×360, and the approved portrait rotated-stage behavior. Public keyboard movement works; bush walkability/translucency, paint-in, and movement break were exercised. The v43 candidate full regression passed: 12 suites / 103 assertions.
-- **Repository metadata:** homepage points to the playable URL; topics are `brawl-stars`, `browser-game`, `fan-content`, `game-prototype`, `javascript`, and `playwright`.
+- **Repository metadata:** homepage points to the playable URL; topics are `brawl-stars`, `browser-game`, `camouflage`, `fan-content`, `fan-game`, `game-design`, `game-prototype`, `map-maker`, `playwright`, `supercell`, and `vanilla-javascript`.
 - **Device note:** phone touch behavior remains for Tessa’s physical-device feel test; no gameplay or bush-smoothing change was made during release hygiene.
 ## ⚡ CURRENT STATE — v43 · Step 1 environment complete
 

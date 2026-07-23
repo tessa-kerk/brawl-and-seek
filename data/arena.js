@@ -114,4 +114,40 @@ window.ARENA = {
     bush:     '#2E9CA0',
     bushHi:   '#4FCBC8',
   },
+
+  /* Hand-traced collision bases for every barrel and hollow tree stump baked
+   * into the approved source-atlas plate. Coordinates are in
+   * world pixels (43 px source cells), radii describe the visible ground base
+   * rather than the tall painted silhouette. Fossils/bones are intentionally
+   * absent: they remain decorative and walkable. */
+  props: [
+    { id: 'stump-01', kind: 'stump', x: 139,  y: 218,  radius: 13 },
+    { id: 'stump-02', kind: 'stump', x: 820,  y: 171,  radius: 13 },
+    { id: 'stump-03', kind: 'stump', x: 937,  y: 279,  radius: 13 },
+    { id: 'stump-04', kind: 'stump', x: 1925, y: 220,  radius: 13 },
+    { id: 'stump-05', kind: 'stump', x: 155,  y: 347,  radius: 13 },
+    { id: 'stump-06', kind: 'stump', x: 977,  y: 452,  radius: 13 },
+    { id: 'stump-07', kind: 'stump', x: 1416, y: 487,  radius: 13 },
+    { id: 'stump-08', kind: 'stump', x: 1545, y: 600,  radius: 13 },
+    { id: 'stump-09', kind: 'stump', x: 326,  y: 618,  radius: 13 },
+    { id: 'stump-10', kind: 'stump', x: 470,  y: 620,  radius: 13 },
+    { id: 'stump-11', kind: 'stump', x: 605,  y: 638,  radius: 13 },
+    { id: 'stump-12', kind: 'stump', x: 321,  y: 707,  radius: 13 },
+    { id: 'stump-13', kind: 'stump', x: 730,  y: 715,  radius: 13 },
+    { id: 'stump-14', kind: 'stump', x: 567,  y: 765,  radius: 13 },
+    { id: 'stump-15', kind: 'stump', x: 865,  y: 785,  radius: 13 },
+    { id: 'stump-16', kind: 'stump', x: 1874, y: 839,  radius: 13 },
+    { id: 'stump-17', kind: 'stump', x: 505,  y: 910,  radius: 13 },
+    { id: 'stump-18', kind: 'stump', x: 1027, y: 1015, radius: 13 },
+    { id: 'stump-19', kind: 'stump', x: 1900, y: 951,  radius: 13 },
+    { id: 'barrel-01', kind: 'barrel', x: 365,  y: 376, radius: 14 },
+    { id: 'barrel-02', kind: 'barrel', x: 412,  y: 376, radius: 14 },
+    { id: 'barrel-03', kind: 'barrel', x: 1205, y: 284, radius: 14 },
+    { id: 'barrel-04', kind: 'barrel', x: 1415, y: 371, radius: 14 },
+    { id: 'barrel-05', kind: 'barrel', x: 1884, y: 581, radius: 14 },
+    { id: 'barrel-06', kind: 'barrel', x: 1925, y: 610, radius: 14 },
+    { id: 'barrel-07', kind: 'barrel', x: 125,  y: 830, radius: 14 },
+    { id: 'barrel-08', kind: 'barrel', x: 1292, y: 832, radius: 14 },
+    { id: 'barrel-09', kind: 'barrel', x: 1488, y: 788, radius: 14 },
+  ],
 };

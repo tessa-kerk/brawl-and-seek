@@ -149,6 +149,7 @@
     drawables.push({ y: Player.y + Player.r, draw: (c) => Render.drawPlayer(c, tSec) });
     drawables.sort((a, b) => a.y - b.y);
     for (const d of drawables) d.draw(ctx);
+    if (window.Debug && Debug.on) Arena.drawPropColliders(ctx);
 
     // Map Maker's "which surfaces camouflage you" scrim (M3, signed off) now
     // draws AFTER the interleave rather than strictly between walls and

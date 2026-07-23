@@ -49,9 +49,19 @@
    * live window.innerWidth, never a cached value, since orientation can
    * change mid-session. isRotated() mirrors the exact CSS media query. */
   function isRotated() { return innerWidth < innerHeight; }
-  function gameW() { return isRotated() ? innerHeight : innerWidth; }
-  function gameH() { return isRotated() ? innerWidth : innerHeight; }
-  function remap(x, y) { return isRotated() ? { x: y, y: innerWidth - x } : { x, y }; }
+  function stage() { return document.getElementById('stage'); }
+  function geometry() {
+    const el = stage();
+    const rect = el ? el.getBoundingClientRect() : { left: 0, top: 0, right: innerWidth, bottom: innerHeight, width: innerWidth, height: innerHeight };
+    return { rect, width: el ? el.clientWidth : innerWidth, height: el ? el.clientHeight : innerHeight };
+  }
+  function gameW() { return geometry().width; }
+  function gameH() { return geometry().height; }
+  function remap(x, y) {
+    if (!isRotated()) return { x, y };
+    const g = geometry();
+    return { x: y - g.rect.top, y: g.rect.right - x };
+  }
 
   // Tuning per mode.
   const F = { DEAD: 4, MAX: 34, MINK: 0.5 };            // floating
@@ -217,6 +227,7 @@
       dbg.cur = active ? { x: cur.x, y: cur.y } : null;
       return { x: 0, y: 0 };
     },
-    debug() { return dbg; },
+    debug() { return { ...dbg, geometry: geometry() }; },
+    mapClient: remap,
   };
 })();

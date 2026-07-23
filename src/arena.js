@@ -34,6 +34,12 @@
   // (no border wall ring â€” see data/arena.js), so isSolid(out-of-bounds)=true
   // IS the arena's boundary; nothing else marks it.
   const isBush  = (c, r) => inBounds(c, r) && grid[r][c] === 'b';
+  // The approved plate is 43 px per source cell; collision runs in CFG.tile
+  // world pixels. Keep the hand-trace readable in source coordinates, then
+  // convert it once at the boundary between data and runtime.
+  const PROP_COLLIDERS = (ARENA.props || []).map((p) => ({
+    ...p, x: p.x * T / 43, y: p.y * T / 43, radius: p.radius * T / 43,
+  }));
   const isSolid = (c, r) => !inBounds(c, r) || grid[r][c] === '#' || grid[r][c] === '~';
   function inBounds(c, r) { return c >= 0 && r >= 0 && c < cols && r < rows; }
 
@@ -53,6 +59,36 @@
    *   2. Move Y, resolve against tiles overlapping the RESOLVED x-band [xÂ±h].
    * No path reverts the whole move or re-clamps into the prior contact point. */
   const EPS = 0.01;
+  function overlapsTileSolid(x, y, h) {
+    const c0 = Math.floor((x - h) / T), c1 = Math.floor((x + h) / T);
+    const r0 = Math.floor((y - h) / T), r1 = Math.floor((y + h) / T);
+    for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) if (isSolid(c, r)) return true;
+    return false;
+  }
+  function overlapsProp(x, y, h, except = null) {
+    return PROP_COLLIDERS.some((p) => p !== except && Math.hypot(x - p.x, y - p.y) < h + p.radius - EPS);
+  }
+  function isSolidAt(x, y, h = 0) { return overlapsTileSolid(x, y, h) || overlapsProp(x, y, h); }
+  function resolvePropAxis(x, y, previous, h, axis) {
+    for (let pass = 0; pass < 4; pass++) for (const p of PROP_COLLIDERS) {
+      const reach = h + p.radius;
+      const ox = x - p.x, oy = y - p.y;
+      if (ox * ox + oy * oy >= (reach - EPS) * (reach - EPS)) continue;
+      const perpendicular = axis === 'x' ? oy : ox;
+      const squared = reach * reach - perpendicular * perpendicular;
+      if (squared <= 0) continue;
+      const delta = Math.sqrt(squared);
+      const prior = axis === 'x' ? previous.x - p.x : previous.y - p.y;
+      const candidate = axis === 'x'
+        ? { x: p.x + (prior <= 0 ? -delta : delta), y }
+        : { x, y: p.y + (prior <= 0 ? -delta : delta) };
+      if (!overlapsTileSolid(candidate.x, candidate.y, h)) { x = candidate.x; y = candidate.y; }
+      else if (axis === 'x') x = previous.x;
+      else y = previous.y;
+    }
+    return { x, y };
+  }
+
   function collide(px, py, dx, dy, h) {
     let x = px, y = py;
     if (dx !== 0) {
@@ -60,12 +96,14 @@
       const rTop = Math.floor((py - h) / T), rBot = Math.floor((py + h) / T);
       if (dx > 0) { const c = Math.floor((x + h) / T); for (let r = rTop; r <= rBot; r++) if (isSolid(c, r)) { x = c * T - h - EPS; break; } }
       else { const c = Math.floor((x - h) / T); for (let r = rTop; r <= rBot; r++) if (isSolid(c, r)) { x = (c + 1) * T + h + EPS; break; } }
+      ({ x, y } = resolvePropAxis(x, y, { x: px, y: py }, h, 'x'));
     }
     if (dy !== 0) {
       y = py + dy;
       const cLeft = Math.floor((x - h) / T), cRight = Math.floor((x + h) / T);
       if (dy > 0) { const r = Math.floor((y + h) / T); for (let c = cLeft; c <= cRight; c++) if (isSolid(c, r)) { y = r * T - h - EPS; break; } }
       else { const r = Math.floor((y - h) / T); for (let c = cLeft; c <= cRight; c++) if (isSolid(c, r)) { y = (r + 1) * T + h + EPS; break; } }
+      ({ x, y } = resolvePropAxis(x, y, { x, y: py }, h, 'y'));
     }
     return { x, y };
   }
@@ -122,10 +160,28 @@
     ctx.globalAlpha = 1;
   }
 
+  function drawPropColliders(ctx) {
+    ctx.save(); ctx.lineWidth = 2.2;
+    for (const p of PROP_COLLIDERS) {
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,79,160,.16)'; ctx.fill();
+      ctx.strokeStyle = '#FF4FA0'; ctx.stroke();
+      ctx.fillStyle = '#F6F4EF'; ctx.font = '9px ui-monospace, monospace';
+      ctx.fillText(p.id, p.x + p.radius + 2, p.y - 2);
+    }
+    ctx.restore();
+  }
+
   // ---- Navigation (BFS on the tile grid; the arena is tiny, so this is free) --
+  const centre = (c, r) => ({ x: c * T + T / 2, y: r * T + T / 2 });
+  const tileBlocked = (c, r) => {
+    if (isSolid(c, r)) return true;
+    const p = centre(c, r);
+    return overlapsProp(p.x, p.y, CFG.playerRadius * T * 0.92);
+  };
   const freeTiles = [], hideTiles = [];
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-    if (isSolid(c, r)) continue;
+    if (tileBlocked(c, r)) continue;
     freeTiles.push({ c, r });
     // A good hiding spot = touches (or IS) something to paint into: a wall or
     // water tile adjacent, OR a bush tile itself/adjacent (bush is walkable â€”
@@ -135,14 +191,13 @@
       || isBush(c, r) || isBush(c - 1, r) || isBush(c + 1, r) || isBush(c, r - 1) || isBush(c, r + 1))
       hideTiles.push({ c, r });
   }
-  const centre = (c, r) => ({ x: c * T + T / 2, y: r * T + T / 2 });
   const tileOf = (x, y) => ({ c: Math.floor(x / T), r: Math.floor(y / T) });
   const key = (c, r) => r * cols + c;
 
   // Shortest tile path from (c0,r0) to (c1,r1). Returns [{c,r}â€¦] excluding the
   // start, or null if unreachable. 4-way â€” diagonals would clip wall corners.
   function path(c0, r0, c1, r1) {
-    if (isSolid(c1, r1) || isSolid(c0, r0)) return null;
+    if (tileBlocked(c1, r1) || tileBlocked(c0, r0)) return null;
     const prev = new Map(); const q = [[c0, r0]]; prev.set(key(c0, r0), null);
     for (let i = 0; i < q.length; i++) {
       const [c, r] = q[i];
@@ -153,7 +208,7 @@
       }
       for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const nc = c + dc, nr = r + dr;
-        if (isSolid(nc, nr) || prev.has(key(nc, nr))) continue;
+        if (tileBlocked(nc, nr) || prev.has(key(nc, nr))) continue;
         prev.set(key(nc, nr), [c, r]); q.push([nc, nr]);
       }
     }
@@ -221,23 +276,21 @@
     const layers=(plateLayerCache&&plateLayerCache[0]===plate&&plateLayerCache[1]===wall&&plateLayerCache[2]===bush)?plateLayerCache[3]:(plateLayerCache=[plate,wall,bush,[makePlateLayer(plate,wall),makePlateLayer(plate,bush)]])[3];
     const out=[];
     for(let r=0;r<rows;r++){let c=0;while(c<cols){if(!isWall(c,r)){c++;continue;}let c1=c;while(c1+1<cols&&isWall(c1+1,r))c1++;out.push({y:(r+1)*T,draw:(ctx)=>drawMaskedPlate(ctx,layers[0],c,r,c1+1,r+1)});c=c1+1;}}
-    // Directive 003B: presentation-only local foliage response.  Keep the
-    // last occupied bush cell while the offset decays, so exit is a short
-    // settled sway rather than an abrupt global reset.  Only the occupied
-    // cell and its four direct bush neighbours can ever move; every other
-    // plate pixel stays byte-stable.
-    const pc=Math.floor(Player.x/T), pr=Math.floor(Player.y/T);
-    if(Player.lastMoving&&isBush(pc,pr)){
+    // Foliage foreground is owned only by a genuinely occupied cell. Other
+    // bushes stay opaque and stationary; leaving cover clears immediately.
+    const pc=Math.floor(Player.x/T), pr=Math.floor(Player.y/T), occupied=isBush(pc,pr);
+    if(occupied){
       bushRuffle.c=pc; bushRuffle.r=pr;
       // At the audited 43px source scale this resolves to a visible but still
       // leaf-local 1–1.5 screen-pixel sway, not a whole-cluster wobble.
-      bushRuffle.x=Math.max(-3.0,Math.min(3.0,(Player.vx||0)*.024));
-      bushRuffle.y=Math.max(-2.2,Math.min(2.2,(Player.vy||0)*.017));
+      if(Player.lastMoving){
+        bushRuffle.x=Math.max(-1.5,Math.min(1.5,(Player.vx||0)*.012));
+        bushRuffle.y=Math.max(-1.1,Math.min(1.1,(Player.vy||0)*.009));
+      } else { bushRuffle.x=0; bushRuffle.y=0; }
     } else {
-      bushRuffle.x *= .72; bushRuffle.y *= .72;
-      if(Math.abs(bushRuffle.x)+Math.abs(bushRuffle.y)<.03){bushRuffle.x=0;bushRuffle.y=0;}
+      bushRuffle={x:0,y:0,c:-1,r:-1};
     }
-    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)if(isBush(c,r)) out.push({y:(r+1)*T,draw:(ctx)=>{const near=Math.abs(bushRuffle.c-c)+Math.abs(bushRuffle.r-r)<=1;ctx.save();if(near&&(bushRuffle.x||bushRuffle.y))ctx.translate(bushRuffle.x,bushRuffle.y);drawMaskedPlate(ctx,layers[1],c,r+.58,c+1,r+1);ctx.restore();}});
+    if(bushRuffle.c>=0) out.push({y:Player.y+Player.r+.05,draw:(ctx)=>{ctx.save();ctx.translate(bushRuffle.x,bushRuffle.y);drawMaskedPlate(ctx,layers[1],bushRuffle.c,bushRuffle.r+.58,bushRuffle.c+1,bushRuffle.r+1);ctx.restore();}});
     return out;
   }
   function makePlateLayer(plate,mask){const c=document.createElement('canvas');c.width=plate.naturalWidth;c.height=plate.naturalHeight;const x=c.getContext('2d');x.drawImage(mask,0,0,c.width,c.height);const d=x.getImageData(0,0,c.width,c.height);for(let i=0;i<d.data.length;i+=4){const a=Math.max(d.data[i],d.data[i+1],d.data[i+2]);d.data[i+3]=a;}x.putImageData(d,0,0);x.globalCompositeOperation='source-in';x.drawImage(plate,0,0,c.width,c.height);return c;}
@@ -655,7 +708,7 @@
   function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); roundRectPath(ctx, x, y, w, h, r); }
 
   window.Arena = {
-    T, cols, rows, W, H, grid, isSolid, isWall, isWater, isBush, spawn, collide, camoSurface, draw, roundRect, roundRectPath,
+    T, cols, rows, W, H, grid, isSolid, isSolidAt, isWall, isWater, isBush, props: PROP_COLLIDERS, spawn, collide, camoSurface, draw, drawPropColliders, roundRect, roundRectPath,
     freeTiles, hideTiles, centre, tileOf, path, pick, drawCamoOverlay, typeAt, wallDrawables, bushCanopyDrawables, propDrawables, truthPatchDrawables,
     isTruthPatch: truthMode, plateForegroundDrawables,
   };

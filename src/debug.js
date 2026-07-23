@@ -83,6 +83,7 @@
       `view: ${STATE.view}  surfaces: ${Object.entries(STATE.camoSurfaces).filter(([, v]) => v).map(([k]) => k).join('+') || 'none'}  repaint ${STATE.repaintTime}s  tell:${STATE.rippleTell ? 'on' : 'off'}`,
       `speed x${STATE.speedScale.toFixed(2)}  (player ${(CFG.playerSpeed * STATE.speedScale).toFixed(2)} · seeker ${Seekers.speedOf().toFixed(2)} · tag ${(TUNING.seeker.baseSpeed * TUNING.tag.speedMult * STATE.speedScale).toFixed(2)} tiles/s)`,
       `pd:${d.pdOk ? 'ok' : 'NO'}  last:${d.lastType}  evts:${d.evtCount}`,
+      `stage: ${d.geometry ? d.geometry.width.toFixed(0) + '×' + d.geometry.height.toFixed(0) + ' rect(' + d.geometry.rect.left.toFixed(0) + ',' + d.geometry.rect.top.toFixed(0) + '→' + d.geometry.rect.right.toFixed(0) + ',' + d.geometry.rect.bottom.toFixed(0) + ')' : '?'}`,
       `vv: off(${vv ? vv.offsetLeft.toFixed(0) + ',' + vv.offsetTop.toFixed(0) : '?'}) h ${vv ? vv.height.toFixed(0) : '?'} / inner ${innerHeight}  dpr ${window.devicePixelRatio}`,
       `touch-action(stage): ${ta}`,
     ].join('\n');

@@ -1,5 +1,18 @@
 # Brawl & Seek — build status
 
+## Directive 004 — v44 phone-correction local PM handoff (24-07-2026)
+
+- Build/cache stamp: `v44 · STEP 1 PHONE`; all 21 `?v=` tokens agree.
+- Changed runtime surfaces: source-to-world prop collision data and slide-safe resolution in `src/arena.js`; hand-audited barrel/stump data in `data/arena.js`; occupancy-owned bush foreground; transformed-stage touch mapping and large viewport sizing in `src/input.js` / `css/main.css`; debug prop overlay; release-rule clarification in `CLAUDE.md`.
+- Fossil plate audit: preserved v43 source in `Art/2026-07-24 - Directive 004 phone corrections/v44-fossil-plate-before.png`; corrected plate plus full diff, CSV ROI inventory and 11 native before/after ROI crops are in the same folder. The final operation is a tight 1–2 px bright-bone-connected local inpaint ring; unrelated floor/wall/bush/prop pixels are outside the mask.
+- Prop gate: 28 hand-traced barrel/stump approach/contact/diagonal cases passed; independent grid-plus-prop collision sweep passed 226,008 cases plus 17,040 boundary cases.
+- Rendered stills: normal 844×390 barrel/stump/bush/exit/adjacent frames, debug-only follow-camera overlay, fit-to-map full-world collider overlay, and 576×1280 phone stage screenshot are in the Directive 004 evidence folder.
+- Motion: `v44-phone-route-final.webm` is the clean (no debug overlay) trimmed held-key route; its sequential OpenCV decode, labelled START/WALK/BUSH/EXIT/RE-ENTRY/CAMERA contact sheet and frame-count report are beside it. Raw recording is preserved as `v44-phone-route-raw.webm`; debug telemetry remains separately in `v44-motion-console.txt`.
+- Dedicated prop motion: clean held-input barrel and stump routes are `v44-prop-barrel-route-final.webm` and `v44-prop-stump-route-final.webm`; `v44-prop-routes-final-contact-sheet.jpg`, both per-route decode reports, and `v44-prop-motion-console.txt` provide the paired visual/console evidence.
+- Regression: **ALL 13 suites passed**, including the focused bush oracle (14 assertions), props oracle, and complete collision sweep. `git diff --check` is clean.
+- Console/phone telemetry: `v44-console.txt`, `v44-motion-console.txt`, and `v44-phone-stage-geometry.json` record zero page-origin errors and actual transformed-stage bounds/mappings.
+- No generation, publication, commit or push occurred; Directive spend remains $0. Physical-phone feel remains the final device judge.
+
 ## Directive 003C — public release deployment (24-07-2026)
 
 - **Curated history:** public `main` was intentionally rebuilt from the approved root-to-tip nine-commit product candidate, followed only by concise public release receipts. Previous v30 tip `8c6667b` is preserved remotely as branch `archive/public-main-v30-2026-07-24` and tag `archive-public-v30-2026-07-24`, plus the verified full-history bundle outside the repository.

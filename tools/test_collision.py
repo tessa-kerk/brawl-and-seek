@@ -1,7 +1,7 @@
 """M1 collision proof — platform-independent.
 
-Oracle = pure grid overlap (`box_hits`), computed straight from the tile grid,
-INDEPENDENT of collide(). Two invariants over a fine grid of positions x 8 dirs:
+Oracle = raw grid plus hand-authored prop circles (`box_hits`), never
+`Arena.collide()`. Two invariants over a fine grid of positions x 8 dirs:
   - no-clip: collide() never leaves the player's box inside a wall
   - slide:   if an axis is geometrically free to move, collide() must move it
 This is geometry, so it holds identically on every device.
@@ -17,6 +17,7 @@ with game() as (pg, errs):
     T = pg.evaluate("Arena.T"); h = pg.evaluate("Player.h")
     cols = pg.evaluate("Arena.cols"); rows = pg.evaluate("Arena.rows")
     grid = pg.evaluate("Arena.grid.map(r=>r.join(''))")
+    props = pg.evaluate("Arena.props.map(({id,kind,x,y,radius})=>({id,kind,x,y,radius}))")
     W, H = cols * T, rows * T
 
     def solid(c, r):
@@ -29,6 +30,9 @@ with game() as (pg, errs):
             for c in range(c0, c1 + 1):
                 if solid(c, r):
                     return True
+        for p in props:
+            if math.hypot(x - p['x'], y - p['y']) < h + p['radius'] - 0.01:
+                return True
         return False
 
     starts = []
@@ -45,7 +49,7 @@ with game() as (pg, errs):
         "(([cs,h])=>cs.map(c=>{const p=Arena.collide(c[0],c[1],c[2],c[3],h);return [p.x,p.y];}))",
         [cases, h])
 
-    clip = stuckx = stucky = 0
+    clip = stuckx = stucky = 0; y_examples = []
     for (px, py, dx, dy), (rx, ry) in zip(cases, res):
         if box_hits(rx, ry):
             clip += 1; continue
@@ -53,10 +57,12 @@ with game() as (pg, errs):
             stuckx += 1
         if dy != 0 and not box_hits(rx, py + dy) and abs(ry - py) <= 0.5 * STEP:
             stucky += 1
+            if len(y_examples) < 3: y_examples.append(((px, py, dx, dy), (rx, ry)))
 
     t = Tally()
     print(f"  {len(starts)} positions x 8 dirs = {len(cases)} cases  (corridor {T}px, box {2*h:.1f}px)")
-    t.check("no-clip: collide never ends inside a wall", clip == 0)
+    if y_examples: print(f"  sample blocked-Y cases: {y_examples}")
+    t.check("no-clip: collide never ends inside a wall or prop", clip == 0)
     t.check("slide: free X axis always moves", stuckx == 0)
     t.check("slide: free Y axis always moves", stucky == 0)
 

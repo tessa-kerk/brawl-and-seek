@@ -62,6 +62,7 @@ Keep the renderer **swap-friendly**: `render.js` `drawBrawler` and `arena.js` ti
 
 ## Always
 - Keep the **"Fan concept by Tessa Kerk · not affiliated with Supercell"** notice visible; name Supercell's Fan Content Policy in any credits/README.
-- Commit after each runnable milestone and **push to GitHub**. Bump the build stamp (`CFG.BUILD.n` + the `?v=` token) every commit.
+- Every PM-approved runnable milestone gets concise, public-facing commit(s) and is published to the phone-playable GitHub Pages URL. Keep internal directives, evidence retries and budget discussion outside the public repository. Refresh README visuals only once the final build and final captures exist; do not churn interim screenshots.
+- Bump the build stamp (`CFG.BUILD.n` + the `?v=` token) for each runnable milestone.
 - **Respect the stop-and-show-me gates** (M1, then M2/M3/M4). Do not blast past a gate — get it solid, show Tessa, wait.
 - Anything Tessa signs off is a **regression surface**: re-render approved states and diff before shipping a change to them; flag visual changes to approved surfaces, never ship silently.

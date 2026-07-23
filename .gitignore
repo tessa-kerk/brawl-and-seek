@@ -39,3 +39,8 @@ assets/world/powercube.png
 tools/capture_003b.py
 tools/capture_003b_walk.py
 tools/crop_003b.py
+tools/capture_004.py
+tools/capture_motion_004.py
+tools/capture_prop_motion_004.py
+tools/trim_motion_004.py
+tools/clean_fossils.py

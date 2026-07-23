@@ -38,8 +38,9 @@ body{
    box is sized 100vh×100vw (so canvas.clientWidth/Height, read in game.js
    resize(), naturally comes out as a landscape box regardless of which way
    the phone is held — zero fit-formula changes needed), then rotated into
-   place. transform-origin:top left keeps the math simple and matches the
-   coordinate remap in src/input.js exactly (documented there). A CSS
+   place. The large viewport units deliberately include the home-indicator
+   side of an iPhone's physical screen; touch coordinates are inverted from
+   the transformed stage rectangle in src/input.js. A CSS
    transform on #stage makes it the containing block for its position:fixed
    descendants too (the joystick ring/nub, appended into #stage) — they
    already compute their positions in this same rotated-box coordinate
@@ -47,7 +48,7 @@ body{
 @media (orientation:portrait){
   #stage{
     top:0; left:0; right:auto; bottom:auto;
-    width:100vh; height:100vw;
+    width:max(100lvh,100dvh); height:100lvw;
     transform-origin:top left;
     transform:rotate(90deg) translateY(-100%);
   }

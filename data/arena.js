@@ -1,0 +1,113 @@
+/* Brawl & Seek — arena data (data-driven; no map geometry lives in logic).
+ * WIDESCREEN CROP (20-07-2026, Concept Brief rule 3j/3i, PM-cleared 16×9):
+ * "a square arena can be played portrait — it breaks the fiction" (Tessa).
+ * The original 10×9 top-left corner (cols0-9) is UNCHANGED — its layout was
+ * already fact-checked against the real map render and is provisionally
+ * still trustworthy for TILE POSITIONS even though that render's RENDERING
+ * STYLE was demoted (rule 3i — a wiki map render is layout-only, never a
+ * palette/art reference). Six columns (10-15) are appended along the same
+ * true top edge to reach 16:9.
+ *
+ * HONEST SCOPING NOTE on cols10-15: Tessa's own footage
+ * (`Art/2026-07-20 - Tessa's own recording - Acid Lakes bot match.mp4`,
+ * ledger H7) does not include a clean top-down establishing shot of this
+ * exact map edge extending further right — her recording is mid-match
+ * gameplay, not a map-select fly-through. These six columns are therefore a
+ * FOOTAGE-INFORMED, PATTERN-MATCHED extension (a bush cluster, a second
+ * small organic pool, a wall-block cluster — all features her recording
+ * confirms genuinely exist on this map and repeat across it), not a literal
+ * pixel trace of an unseen region. Flagged for the PM's clear, same as
+ * everything else this pass — not presented as more precise than it is.
+ *
+ * Real edges vs. cut edges, unchanged in kind: row0/col0 are the map's own
+ * TRUE boundary (top + left, the spiky wall border — now continued across
+ * the full 16-wide top edge, since a border doesn't stop mid-map). Col15
+ * (right, was col9) and row8 (bottom) are crop cuts, not real edges.
+ * REVISED 20-07-2026 (Concept Brief rule 3l): these no longer get a dimmed
+ * fade — the full-bleed ground (Arena.drawGround) just keeps going past
+ * them at full brightness, which reads as "the map continues" more honestly
+ * than a fade ever did (a fade that stops is itself a visible rectangle).
+ *
+ * BUSH GAP RESOLVED (was HONEST GAP in the 10-col version): the original
+ * corner genuinely had zero bush tiles, flagged not hidden. Her own footage
+ * confirms bushes ARE a real feature of this map (teal foliage clusters),
+ * so the widescreen extension gives the 4th Map Maker toggle its first real
+ * tiles on this grid — see the bush cluster at cols10-12, row2.
+ *
+ * Legend:  #  wall (solid, a chunky Brawl-style block, qualifies as camo)
+ *          ~  water (solid to walk into, qualifies as camo when adjacent)
+ *          b  bush (a real camo surface, walkable, priority wall > bush >
+ *             water > floor)
+ *          .  floor (walkable; always qualifies as camo where you stand)
+ *          S  spawn (floor)
+ *
+ * Surface palette moved toward her footage's actual current theme (dark
+ * violet-purple ground, teal foliage, glowing acid-green water) — the
+ * procedural FALLBACK colours only; the real generated textures redo
+ * against her frames in the next batch (held for PM clear + Tessa's budget
+ * yes, Concept Brief rule 3j).
+ *
+ * ESTABLISHING PAN REVIEWED (21-07-2026, Concept Brief rule 3l): the PM's
+ * "no establishing shot exists" claim was wrong — her Acid Lakes recording
+ * DOES have a match-intro pan (~14–16s) with a clean overhead of the map
+ * centre. Extracted at native res (`Art/Acid Lakes Real Footage Reference/`
+ * scratch — pan_14.0s through pan_17.0s) and used to cross-check this grid's
+ * cluster SHAPES: the fence run, bush mass, pool silhouette and general
+ * cover density all match what the pan shows for this map. Honest limit,
+ * stated plainly: the pan has no gridline overlay (unlike the original
+ * top-left corner trace, which did), so this is a confirmed-shape review,
+ * not a pixel-precise re-trace — cols10-15 stay footage-INFORMED rather
+ * than footage-TRACED. The layered rendering rebuild (below/`src/arena.js`)
+ * was the pan's main payoff this round: it's what let a genuine fence
+ * structure, real prop types (stump/barrels/bones) and correct floor
+ * texture replace guesses.
+ */
+window.ARENA = {
+  // 16 wide × 9 tall (was 10×9) — 16:9, PM-cleared widescreen crop. Height
+  // unchanged (still the compact scale that fit the mode's tuned pacing;
+  // "don't oversize" per the Meccha lesson still applies to depth, just not
+  // width). col0/row0 = the map's true left/top edge, continued in kind
+  // across the new width, not reinvented.
+  grid: [
+    '#####~~~~#######',
+    '####~~~~~#######',
+    '###.~~~~~#bbb...',
+    '##..~~~..#..###.',
+    '.....~~..#......',
+    '~~~.........~~..',
+    '~~~~..S.....~~..',
+    '~~~.........~~..',
+    '~###............',
+  ].map((row) => row.slice(0, 16)),
+
+  // Decorative props (v30, 21-07-2026, Concept Brief rule 3l layered-build
+  // spec). Power-Cube crates REMOVED outright (Tessa's design ruling: Solo
+  // Showdown power-up furniture, not map furniture — false-promises power
+  // cubes in our camo mode); their old (3,2)/(2,3) positions are now just
+  // open floor, not backfilled. New set is set-dressing her footage
+  // confirms genuinely exists on this map (stumps, barrels, bone/fossil
+  // decals) — scattered on open floor, not solid, never consulted by
+  // collide()/isSolid()/hideTiles. Stumps carry `rot` (degrees) — her
+  // footage shows the same stump asset repeated at different rotations.
+  props: [
+    { c: 14, r: 2, key: 'stump', rot: 0 },
+    { c: 11, r: 4, key: 'stump', rot: 110 },
+    { c: 5,  r: 8, key: 'stump', rot: 230 },
+    { c: 7,  r: 4, key: 'barrel_plain' },
+    { c: 10, r: 7, key: 'barrel_cobweb' },
+    { c: 12, r: 5, key: 'bones_skull' },
+    { c: 8,  r: 7, key: 'bones_pair' },
+    { c: 4,  r: 4, key: 'bones_ribs' },
+  ],
+
+  surfaces: {
+    floorA: '#2A2140',
+    floorB: '#332B52',
+    wallTop:  '#6B6FB8',
+    wallSide: '#3A3868',
+    water:    '#3ED45A',
+    waterHi:  '#7CF08A',
+    bush:     '#2E9CA0',
+    bushHi:   '#4FCBC8',
+  },
+};

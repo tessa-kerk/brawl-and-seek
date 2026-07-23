@@ -1,5 +1,12 @@
 # Brawl & Seek — build status
 
+## Directive 005 publication receipt (24-07-2026)
+
+- Gameplay commit: `e03aebbe987b1faa24e7f2ee062d34924a592006` (`Keep desktop play upright`).
+- GitHub Pages workflow `30039937829` completed successfully for that commit. Public URL: [tessa-kerk.github.io/brawl-and-seek](https://tessa-kerk.github.io/brawl-and-seek/).
+- Cache-busted public system-Chrome verification passed at 1,300×1,365, 1,280×720, 576×1,280 portrait, 844×390 landscape and 740×360 landscape: v45 stamp, approved plate, expected desktop/mobile orientation, exact viewport bounds, movement and zero page-origin errors. Public end-state and Play Again also passed at 1,300×1,365.
+- README, capture utilities and Art evidence remain outside the public tree. No Gemini or paid generation occurred.
+
 ## Directive 004 publication receipt (24-07-2026)
 
 ## Directive 005 — v45 desktop-safe orientation local PM handoff (24-07-2026)
@@ -10,16 +17,15 @@
 - Artefacts: `Art/2026-07-24 - Directive 005 desktop orientation/v45-geometry.json`, six viewport stills, and exact desktop keyboard-walk/end-state/Play Again stills. Geometry covers 1300×1365, 1280×720, 900×1200, 576×1280 mobile portrait, 844×390 and 740×360 mobile landscape; every capture reports exact viewport bounds and zero page-origin errors.
 - Motion: `v45-desktop-tall-keyboard-final.webm` is the clean trimmed desktop held-key recording (11.920s, 298 frames at 25fps, decoded by OpenCV from v45 frame 0); `v45-desktop-tall-keyboard-contact-sheet.jpg` is the labelled sequential sheet showing START V45, keyboard walk, END STATE and PLAY AGAIN. Raw recording is preserved as `v45-desktop-tall-keyboard-raw.webm`; console log is `v45-desktop-tall-keyboard-console.txt` and reports no page-origin errors.
 - Regression: independent desktop-orientation oracle passed 4/4; mobile rotate/input oracle passed 5/5; complete regression passed **ALL 14 suites** (including the new desktop-orientation suite) with zero failures; `git diff --check` is clean.
-- Local PM gate is complete. No commit, push, publication, generation or Gemini spend occurred; public v44 remains unchanged pending PM approval.
+- Local PM gate passed and the reviewed gameplay commit is now published as v45. No generation or Gemini spend occurred; public verification is recorded above.
 
 ## CURRENT STATE — v45 · DESKTOP ORIENT
 
-The public playable build is v44 on GitHub Pages at final public SHA `62b5aca`. Gameplay is frozen at the PM-approved phone-correction surface pending the next dated directive; Tessa’s physical-phone feel test remains the device judge.
+The public playable build is v45 on GitHub Pages at gameplay commit `e03aebb`. Gameplay is frozen at the PM-approved desktop-safe orientation surface pending the next dated directive; Tessa’s physical-device feel test remains the device judge.
 
-- Published commit: `366a17a` (v44 phone corrections), followed by this deployment receipt.
-- Final public SHA after the documentation receipt is `62b5aca`; gameplay and README are unchanged.
-- GitHub Pages workflow `30037152661` completed successfully; public URL: [tessa-kerk.github.io/brawl-and-seek](https://tessa-kerk.github.io/brawl-and-seek/).
-- System-Chrome public verification passed at 1280×720, 844×390, 740×360 and rotated 576×1280: `V44 · STEP 1 PHONE`, approved world plate present, keyboard movement works, zero page-origin errors. Raw verification is recorded in `Art/2026-07-24 - Directive 004 phone corrections/v44-public-verification.json`.
+- Published gameplay commit: `e03aebb` (v45 desktop-safe orientation), following the v44 phone-correction history.
+- GitHub Pages workflow `30039937829` completed successfully; public URL: [tessa-kerk.github.io/brawl-and-seek](https://tessa-kerk.github.io/brawl-and-seek/).
+- System-Chrome public verification passed at 1,300×1,365, 1,280×720, 844×390, 740×360 and rotated 576×1280: `V45 · DESKTOP ORIENT`, approved world plate present, keyboard movement works, exact bounds and zero page-origin errors. Detailed v45 geometry is recorded in `Art/2026-07-24 - Directive 005 desktop orientation/v45-geometry.json`.
 
 ## Directive 004 — v44 phone-correction local PM handoff (24-07-2026)
 

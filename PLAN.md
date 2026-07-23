@@ -2,7 +2,17 @@
 
 ## Directive 004 publication receipt (24-07-2026)
 
-## CURRENT STATE — v44 · Step 1 phone corrections published
+## Directive 005 — v45 desktop-safe orientation local PM handoff (24-07-2026)
+
+- Build/cache stamp: `v45 · DESKTOP ORIENT`; all 21 `?v=` tokens agree. README and gameplay surfaces remain unchanged.
+- Exact defect reproduction: fine-pointer 1300×1365 previously produced a rotated stage; v45 now gives an upright centred stage `(0,337.3125)–(1300,1027.6875)`, 1.883:1, no overflow.
+- Orientation logic: CSS and `Input.isRotated()` now require portrait + coarse pointer + no hover; tall fine-pointer desktops receive an upright centred landscape surface. Debug telemetry exposes the decision and actual stage rectangle.
+- Artefacts: `Art/2026-07-24 - Directive 005 desktop orientation/v45-geometry.json`, six viewport stills, and exact desktop keyboard-walk/end-state/Play Again stills. Geometry covers 1300×1365, 1280×720, 900×1200, 576×1280 mobile portrait, 844×390 and 740×360 mobile landscape; every capture reports exact viewport bounds and zero page-origin errors.
+- Motion: `v45-desktop-tall-keyboard-final.webm` is the clean trimmed desktop held-key recording (11.920s, 298 frames at 25fps, decoded by OpenCV from v45 frame 0); `v45-desktop-tall-keyboard-contact-sheet.jpg` is the labelled sequential sheet showing START V45, keyboard walk, END STATE and PLAY AGAIN. Raw recording is preserved as `v45-desktop-tall-keyboard-raw.webm`; console log is `v45-desktop-tall-keyboard-console.txt` and reports no page-origin errors.
+- Regression: independent desktop-orientation oracle passed 4/4; mobile rotate/input oracle passed 5/5; complete regression passed **ALL 14 suites** (including the new desktop-orientation suite) with zero failures; `git diff --check` is clean.
+- Local PM gate is complete. No commit, push, publication, generation or Gemini spend occurred; public v44 remains unchanged pending PM approval.
+
+## CURRENT STATE — v45 · DESKTOP ORIENT
 
 The public playable build is v44 on GitHub Pages at final public SHA `62b5aca`. Gameplay is frozen at the PM-approved phone-correction surface pending the next dated directive; Tessa’s physical-phone feel test remains the device judge.
 

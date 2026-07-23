@@ -31,16 +31,17 @@
 
   const MODE = new URLSearchParams(location.search).get('joystick') === 'float' ? 'float' : 'fixed';
 
-  /* Rotated-portrait coordinate remap (Concept Brief rule 3l, 20-07-2026 —
-   * no rotate prompt; #stage itself renders rotated via CSS, see main.css).
+  /* Capability-aware portrait coordinate remap (Concept Brief rule 3l —
+   * no rotate prompt; #stage itself renders rotated via CSS only for a
+   * portrait coarse/no-hover primary pointer, see main.css).
    * Touch events keep reporting RAW physical clientX/clientY regardless of
    * any CSS transform on an ancestor — the browser does NOT rotate touch
    * coordinates for you, only the pixels it paints. Every touch coordinate
    * used for game logic must be converted into #stage's OWN rotated-box
    * space to match what game.js's cssW/cssH (stage.clientWidth/Height,
    * unaffected by the transform) already assume.
-   * Derived from the exact CSS transform (rotate(90deg) translateY(-100%),
-   * transform-origin:top left) on a box sized width=innerHeight,
+   * Derived from the exact mobile CSS transform (rotate(90deg)
+   * translateY(-100%), transform-origin:top left) on a box sized width=innerHeight,
    * height=innerWidth: inverting that transform gives
    *   gameX = physicalClientY
    *   gameY = innerWidth − physicalClientX
@@ -48,7 +49,7 @@
    * i.e. the translateY(-100%) distance) — always call remap() with the
    * live window.innerWidth, never a cached value, since orientation can
    * change mid-session. isRotated() mirrors the exact CSS media query. */
-  function isRotated() { return innerWidth < innerHeight; }
+  function isRotated() { return matchMedia('(orientation: portrait) and (pointer: coarse) and (hover: none)').matches; }
   function stage() { return document.getElementById('stage'); }
   function geometry() {
     const el = stage();
@@ -58,8 +59,8 @@
   function gameW() { return geometry().width; }
   function gameH() { return geometry().height; }
   function remap(x, y) {
-    if (!isRotated()) return { x, y };
     const g = geometry();
+    if (!isRotated()) return { x: x - g.rect.left, y: y - g.rect.top };
     return { x: y - g.rect.top, y: g.rect.right - x };
   }
 
@@ -227,7 +228,7 @@
       dbg.cur = active ? { x: cur.x, y: cur.y } : null;
       return { x: 0, y: 0 };
     },
-    debug() { return { ...dbg, geometry: geometry() }; },
+    debug() { return { ...dbg, rotation: isRotated(), geometry: geometry() }; },
     mapClient: remap,
   };
 })();

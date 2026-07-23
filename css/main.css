@@ -45,12 +45,26 @@ body{
    descendants too (the joystick ring/nub, appended into #stage) — they
    already compute their positions in this same rotated-box coordinate
    space, so they land correctly with no extra CSS needed. */
-@media (orientation:portrait){
+@media (orientation:portrait) and (pointer:coarse) and (hover:none){
   #stage{
     top:0; left:0; right:auto; bottom:auto;
     width:max(100lvh,100dvh); height:100lvw;
     transform-origin:top left;
     transform:rotate(90deg) translateY(-100%);
+  }
+}
+
+/* Fine-pointer desktop windows can be taller than wide without becoming a
+   phone. Keep the gameplay composition upright and centre the audited
+   landscape camera surface inside honest Night Navy letterbox space. */
+@media (orientation:portrait) and (pointer:fine) and (hover:hover){
+  #stage{
+    inset:auto;
+    left:50%; top:50%; right:auto; bottom:auto;
+    width:min(100vw, calc(100vh * 1.883));
+    height:min(100vh, calc(100vw / 1.883));
+    transform:translate(-50%,-50%);
+    transform-origin:center;
   }
 }
 

@@ -41,7 +41,7 @@
     // narrow LANDSCAPE phone like 844x390 fell under and got the sheet,
     // eating ~60% of its height for a postage-stamp arena — wrong axis to
     // gate on. Real devices only ever reach this view in landscape (the
-    // rotate-prompt blocks portrait), so orientation is the correct signal).
+    // portrait rotation is capability-aware, so orientation is the correct signal).
     let padR = 0, padB = 0, padT = 0;
     if (STATE.view === 'maker') {
       if (cssW > cssH) padR = 340; else padB = Math.min(Math.round(cssH * 0.46), 360);

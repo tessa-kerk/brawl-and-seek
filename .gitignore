@@ -25,6 +25,7 @@ __pycache__/
 assets/GENERATION-LOG.md
 assets/world/_*.png
 assets/world/d002-*.png
+assets/world/d003-cleanup-layers.png
 assets/world/truth-*.png
 assets/world/floor*.png
 assets/world/water*.png
@@ -48,3 +49,13 @@ tools/verify_public_004.py
 tools/capture_005.py
 tools/repro_005.py
 tools/capture_desktop_video_005.py
+tools/capture_006.py
+tools/repair_plate_006.py
+tools/repair_bush_ghost_006.py
+tools/package_plate_evidence_006.py
+tools/retry_006c.py
+tools/build_layers_006d.py
+tools/capture_006f.py
+tools/capture_collision_006f.py
+tools/capture_006g_sequence.py
+tools/capture_006g_stills.py

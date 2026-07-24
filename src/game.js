@@ -131,6 +131,8 @@
       x1: (cssW - offX) / scale, y1: (cssH - offY) / scale,
     };
     Arena.draw(ctx, tSec, bleed);                    // ground layer: full-bleed floor, then bush, water (flat, always first)
+    if (window.Assets && Assets.get('world_plate') && Arena.drawIdleGhostBushCorrection) Arena.drawIdleGhostBushCorrection(ctx);
+    if (window.Assets && Assets.get('world_plate') && Arena.drawOccupiedBushTreatment) Arena.drawOccupiedBushTreatment(ctx);
     FX.draw(ctx);
 
     // Camera-tilt draw order (engineering pass, 18-07-2026): walls and
@@ -149,7 +151,7 @@
     drawables.push({ y: Player.y + Player.r, draw: (c) => Render.drawPlayer(c, tSec) });
     drawables.sort((a, b) => a.y - b.y);
     for (const d of drawables) d.draw(ctx);
-    if (window.Debug && Debug.on) Arena.drawPropColliders(ctx);
+    if (window.Debug && Debug.on) { Arena.drawCollisionOverlay(ctx); Arena.drawPropColliders(ctx); }
 
     // Map Maker's "which surfaces camouflage you" scrim (M3, signed off) now
     // draws AFTER the interleave rather than strictly between walls and

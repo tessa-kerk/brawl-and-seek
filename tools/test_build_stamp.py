@@ -8,6 +8,8 @@ either file's own logic."""
 import re
 import sys
 import pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from _harness import game
 
 HERE = pathlib.Path(__file__).resolve().parent
 GAME = HERE.parent
@@ -40,6 +42,12 @@ check(f"every ?v= token is the SAME value (no half-bumped file) — {sorted(set(
       len(set(tokens)) == 1)
 check(f"CFG.BUILD.n ({build_n}) == the index.html ?v= token ({max_token})",
       build_n is not None and max_token is not None and build_n == max_token)
+check("CFG.BUILD.milestone is the final playability label",
+      "milestone: 'STEP 1 PLAYABILITY'" in config_js)
+with game(width=844, height=390) as (pg, errs):
+    stamp = pg.locator('.stamp').inner_text()
+    check("fresh system-Chrome stamp is V48 · STEP 1 PLAYABILITY",
+          stamp == 'V48 · STEP 1 PLAYABILITY' and not errs)
 
 print(f"build-stamp: {ok} passed, {fail} failed")
 sys.exit(0 if fail == 0 else 1)

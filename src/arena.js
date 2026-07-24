@@ -7,7 +7,7 @@
   const grid = ARENA.grid.map((row) => row.split(''));
   const rows = grid.length, cols = grid[0].length;
   const W = cols * T, H = rows * T;
-  let plateLayerCache = null, bushRuffle = { x: 0, y: 0, c: -1, r: -1 };
+  let plateLayerCache = null, bushCoverAlpha = 0, bushCoverKey = '', occupiedTargetCache = new Map(), maskAlphaCache = new Map();
   // Directive 002's reference-locked fixture is deliberately query-gated.
   // It paints no cells into the 50×27 arena data and never alters collision.
   const truthMode = new URLSearchParams(location.search).get('truth') === '1';
@@ -43,11 +43,22 @@
   const isSolid = (c, r) => !inBounds(c, r) || grid[r][c] === '#' || grid[r][c] === '~';
   function inBounds(c, r) { return c >= 0 && r >= 0 && c < cols && r < rows; }
 
-  // Spawn (the 'S' cell), centre of its tile.
+  // Spawn is authored near the audited open route, then validated against the
+  // complete final blocker model. A stale S marker or prop can never place a
+  // body inside visible geometry; the deterministic fallback scans nearest
+  // floor cells in row-major order.
+  const SPAWN_CANDIDATES = [[27, 8], [28, 8], [29, 8], [27, 9], [26, 8]];
   function spawn() {
     if (truthMode) return centre(16, 13);
-    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++)
-      if (grid[r][c] === 'S') return { x: c * T + T / 2, y: r * T + T / 2 };
+    const h = CFG.playerRadius * T;
+    for (const [c, r] of SPAWN_CANDIDATES) {
+      if (inBounds(c, r) && !isSolid(c, r) && !isSolidAt(c * T + T / 2, r * T + T / 2, h))
+        return { x: c * T + T / 2, y: r * T + T / 2 };
+    }
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      if (!isSolid(c, r) && !isSolidAt(c * T + T / 2, r * T + T / 2, h))
+        return { x: c * T + T / 2, y: r * T + T / 2 };
+    }
     return { x: W / 2, y: H / 2 };
   }
 
@@ -172,6 +183,22 @@
     ctx.restore();
   }
 
+  function drawCollisionOverlay(ctx) {
+    ctx.save();
+    for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+      const ch=grid[r][c], x=c*T, y=r*T;
+      if (ch==='#') { ctx.fillStyle='rgba(255,70,90,.20)'; ctx.strokeStyle='rgba(255,70,90,.75)'; }
+      else if (ch==='~') { ctx.fillStyle='rgba(40,150,255,.20)'; ctx.strokeStyle='rgba(40,150,255,.75)'; }
+      else continue;
+      ctx.fillRect(x,y,T,T); ctx.strokeRect(x+.5,y+.5,T-1,T-1);
+    }
+    ctx.strokeStyle='#35E0D0'; ctx.lineWidth=3; ctx.strokeRect(1.5,1.5,W-3,H-3);
+    for (const p of PROP_COLLIDERS) { ctx.beginPath(); ctx.arc(p.x,p.y,p.radius,0,7); ctx.strokeStyle='#FFC800'; ctx.lineWidth=2.5; ctx.stroke(); }
+    ctx.fillStyle='#F6F4EF'; ctx.font='bold 13px ui-monospace,monospace';
+    ctx.fillText('COLLISION: red wall/fence · blue lake · yellow prop · cyan boundary',12,18);
+    ctx.restore();
+  }
+
   // ---- Navigation (BFS on the tile grid; the arena is tiny, so this is free) --
   const centre = (c, r) => ({ x: c * T + T / 2, y: r * T + T / 2 });
   const tileBlocked = (c, r) => {
@@ -278,23 +305,48 @@
     for(let r=0;r<rows;r++){let c=0;while(c<cols){if(!isWall(c,r)){c++;continue;}let c1=c;while(c1+1<cols&&isWall(c1+1,r))c1++;out.push({y:(r+1)*T,draw:(ctx)=>drawMaskedPlate(ctx,layers[0],c,r,c1+1,r+1)});c=c1+1;}}
     // Foliage foreground is owned only by a genuinely occupied cell. Other
     // bushes stay opaque and stationary; leaving cover clears immediately.
-    const pc=Math.floor(Player.x/T), pr=Math.floor(Player.y/T), occupied=isBush(pc,pr);
-    if(occupied){
-      bushRuffle.c=pc; bushRuffle.r=pr;
+    /* Bush cover is applied as one connected pre-entity treatment below. */
       // At the audited 43px source scale this resolves to a visible but still
       // leaf-local 1–1.5 screen-pixel sway, not a whole-cluster wobble.
-      if(Player.lastMoving){
-        bushRuffle.x=Math.max(-1.5,Math.min(1.5,(Player.vx||0)*.012));
-        bushRuffle.y=Math.max(-1.1,Math.min(1.1,(Player.vy||0)*.009));
-      } else { bushRuffle.x=0; bushRuffle.y=0; }
-    } else {
-      bushRuffle={x:0,y:0,c:-1,r:-1};
-    }
-    if(bushRuffle.c>=0) out.push({y:Player.y+Player.r+.05,draw:(ctx)=>{ctx.save();ctx.translate(bushRuffle.x,bushRuffle.y);drawMaskedPlate(ctx,layers[1],bushRuffle.c,bushRuffle.r+.58,bushRuffle.c+1,bushRuffle.r+1);ctx.restore();}});
     return out;
   }
   function makePlateLayer(plate,mask){const c=document.createElement('canvas');c.width=plate.naturalWidth;c.height=plate.naturalHeight;const x=c.getContext('2d');x.drawImage(mask,0,0,c.width,c.height);const d=x.getImageData(0,0,c.width,c.height);for(let i=0;i<d.data.length;i+=4){const a=Math.max(d.data[i],d.data[i+1],d.data[i+2]);d.data[i+3]=a;}x.putImageData(d,0,0);x.globalCompositeOperation='source-in';x.drawImage(plate,0,0,c.width,c.height);return c;}
   function drawMaskedPlate(ctx,layer,c0,r0,c1,r1){const x=c0*T,y=r0*T,w=(c1-c0)*T,h=(r1-r0)*T;ctx.drawImage(layer,c0*43,r0*43,(c1-c0)*43,(r1-r0)*43,x,y,w,h);}
+
+  function drawOccupiedBushTreatment(ctx) {
+    const plate=window.Assets&&Assets.get('world_plate'), mask=window.Assets&&Assets.get('world_mask_bush');
+    if(!plate||!mask||!window.Player) return;
+    const pc=Math.floor(Player.x/T), pr=Math.floor(Player.y/T), inBush=isBush(pc,pr);
+    if (!inBush) bushCoverAlpha = 0;
+    else bushCoverAlpha += (.66-bushCoverAlpha)*.22;
+    if(!inBush && bushCoverAlpha<.01) return;
+    const region=tileRegions((c,r)=>isBush(c,r)).find((reg)=>pc>=reg.c0&&pc<=reg.c1&&pr>=reg.r0&&pr<=reg.r1);
+    if(!region){ bushCoverAlpha=0; return; }
+    const keyRegion=`${region.c0},${region.r0},${region.c1},${region.r1}`;
+    let target=occupiedTargetCache.get(keyRegion);
+    if(!target){
+      const tw=(region.c1-region.c0+1)*T, th=(region.r1-region.r0+1)*T;
+      target=document.createElement('canvas'); target.width=tw; target.height=th;
+      const q=target.getContext('2d');
+      const sw=(region.c1-region.c0+1)*43, sh=(region.r1-region.r0+1)*43;
+      const alphaKey=`${region.c0},${region.r0},${region.c1},${region.r1}`;
+      let alphaMask=maskAlphaCache.get(alphaKey);
+      if(!alphaMask){ alphaMask=document.createElement('canvas'); alphaMask.width=tw; alphaMask.height=th; const aq=alphaMask.getContext('2d'); aq.drawImage(mask,region.c0*43,region.r0*43,sw,sh,0,0,tw,th); const ad=aq.getImageData(0,0,tw,th); for(let i=0;i<ad.data.length;i+=4){const lum=ad.data[i]; ad.data[i]=255; ad.data[i+1]=255; ad.data[i+2]=255; ad.data[i+3]=lum;} aq.putImageData(ad,0,0); maskAlphaCache.set(alphaKey,alphaMask); }
+      const underlay=document.createElement('canvas'); underlay.width=tw; underlay.height=th; const uq=underlay.getContext('2d'); uq.fillStyle='#4b3a56'; uq.fillRect(0,0,tw,th); uq.globalCompositeOperation='destination-in'; uq.drawImage(alphaMask,0,0); q.drawImage(underlay,0,0);
+      const bushLayer=document.createElement('canvas'); bushLayer.width=tw; bushLayer.height=th; const bq=bushLayer.getContext('2d');
+      bq.drawImage(alphaMask,0,0); bq.globalCompositeOperation='source-in'; bq.globalAlpha=.42; bq.drawImage(plate,region.c0*43,region.r0*43,sw,sh,0,0,tw,th); q.drawImage(bushLayer,0,0); occupiedTargetCache.set(keyRegion,target);
+    }
+    ctx.save(); ctx.globalAlpha=bushCoverAlpha; ctx.beginPath();
+    for(let r=region.r0;r<=region.r1;r++) for(let c=region.c0;c<=region.c1;c++) if(isBush(c,r)) ctx.rect(c*T,r*T,T,T);
+    ctx.clip(); ctx.drawImage(target,region.c0*T,region.r0*T); ctx.restore();
+  }
+  function drawIdleGhostBushCorrection(ctx) {
+    const mask=window.Assets&&Assets.get('world_mask_bush');
+    if(!mask) return;
+    const x=1100,y=470,w=96,h=44, c=document.createElement('canvas'); c.width=w; c.height=h;
+    const q=c.getContext('2d'); q.drawImage(mask,x,y,w,h,0,0,w,h); q.globalCompositeOperation='source-in'; q.globalAlpha=.10; q.fillStyle='#35e0d0'; q.fillRect(0,0,w,h);
+    ctx.drawImage(c,x,y);
+  }
 
   // Bounding boxes of contiguous same-type tile regions, 4-way flood fill.
   // Used to trace a ROUNDED outer silhouette around a pool/cluster instead of
@@ -708,8 +760,8 @@
   function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); roundRectPath(ctx, x, y, w, h, r); }
 
   window.Arena = {
-    T, cols, rows, W, H, grid, isSolid, isSolidAt, isWall, isWater, isBush, props: PROP_COLLIDERS, spawn, collide, camoSurface, draw, drawPropColliders, roundRect, roundRectPath,
+    T, cols, rows, W, H, grid, isSolid, isSolidAt, isWall, isWater, isBush, props: PROP_COLLIDERS, spawn, collide, camoSurface, draw, drawPropColliders, drawCollisionOverlay, roundRect, roundRectPath,
     freeTiles, hideTiles, centre, tileOf, path, pick, drawCamoOverlay, typeAt, wallDrawables, bushCanopyDrawables, propDrawables, truthPatchDrawables,
-    isTruthPatch: truthMode, plateForegroundDrawables,
+    isTruthPatch: truthMode, plateForegroundDrawables, drawOccupiedBushTreatment, drawIdleGhostBushCorrection,
   };
 })();

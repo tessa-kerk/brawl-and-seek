@@ -9,5 +9,5 @@ with game(width=1300, height=1365) as (pg, errs):
     t.check('fine-pointer desktop does not rotate', info['coarse'] is False and info['hover'] is True and info['rot'] is False and info['css'].startswith('matrix(1, 0, 0, 1'))
     t.check('tall desktop stage is centred at audited landscape ratio', abs(info['r']['w']/info['r']['h']-ratio)<.01 and abs(info['r']['x'])<1 and abs(info['r']['y']-(1365-info['r']['h'])/2)<1)
     t.check('tall desktop has no document overflow', info['overflow']==[1300,1365])
-    t.check('desktop stage owns upright controls', pg.evaluate("getComputedStyle(document.getElementById('hint')).display!='none' && document.querySelector('.stamp').innerText.includes('V45')"))
+    t.check('desktop stage owns upright controls', pg.evaluate("getComputedStyle(document.getElementById('hint')).display!='none' && document.querySelector('.stamp').innerText.includes('V48')"))
     t.finish('desktop orientation', errs)
